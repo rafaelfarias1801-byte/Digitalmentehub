@@ -1,43 +1,151 @@
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
-import { Mail } from "lucide-react";
+import { SiThreads } from "react-icons/si";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
-    <footer className="py-12 bg-brand-dark border-t border-white/5" data-testid="footer">
+    <footer className="py-16 bg-brand-dark border-t border-white/5" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <img src="/logo.png" alt="Digitalmente HUB" className="h-8 w-auto" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+
+          <div className="lg:col-span-1">
+            <img src="/logo.png" alt="Digitalmente HUB" className="h-16 w-auto mb-2" />
+            <p className="text-white/50 text-sm">HUB digital</p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <a
-              href="https://wa.me/5541987907321"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-9 h-9 rounded-md bg-white/5 flex items-center justify-center text-white/50 hover:text-brand-orange hover:bg-white/10 transition-all"
-              aria-label="WhatsApp"
-            >
-              <FaWhatsapp className="w-4 h-4" />
-            </a>
-            <a
-              href="https://instagram.com/digital.mentte"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-9 h-9 rounded-md bg-white/5 flex items-center justify-center text-white/50 hover:text-brand-orange hover:bg-white/10 transition-all"
-              aria-label="Instagram"
-            >
-              <FaInstagram className="w-4 h-4" />
-            </a>
-            <a
-              href="mailto:digitalmente.oficial.mkt@gmail.com"
-              className="w-9 h-9 rounded-md bg-white/5 flex items-center justify-center text-white/50 hover:text-brand-orange hover:bg-white/10 transition-all"
-              aria-label="E-mail"
-            >
-              <Mail className="w-4 h-4" />
-            </a>
+          <div>
+            <h4 className="text-white font-medium mb-4">Contato</h4>
+            <div className="space-y-3">
+              <a
+                href="https://wa.me/5541987907321"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white/50 text-sm"
+                data-testid="footer-whatsapp-1"
+              >
+                <FaWhatsapp className="w-4 h-4 flex-shrink-0" />
+                (41) 98790-7321
+              </a>
+              <a
+                href="https://wa.me/5541920059509"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white/50 text-sm"
+                data-testid="footer-whatsapp-2"
+              >
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                (41) 92005-9509
+              </a>
+              <a
+                href="mailto:digitalmente.oficial.mkt@gmail.com"
+                className="flex items-center gap-2 text-white/50 text-sm"
+                data-testid="footer-email"
+              >
+                <Mail className="w-4 h-4 flex-shrink-0" />
+                digitalmente.oficial.mkt@gmail.com
+              </a>
+              <div className="flex items-start gap-2 text-white/50 text-sm">
+                <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>Av. Dr. Dário Lopes dos Santos, 2197 - Jardim Botânico, Curitiba - PR</span>
+              </div>
+            </div>
           </div>
 
+          <div>
+            <h4 className="text-white font-medium mb-4">Navegação</h4>
+            <div className="space-y-3">
+              <a href="/#inicio" className="block text-white/50 text-sm" data-testid="footer-nav-home">Home</a>
+              <a href="/#sobre" className="block text-white/50 text-sm" data-testid="footer-nav-about">Quem somos</a>
+              <a href="/#servicos" className="block text-white/50 text-sm" data-testid="footer-nav-services">Serviços</a>
+              <a href="/#contato" className="block text-white/50 text-sm" data-testid="footer-nav-contact">Contato</a>
+            </div>
+
+            <h4 className="text-white font-medium mt-8 mb-4">Redes Sociais</h4>
+            <div className="space-y-3">
+              <a
+                href="https://instagram.com/digital.mentte"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white/50 text-sm"
+                data-testid="footer-instagram"
+              >
+                <FaInstagram className="w-4 h-4" />
+                Instagram
+              </a>
+              <a
+                href="https://www.threads.net/@digital.mentte"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white/50 text-sm"
+                data-testid="footer-threads"
+              >
+                <SiThreads className="w-4 h-4" />
+                Threads
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-white font-medium mb-4">Produtos</h4>
+            <div className="space-y-3">
+              <Link href="/produtos/packs" className="block text-white/50 text-sm" data-testid="footer-packs">
+                Pack's de conteúdos
+              </Link>
+              <Link href="/produtos/consultoria" className="block text-white/50 text-sm" data-testid="footer-consultoria">
+                Consultoria estratégica para empreendedores
+              </Link>
+              <Link href="/produtos/analise-instagram" className="block text-white/50 text-sm" data-testid="footer-analise">
+                Análise estratégica de Instagram
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-white font-medium mb-4">Parcerias</h4>
+            <div className="space-y-3">
+              <a
+                href="https://www.instagram.com/unicornio.designer/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-white/50 text-sm"
+                data-testid="footer-unidesign"
+              >
+                Unidesign
+              </a>
+              <a
+                href="https://createstudiocr.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-white/50 text-sm"
+                data-testid="footer-create-studio"
+              >
+                Create Studio
+              </a>
+              <a
+                href="https://xsolidy.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-white/50 text-sm"
+                data-testid="footer-xsolid"
+              >
+                XSolid
+              </a>
+              <a
+                href="https://www.figma.com/proto/Bd52kse9I8MlmtURocp4bd/Hub-360%C2%B0?page-id=0%3A1&node-id=1-3&viewport=530%2C50%2C0.12&t=V7oHi6DZJBQnPR4z-8&scaling=scale-down-width&content-scaling=fixed&hide-ui=1&starting-point-node-id=1%3A3&fbclid=PARlRTSAQFyBtleHRuA2FlbQIxMABzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAaf-o7ieqvFRHMjmT3JwsSA2cnfUKxA8-vPVMb5VC5Kwye0_UPux9WUsz-EHxQ_aem_P5AWbrjKOZ-F-a7czxOlJA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-white/50 text-sm"
+                data-testid="footer-alimentec"
+              >
+                Alimentec
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-white/5 text-center">
           <p className="text-white/30 text-xs">
             Digitalmente HUB - Curitiba, PR
           </p>
