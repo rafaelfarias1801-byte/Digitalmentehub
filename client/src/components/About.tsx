@@ -1,9 +1,16 @@
 import { motion } from "framer-motion";
+import diamondBg from "@/assets/images/diamond-bg.png";
 
 export default function About() {
   return (
-    <section id="sobre" className="py-24 md:py-32 bg-brand-pink relative" data-testid="section-about">
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="sobre" className="relative overflow-hidden" data-testid="section-about">
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${diamondBg})` }}
+      />
+      <div className="absolute inset-0 bg-brand-pink/85" />
+
+      <div className="relative py-24 md:py-32 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -11,6 +18,10 @@ export default function About() {
           transition={{ duration: 0.6 }}
           className="space-y-6"
         >
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-white mb-8">
+            Quem somos
+          </h2>
+
           <p className="text-white text-lg md:text-xl leading-relaxed">
             Nós nascemos da vontade sincera de transformar o digital em algo que fizesse sentido de verdade.
             {" "}Não só para marcas, mas para pessoas.
