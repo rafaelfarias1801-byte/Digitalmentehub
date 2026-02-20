@@ -23,7 +23,6 @@ export default function Hero() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-navy/80 via-brand-navy/70 to-brand-navy/95" />
       </div>
-
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 w-full">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h1
@@ -55,7 +54,7 @@ export default function Hero() {
               href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20receber%20um%20diagn%C3%B3stico%20gratuito."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-3 bg-brand-orange text-white px-10 py-4 rounded-full text-base font-medium transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
+              className="inline-flex items-center justify-center gap-3 bg-brand-orange text-white px-10 py-4 rounded-full transition-all duration-200 hover:brightness-110 hover:scale-[1.02] text-[16px] font-bold"
               data-testid="button-hero-diagnostico"
             >
               <FaWhatsapp className="text-xl" />
@@ -64,7 +63,6 @@ export default function Hero() {
           </motion.div>
         </div>
       </div>
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
