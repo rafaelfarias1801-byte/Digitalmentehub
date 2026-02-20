@@ -3,14 +3,14 @@ import { services } from "../data/services";
 
 export default function Services() {
   return (
-    <section id="servicos" className="py-24 md:py-32 bg-brand-pink relative" data-testid="section-services">
+    <section id="servicos" className="pt-16 md:pt-20 pb-24 md:pb-32 bg-brand-pink relative scroll-mt-16" data-testid="section-services">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-8"
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4 font-bold">Nossos Serviços</h2>
         </motion.div>
