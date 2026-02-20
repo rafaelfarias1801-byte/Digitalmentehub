@@ -32,7 +32,7 @@ export default function Hero() {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-8"
           >
             Estratégias criativas pra transformar{" "}
-            <span className="text-brand-orange">presença</span> em{" "}
+            <span className="text-brand-orange font-semibold">presença</span> em{" "}
             <span className="text-brand-orange font-semibold">resultado.</span>
           </motion.h1>
 
