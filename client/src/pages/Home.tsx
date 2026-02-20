@@ -22,8 +22,8 @@ export default function Home() {
       <Services />
       <CaseStudy />
       <Partners />
-      <FAQ />
       <Contact />
+      <FAQ />
       <Footer />
       <WhatsAppFloat />
     </div>
