@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertLeadSchema } from "@shared/schema";
 import { ZodError, z } from "zod";
+import { sendLeadNotification } from "./gmail";
 
 const serverLeadSchema = insertLeadSchema.extend({
   name: z.string().min(2, "Nome é obrigatório"),
@@ -20,6 +21,13 @@ export async function registerRoutes(
     try {
       const data = serverLeadSchema.parse(req.body);
       const lead = await storage.createLead(data);
+
+      try {
+        await sendLeadNotification(data);
+      } catch (emailError) {
+        console.error("Erro ao enviar email de notificação:", emailError);
+      }
+
       res.json({ success: true, id: lead.id });
     } catch (error) {
       if (error instanceof ZodError) {
