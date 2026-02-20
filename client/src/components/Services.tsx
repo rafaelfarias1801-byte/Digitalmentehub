@@ -34,7 +34,7 @@ export default function Services() {
               <div className="w-10 h-10 rounded-md bg-brand-purple/15 flex items-center justify-center mb-4 group-hover:bg-brand-orange/15 transition-colors">
                 <service.icon className="w-5 h-5 text-brand-blue group-hover:text-brand-orange transition-colors" />
               </div>
-              <h3 className="text-base text-white mb-2">{service.title}</h3>
+              <h3 className="text-base text-white mb-2 font-semibold">{service.title}</h3>
               <p className="text-white/45 text-sm leading-relaxed">{service.description}</p>
             </motion.div>
           ))}
