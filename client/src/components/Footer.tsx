@@ -7,9 +7,9 @@ export default function Footer() {
   return (
     <footer className="py-16 bg-brand-dark border-t border-white/5" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-6">
 
-          <div className="lg:col-span-1">
+          <div>
             <img src="/logo.png" alt="Digitalmente HUB" className="h-16 w-auto mb-2" />
             <p className="text-white/50 text-sm">HUB digital</p>
           </div>
@@ -39,11 +39,11 @@ export default function Footer() {
               </a>
               <a
                 href="mailto:digitalmente.oficial.mkt@gmail.com"
-                className="flex items-center gap-2 text-white/50 text-sm"
+                className="flex items-start gap-2 text-white/50 text-sm break-all"
                 data-testid="footer-email"
               >
-                <Mail className="w-4 h-4 flex-shrink-0" />
-                digitalmente.oficial.mkt@gmail.com
+                <Mail className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span className="break-all">digitalmente.oficial.mkt@gmail.com</span>
               </a>
               <div className="flex items-start gap-2 text-white/50 text-sm">
                 <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -60,8 +60,10 @@ export default function Footer() {
               <a href="/#servicos" className="block text-white/50 text-sm" data-testid="footer-nav-services">Serviços</a>
               <a href="/#contato" className="block text-white/50 text-sm" data-testid="footer-nav-contact">Contato</a>
             </div>
+          </div>
 
-            <h4 className="text-white font-medium mt-8 mb-4">Redes Sociais</h4>
+          <div>
+            <h4 className="text-white font-medium mb-4">Redes Sociais</h4>
             <div className="space-y-3">
               <a
                 href="https://instagram.com/digital.mentte"
