@@ -72,7 +72,7 @@ export default function Contact() {
             </h2>
 
             <p className="text-white/60 text-sm leading-relaxed mb-4">
-              Entre em contato com a Digitalmente HUB, agência de marketing digital em Curitiba que pode transformar a presença online do seu negócio. Nossa equipe de especialistas está pronta para entender suas necessidades, esclarecer suas dúvidas e desenvolver uma estratégia personalizada para impulsionar seus resultados no digital.
+              Entre em contato com a Dig, nosso HUB digital que pode transformar a presença online do seu negócio. Nossa equipe de especialistas está pronta para entender suas necessidades, esclarecer suas dúvidas e desenvolver uma estratégia personalizada para impulsionar seus resultados no digital.
             </p>
 
             <p className="text-white/60 text-sm leading-relaxed mb-8">
