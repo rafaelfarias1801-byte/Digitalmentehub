@@ -1,47 +1,55 @@
 import { motion } from "framer-motion";
-import inateLogo from "@assets/2_1771623217111.png";
+import inateLogo from "@assets/2_1771623412063.png";
+import caseBg from "@assets/image_1771623359585.png";
 
 export default function CaseStudy() {
   return (
-    <section id="case" className="py-24 md:py-32 bg-brand-navy relative" data-testid="section-casestudy">
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-[38px] text-white mb-4 font-display">
-            Case de Sucesso
-          </h2>
-        </motion.div>
+    <section id="case" className="relative overflow-hidden" data-testid="section-casestudy">
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        className="text-center py-12 md:py-16 bg-brand-navy"
+      >
+        <h2 className="text-[38px] text-white font-display">
+          Case de Sucesso
+        </h2>
+      </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5 }}
-          className="max-w-4xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12"
-        >
-          <div className="flex-shrink-0 w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden bg-black flex items-center justify-center">
+      <div className="relative w-full min-h-[500px] md:min-h-[600px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${caseBg})` }}
+        />
+        <div className="absolute inset-0 bg-brand-navy/40" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12 md:py-16 flex flex-col justify-center h-full min-h-[500px] md:min-h-[600px]">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="max-w-2xl"
+          >
             <img
               src={inateLogo}
               alt="INATE"
-              className="w-full h-full object-contain p-4"
+              className="w-28 md:w-36 mb-4"
               loading="lazy"
             />
-          </div>
 
-          <div className="flex-1 text-center md:text-left">
-            <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-pink mb-4">
-              +7 mil seguidores.
+            <h3 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-[0.95] mb-6">
+              +7mil<br />seguidores
             </h3>
-            <p className="text-white/70 text-base md:text-lg leading-relaxed">
-              A INATE nos procurou com cerca de 400 seguidores e sem uma presença digital construída de forma estratégica. Através de reposicionamento, clareza de mensagem e conteúdo alinhado ao propósito da marca, a INATE ultrapassou 7 mil seguidores e passou a ocupar um espaço de autoridade, conexão e crescimento real no digital.
-            </p>
-          </div>
-        </motion.div>
+
+            <div className="bg-brand-pink px-5 py-4 md:px-6 md:py-5 inline-block max-w-xl">
+              <p className="text-white text-sm md:text-base leading-relaxed font-medium">
+                A INATE nos procurou com cerca de 400 seguidores e sem uma presença digital construída de forma estratégica. Através de reposicionamento, clareza de mensagem e conteúdo alinhado ao propósito da marca, a INATE ultrapassou 7 mil seguidores e passou a ocupar um espaço de autoridade, conexão e crescimento real no digital.
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
