@@ -33,7 +33,7 @@ export default function Hero() {
           >
             Estratégias criativas pra transformar{" "}
             <span className="text-brand-orange">presença</span> em{" "}
-            <span className="text-brand-orange">resultado.</span>
+            <span className="text-brand-orange font-semibold">resultado.</span>
           </motion.h1>
 
           <motion.p
