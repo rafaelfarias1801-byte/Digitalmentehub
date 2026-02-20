@@ -12,7 +12,7 @@ export default function Partners() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="md:text-5xl lg:text-6xl text-white mb-4 font-display text-[30px]">
+          <h2 className="md:text-5xl lg:text-6xl text-white mb-4 font-display text-[40px]">
             Parceiros
           </h2>
           <p className="max-w-xl mx-auto text-white">
@@ -20,7 +20,6 @@ export default function Partners() {
           </p>
         </motion.div>
       </div>
-
       <div className="relative w-full overflow-hidden">
         <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-brand-pink to-transparent pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-brand-pink to-transparent pointer-events-none" />
