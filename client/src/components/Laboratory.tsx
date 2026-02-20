@@ -52,7 +52,7 @@ export default function Laboratory() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4 font-bold">
             A sua marca não precisa de mais posts
           </h2>
           <p className="text-white/50 max-w-xl mx-auto">
