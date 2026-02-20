@@ -4,7 +4,7 @@ import BrandsServed from "@/components/BrandsServed";
 import About from "@/components/About";
 import Laboratory from "@/components/Laboratory";
 import Services from "@/components/Services";
-import HowItWorks from "@/components/HowItWorks";
+import CaseStudy from "@/components/CaseStudy";
 import Partners from "@/components/Partners";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
@@ -20,7 +20,7 @@ export default function Home() {
       <About />
       <Laboratory />
       <Services />
-      <HowItWorks />
+      <CaseStudy />
       <Partners />
       <FAQ />
       <Contact />

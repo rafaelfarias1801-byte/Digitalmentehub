@@ -8,6 +8,7 @@ const navLinks = [
   { label: "Início", href: "#inicio", isPage: false },
   { label: "Quem Somos", href: "#sobre", isPage: false },
   { label: "Serviços", href: "#servicos", isPage: false },
+  { label: "Case de Sucesso", href: "#case", isPage: false },
   { label: "Parceiros", href: "#parceiros", isPage: false },
   { label: "Contato", href: "#contato", isPage: false },
   { label: "Produtos", href: "/produtos", isPage: true },
