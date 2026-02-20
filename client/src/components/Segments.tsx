@@ -13,12 +13,12 @@ export default function Segments() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4">
             Segmentos que atendemos
           </h2>
-          <p className="text-white/50 font-navycula max-w-xl mx-auto">
+          <p className="text-white/50 max-w-xl mx-auto">
             Hoje atendemos vários mercados — e colocamos energia extra onde somos mais fortes:{" "}
-            <span className="text-brand-orange font-navycula">A&B.</span>
+            <span className="text-brand-orange">A&B.</span>
           </p>
         </motion.div>
 
@@ -38,7 +38,7 @@ export default function Segments() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: i * 0.06 }}
-                className={`px-5 py-2.5 rounded-md text-sm font-navycula border transition-all duration-200 cursor-default ${
+                className={`px-5 py-2.5 rounded-md text-sm border transition-all duration-200 cursor-default ${
                   isAB
                     ? "bg-brand-orange/10 border-brand-orange/40 text-brand-orange"
                     : "bg-white/[0.03] border-brand-blue/30 text-white/70 hover:border-brand-orange/40 hover:text-brand-orange"

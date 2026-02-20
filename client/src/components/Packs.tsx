@@ -16,10 +16,10 @@ export default function Packs() {
           className="text-center mb-6"
         >
           <span className="font-display text-brand-pink text-lg">PACKS</span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mt-2 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4">
             Packs de Conteúdo
           </h2>
-          <p className="text-white/50 font-navycula max-w-xl mx-auto">
+          <p className="text-white/50 max-w-xl mx-auto">
             Pra manter presença com qualidade — mesmo fazendo internamente.
           </p>
         </motion.div>
@@ -41,27 +41,27 @@ export default function Packs() {
             >
               {pack.highlight && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 bg-brand-pink text-white text-xs px-3 py-1 rounded-md font-navycula">
+                  <span className="inline-flex items-center gap-1 bg-brand-pink text-white text-xs px-3 py-1 rounded-md">
                     <Star className="w-3 h-3" />
                     Popular
                   </span>
                 </div>
               )}
 
-              <h3 className="text-base text-white font-navycula mb-1">{pack.name}</h3>
-              <p className="text-2xl md:text-3xl text-brand-orange font-navycula mb-5">{pack.price}</p>
+              <h3 className="text-base text-white mb-1">{pack.name}</h3>
+              <p className="text-2xl md:text-3xl text-brand-orange mb-5">{pack.price}</p>
 
               <ul className="space-y-3 mb-6 flex-1">
                 {pack.features.map((feat, fi) => (
                   <li key={fi} className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
-                    <span className="text-white/60 text-sm font-navycula">{feat}</span>
+                    <span className="text-white/60 text-sm">{feat}</span>
                   </li>
                 ))}
                 {pack.extras && (
                   <li className="flex items-start gap-2.5">
                     <span className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span className="text-white/35 text-xs font-navycula italic">{pack.extras}</span>
+                    <span className="text-white/35 text-xs italic">{pack.extras}</span>
                   </li>
                 )}
               </ul>
@@ -72,7 +72,7 @@ export default function Packs() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center justify-center gap-2 w-full py-3 rounded-md text-sm font-navycula transition-all duration-200 ${
+                className={`inline-flex items-center justify-center gap-2 w-full py-3 rounded-md text-sm transition-all duration-200 ${
                   pack.highlight
                     ? "bg-brand-orange text-white hover:brightness-110"
                     : "border border-brand-orange/30 text-brand-orange hover:bg-brand-orange/10"

@@ -2,19 +2,21 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
 import { Menu, X } from "lucide-react";
+import { useLocation } from "wouter";
 
 const navLinks = [
-  { label: "Início", href: "#inicio" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Serviços", href: "#servicos" },
-  { label: "Packs", href: "#packs" },
-  { label: "Parceiros", href: "#parceiros" },
-  { label: "Contato", href: "#contato" },
+  { label: "Início", href: "#inicio", isPage: false },
+  { label: "Sobre", href: "#sobre", isPage: false },
+  { label: "Serviços", href: "#servicos", isPage: false },
+  { label: "Parceiros", href: "#parceiros", isPage: false },
+  { label: "Contato", href: "#contato", isPage: false },
+  { label: "Produtos", href: "/produtos", isPage: true },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -22,10 +24,22 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleClick = (href: string) => {
+  const handleClick = (link: typeof navLinks[number]) => {
     setMobileOpen(false);
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (link.isPage) {
+      setLocation(link.href);
+      return;
+    }
+    if (window.location.pathname !== "/") {
+      setLocation("/");
+      setTimeout(() => {
+        const el = document.querySelector(link.href);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    } else {
+      const el = document.querySelector(link.href);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
@@ -41,7 +55,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           <a
             href="#inicio"
-            onClick={(e) => { e.preventDefault(); handleClick("#inicio"); }}
+            onClick={(e) => { e.preventDefault(); handleClick(navLinks[0]); }}
             className="flex-shrink-0"
             data-testid="link-logo"
           >
@@ -57,8 +71,8 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                onClick={(e) => { e.preventDefault(); handleClick(link.href); }}
-                className="px-3 py-2 text-sm text-white/80 hover:text-brand-orange transition-colors font-navycula"
+                onClick={(e) => { e.preventDefault(); handleClick(link); }}
+                className="px-3 py-2 text-sm text-white/80 hover:text-brand-orange transition-colors"
                 data-testid={`link-nav-${link.label.toLowerCase()}`}
               >
                 {link.label}
@@ -71,7 +85,7 @@ export default function Navbar() {
               href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20saber%20mais."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-brand-orange text-white px-5 py-2.5 rounded-md text-sm font-navycula transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 bg-brand-orange text-white px-5 py-2.5 rounded-md text-sm transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
               data-testid="button-whatsapp-nav"
             >
               <FaWhatsapp className="text-lg" />
@@ -103,8 +117,8 @@ export default function Navbar() {
                 <a
                   key={link.href}
                   href={link.href}
-                  onClick={(e) => { e.preventDefault(); handleClick(link.href); }}
-                  className="block px-4 py-3 text-white/80 hover:text-brand-orange hover:bg-white/5 rounded-md transition-colors font-navycula"
+                  onClick={(e) => { e.preventDefault(); handleClick(link); }}
+                  className="block px-4 py-3 text-white/80 hover:text-brand-orange hover:bg-white/5 rounded-md transition-colors"
                   data-testid={`link-mobile-${link.label.toLowerCase()}`}
                 >
                   {link.label}
@@ -114,7 +128,7 @@ export default function Navbar() {
                 href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20saber%20mais."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-brand-orange text-white px-5 py-3 rounded-md text-sm font-navycula mt-3"
+                className="flex items-center justify-center gap-2 bg-brand-orange text-white px-5 py-3 rounded-md text-sm mt-3"
                 data-testid="button-whatsapp-mobile"
               >
                 <FaWhatsapp className="text-lg" />

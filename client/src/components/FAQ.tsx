@@ -18,7 +18,7 @@ export default function FAQ() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4">
             Perguntas Frequentes
           </h2>
         </motion.div>
@@ -36,10 +36,10 @@ export default function FAQ() {
                 value={`faq-${i}`}
                 className="bg-white/[0.03] border border-white/[0.06] rounded-lg px-5 data-[state=open]:border-brand-orange/20"
               >
-                <AccordionTrigger className="text-white font-navycula text-left text-sm md:text-base py-4 hover:no-underline hover:text-brand-orange transition-colors [&[data-state=open]]:text-brand-orange">
+                <AccordionTrigger className="text-white text-left text-sm md:text-base py-4 hover:no-underline hover:text-brand-orange transition-colors [&[data-state=open]]:text-brand-orange">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-white/55 font-navycula text-sm leading-relaxed pb-4">
+                <AccordionContent className="text-white/55 text-sm leading-relaxed pb-4">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

@@ -13,10 +13,10 @@ export default function Services() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4">
             Serviços
           </h2>
-          <p className="text-white/50 font-navycula max-w-xl mx-auto">
+          <p className="text-white/50 max-w-xl mx-auto">
             Planos personalizados conforme momento e meta.
           </p>
         </motion.div>
@@ -34,8 +34,8 @@ export default function Services() {
               <div className="w-10 h-10 rounded-md bg-brand-purple/15 flex items-center justify-center mb-4 group-hover:bg-brand-orange/15 transition-colors">
                 <service.icon className="w-5 h-5 text-brand-blue group-hover:text-brand-orange transition-colors" />
               </div>
-              <h3 className="text-base text-white font-navycula mb-2">{service.title}</h3>
-              <p className="text-white/45 text-sm font-navycula leading-relaxed">{service.description}</p>
+              <h3 className="text-base text-white mb-2">{service.title}</h3>
+              <p className="text-white/45 text-sm leading-relaxed">{service.description}</p>
             </motion.div>
           ))}
         </div>

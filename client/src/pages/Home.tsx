@@ -5,7 +5,6 @@ import Segments from "@/components/Segments";
 import Laboratory from "@/components/Laboratory";
 import Services from "@/components/Services";
 import HowItWorks from "@/components/HowItWorks";
-import Packs from "@/components/Packs";
 import Partners from "@/components/Partners";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
@@ -22,7 +21,6 @@ export default function Home() {
       <Laboratory />
       <Services />
       <HowItWorks />
-      <Packs />
       <Partners />
       <FAQ />
       <Contact />

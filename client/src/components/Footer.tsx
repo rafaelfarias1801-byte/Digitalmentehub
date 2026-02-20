@@ -38,7 +38,7 @@ export default function Footer() {
             </a>
           </div>
 
-          <p className="text-white/30 text-xs font-navycula">
+          <p className="text-white/30 text-xs">
             Digitalmente HUB - Curitiba, PR
           </p>
         </div>

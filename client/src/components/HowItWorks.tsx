@@ -18,7 +18,7 @@ export default function HowItWorks() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4">
             Como funciona
           </h2>
         </motion.div>
@@ -36,8 +36,8 @@ export default function HowItWorks() {
               <span className="text-6xl md:text-7xl font-display text-brand-orange/15 group-hover:text-brand-orange/25 transition-colors">
                 {step.number}
               </span>
-              <h3 className="text-xl text-white font-navycula mt-2 mb-2">{step.title}</h3>
-              <p className="text-white/50 text-sm font-navycula">{step.description}</p>
+              <h3 className="text-xl text-white mt-2 mb-2">{step.title}</h3>
+              <p className="text-white/50 text-sm">{step.description}</p>
               {i < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-10 -right-4 w-8 border-t border-dashed border-white/10" />
               )}

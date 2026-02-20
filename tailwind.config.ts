@@ -92,9 +92,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Navycula", "var(--font-sans)"],
-        display: ["Baou Display", "var(--font-sans)"],
-        navycula: ["Navycula", "var(--font-sans)"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Baou Display", "Inter", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
       },

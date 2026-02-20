@@ -53,10 +53,10 @@ export default function Laboratory() {
           className="text-center mb-12"
         >
           <span className="font-display text-brand-pink text-lg">LAB</span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mt-2 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4">
             Laboratório de Presença
           </h2>
-          <p className="text-white/50 font-navycula max-w-xl mx-auto">
+          <p className="text-white/50 max-w-xl mx-auto">
             Três pilares que sustentam marcas fortes no digital.
           </p>
         </motion.div>
@@ -66,7 +66,7 @@ export default function Laboratory() {
             <button
               key={tab.id}
               onClick={() => setActive(i)}
-              className={`px-5 md:px-8 py-3 rounded-md text-sm font-navycula transition-all duration-300 ${
+              className={`px-5 md:px-8 py-3 rounded-md text-sm transition-all duration-300 ${
                 active === i
                   ? "bg-brand-orange text-white"
                   : "bg-white/[0.04] text-white/60 border border-white/10 hover:border-brand-orange/30 hover:text-white"
@@ -98,7 +98,7 @@ export default function Laboratory() {
             </div>
 
             <div>
-              <h3 className="text-2xl md:text-3xl text-white font-navycula mb-6">
+              <h3 className="text-2xl md:text-3xl text-white mb-6">
                 {current.title}
               </h3>
               <ul className="space-y-4">
@@ -111,7 +111,7 @@ export default function Laboratory() {
                     className="flex items-start gap-3"
                   >
                     <span className="w-2 h-2 rounded-full bg-brand-orange mt-2 flex-shrink-0" />
-                    <span className="text-white/70 font-navycula text-base">{bullet}</span>
+                    <span className="text-white/70 text-base">{bullet}</span>
                   </motion.li>
                 ))}
               </ul>

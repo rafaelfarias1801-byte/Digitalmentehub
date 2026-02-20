@@ -32,10 +32,10 @@ export default function About() {
           className="text-center mb-16"
         >
           <span className="font-display text-brand-pink text-lg">HUB</span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white font-navycula mt-2 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4">
             O que é a Digitalmente HUB
           </h2>
-          <p className="text-white/60 font-navycula max-w-2xl mx-auto text-lg">
+          <p className="text-white/60 max-w-2xl mx-auto text-lg">
             Um hub de marketing que centraliza estratégia e coordena execução — com uma rede de especialistas por área.
           </p>
         </motion.div>
@@ -53,8 +53,8 @@ export default function About() {
               <div className="w-12 h-12 rounded-md bg-brand-orange/10 flex items-center justify-center mb-5 group-hover:bg-brand-orange/20 transition-colors">
                 <card.icon className="w-6 h-6 text-brand-orange" />
               </div>
-              <h3 className="text-xl text-white font-navycula mb-3">{card.title}</h3>
-              <p className="text-white/55 font-navycula text-sm leading-relaxed">{card.description}</p>
+              <h3 className="text-xl text-white mb-3">{card.title}</h3>
+              <p className="text-white/55 text-sm leading-relaxed">{card.description}</p>
             </motion.div>
           ))}
         </div>
