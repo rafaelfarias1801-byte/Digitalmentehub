@@ -61,7 +61,7 @@ export default function BrandsServed() {
           href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Quero%20fazer%20parte%20das%20marcas%20atendidas."
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-8 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
+          className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-8 py-3 rounded-full transition-all duration-200 hover:brightness-110 hover:scale-[1.02] font-bold text-[16px]"
           data-testid="button-brands-cta"
         >
           <FaWhatsapp className="text-lg" />
