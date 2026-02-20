@@ -2,13 +2,16 @@ import { FaWhatsapp } from "react-icons/fa";
 
 import brand1 from "@assets/1_1771613135862.png";
 import brand2 from "@assets/2_1771613135864.png";
-import brand3 from "@assets/3_1771613135866.png";
 import brand4 from "@assets/4_1771613135855.png";
 import brand5 from "@assets/5_1771613135856.png";
 import brand6 from "@assets/6_1771613135857.png";
 import brand7 from "@assets/7_1771613135857.png";
 import brand8 from "@assets/8_1771613135858.png";
 import brand9 from "@assets/Marcas_1771613208774.png";
+import brandExpe from "@assets/Marcas_(1)_1771613389727.png";
+import brandTecas from "@assets/Marcas_(2)_1771613463514.png";
+import brandThaline from "@assets/Marcas_(3)_1771613465836.png";
+import brandAbarduzido from "@assets/Marcas_(4)_1771613521728.png";
 
 const brands = [
   { src: brand4, alt: "Comuniquei" },
@@ -18,8 +21,11 @@ const brands = [
   { src: brand8, alt: "Alimentec" },
   { src: brand1, alt: "Cite Nacibe" },
   { src: brand2, alt: "Inate" },
-  { src: brand3, alt: "Marca 8" },
+  { src: brandExpe, alt: "Expe." },
   { src: brand9, alt: "Atâmara Empório Saudável" },
+  { src: brandTecas, alt: "Tecas" },
+  { src: brandThaline, alt: "Thaline Leticia" },
+  { src: brandAbarduzido, alt: "Abarduzido" },
 ];
 
 export default function BrandsServed() {
@@ -35,11 +41,11 @@ export default function BrandsServed() {
         <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-brand-navy to-transparent pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-brand-navy to-transparent pointer-events-none" />
 
-        <div className="flex animate-marquee items-center gap-12 md:gap-16 w-max">
+        <div className="flex animate-marquee items-center gap-16 md:gap-20 w-max">
           {[...brands, ...brands].map((brand, i) => (
             <div
               key={i}
-              className="flex-shrink-0 w-28 h-20 md:w-36 md:h-24 flex items-center justify-center"
+              className="flex-shrink-0 w-[190px] h-[136px] md:w-[245px] md:h-[163px] flex items-center justify-center"
             >
               <img
                 src={brand.src}
