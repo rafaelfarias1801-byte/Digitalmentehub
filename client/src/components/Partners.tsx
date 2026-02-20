@@ -3,7 +3,7 @@ import { partners } from "../data/partners";
 
 export default function Partners() {
   return (
-    <section id="parceiros" className="py-24 md:py-32 bg-brand-pink relative overflow-hidden" data-testid="section-partners">
+    <section id="parceiros" className="pt-24 md:pt-32 pb-32 md:pb-40 bg-brand-pink relative overflow-hidden scroll-mt-16" data-testid="section-partners">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
