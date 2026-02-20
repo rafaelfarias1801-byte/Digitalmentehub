@@ -85,7 +85,7 @@ export default function Navbar() {
               href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20saber%20mais."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-brand-orange text-white px-5 py-2.5 rounded-md text-sm transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 bg-brand-orange text-white px-5 py-2.5 rounded-md text-sm transition-all duration-200 hover:brightness-110 hover:scale-[1.02] font-medium"
               data-testid="button-whatsapp-nav"
             >
               <FaWhatsapp className="text-lg" />
@@ -103,7 +103,6 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
