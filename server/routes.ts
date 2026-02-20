@@ -7,9 +7,9 @@ import { ZodError, z } from "zod";
 const serverLeadSchema = insertLeadSchema.extend({
   name: z.string().min(2, "Nome é obrigatório"),
   phone: z.string().min(8, "Telefone inválido"),
-  company: z.string().min(1, "Empresa é obrigatória"),
+  company: z.string().optional().default(""),
   email: z.string().email("E-mail inválido"),
-  contactType: z.string().min(1, "Selecione o tipo"),
+  contactType: z.string().optional().default("servico"),
 });
 
 export async function registerRoutes(

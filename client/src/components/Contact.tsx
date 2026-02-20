@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertLeadSchema } from "@shared/schema";
 import type { InsertLead } from "@shared/schema";
-import { FaWhatsapp, FaInstagram } from "react-icons/fa";
-import { Mail, MapPin, Check, Loader2 } from "lucide-react";
+import { FaWhatsapp, FaInstagram, FaFacebookF, FaLinkedinIn, FaYoutube } from "react-icons/fa";
+import { Check, Loader2 } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -19,9 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 const formSchema = insertLeadSchema.extend({
   name: insertLeadSchema.shape.name.min(2, "Nome é obrigatório"),
   phone: insertLeadSchema.shape.phone.min(8, "Telefone inválido"),
-  company: insertLeadSchema.shape.company.min(1, "Empresa é obrigatória"),
   email: insertLeadSchema.shape.email.email("E-mail inválido"),
-  contactType: insertLeadSchema.shape.contactType.min(1, "Selecione o tipo"),
 });
 
 export default function Contact() {
@@ -40,111 +38,91 @@ export default function Contact() {
     },
   });
 
-  const contactType = form.watch("contactType");
-  const formValues = form.watch();
-
   const onSubmit = async (data: InsertLead) => {
     setSubmitting(true);
     try {
-      await fetch("/api/lead", {
+      const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (!res.ok) throw new Error("Erro ao enviar");
       setSubmitted(true);
     } catch {
-      setSubmitted(true);
+      setSubmitted(false);
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const whatsappFallback = () => {
-    const text = `Olá! Meu nome é ${formValues.name || "..."}, da empresa ${formValues.company || "..."}. E-mail: ${formValues.email || "..."}. Telefone: ${formValues.phone || "..."}. Tipo: ${formValues.contactType === "parceiro" ? "Parceiro" : "Serviço"}. ${formValues.message ? `Mensagem: ${formValues.message}` : ""}`;
-    return `https://wa.me/5541987907321?text=${encodeURIComponent(text)}`;
   };
 
   return (
     <section id="contato" className="py-24 md:py-32 bg-brand-navy relative" data-testid="section-contact">
       <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/40 to-transparent pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4">
-            Vamos conversar?
-          </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
-            Conte o que você precisa. A gente responde rápido.
-          </p>
-        </motion.div>
-
-        <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-2"
           >
-            <div className="grid grid-cols-2 gap-4">
-              <a
-                href="https://wa.me/5541987907321"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white/70 hover:text-brand-orange transition-colors group"
-                data-testid="link-whatsapp-1"
-              >
-                <div className="w-10 h-10 rounded-md bg-brand-orange/10 flex items-center justify-center group-hover:bg-brand-orange/20 transition-colors flex-shrink-0">
-                  <FaWhatsapp className="text-brand-orange" />
-                </div>
-                <span className="text-sm">(41) 98790-7321</span>
-              </a>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl mb-6" data-testid="text-contact-title">
+              <span className="font-display text-white">FALE </span>
+              <span className="font-display text-brand-orange">CONOSCO</span>
+            </h2>
 
-              <a
-                href="https://wa.me/5541920059509"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white/70 hover:text-brand-orange transition-colors group"
-                data-testid="link-whatsapp-2"
-              >
-                <div className="w-10 h-10 rounded-md bg-brand-orange/10 flex items-center justify-center group-hover:bg-brand-orange/20 transition-colors flex-shrink-0">
-                  <FaWhatsapp className="text-brand-orange" />
-                </div>
-                <span className="text-sm">(41) 92005-9509</span>
-              </a>
+            <p className="text-white/60 text-sm leading-relaxed mb-4">
+              Entre em contato com a Digitalmente HUB, agência de marketing digital em Curitiba que pode transformar a presença online do seu negócio. Nossa equipe de especialistas está pronta para entender suas necessidades, esclarecer suas dúvidas e desenvolver uma estratégia personalizada para impulsionar seus resultados no digital.
+            </p>
 
+            <p className="text-white/60 text-sm leading-relaxed mb-8">
+              Seja para atrair mais clientes, fortalecer sua marca ou aumentar suas vendas, temos as soluções ideais para você. Vamos criar juntos campanhas eficazes e inovadoras que realmente fazem a diferença. Fale conosco e descubra como podemos levar sua empresa ao próximo nível!
+            </p>
+
+            <div className="flex items-center gap-4 mb-8">
               <a
                 href="https://instagram.com/digital.mentte"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 text-white/70 hover:text-brand-orange transition-colors group"
+                className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
                 data-testid="link-instagram"
               >
-                <div className="w-10 h-10 rounded-md bg-brand-purple/15 flex items-center justify-center group-hover:bg-brand-purple/25 transition-colors flex-shrink-0">
-                  <FaInstagram className="text-brand-purple" />
-                </div>
-                <span className="text-sm">@digital.mentte</span>
+                <FaInstagram className="text-base" />
+                Instagram
               </a>
-
-              <div className="flex items-center gap-3 text-white/70" data-testid="text-email">
-                <div className="w-10 h-10 rounded-md bg-brand-blue/10 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-4 h-4 text-brand-blue" />
-                </div>
-                <span className="text-sm break-all">digitalmente.oficial.mkt@gmail.com</span>
-              </div>
-
-              <div className="flex items-center gap-3 text-white/50 col-span-2" data-testid="text-address">
-                <div className="w-10 h-10 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-4 h-4 text-white/40" />
-                </div>
-                <span className="text-sm">Sítio Cercado, Curitiba-PR</span>
-              </div>
+              <a
+                href="#"
+                className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
+              >
+                <FaFacebookF className="text-base" />
+                Facebook
+              </a>
+              <a
+                href="#"
+                className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
+              >
+                <FaLinkedinIn className="text-base" />
+                LinkedIn
+              </a>
+              <a
+                href="#"
+                className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
+              >
+                <FaYoutube className="text-base" />
+                YouTube
+              </a>
             </div>
+
+            <a
+              href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20entrar%20em%20contato."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-full text-sm font-medium hover:brightness-110 transition-all"
+              data-testid="button-whatsapp-contact"
+            >
+              <FaWhatsapp className="text-lg" />
+              Entrar em contato
+            </a>
           </motion.div>
 
           <motion.div
@@ -152,7 +130,6 @@ export default function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="lg:col-span-3"
           >
             {submitted ? (
               <div className="bg-white/[0.03] border border-brand-orange/20 rounded-lg p-8 text-center" data-testid="text-success">
@@ -164,10 +141,10 @@ export default function Contact() {
                   Respondemos em até 24h. Ou se preferir, fale agora pelo WhatsApp.
                 </p>
                 <a
-                  href={whatsappFallback()}
+                  href="https://wa.me/5541987907321"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-md text-sm hover:brightness-110 transition-all"
+                  className="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-full text-sm hover:brightness-110 transition-all"
                   data-testid="button-whatsapp-fallback"
                 >
                   <FaWhatsapp />
@@ -178,52 +155,42 @@ export default function Contact() {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-6 md:p-8 space-y-5"
+                  className="space-y-4"
                   data-testid="form-contact"
                 >
-                  <div className="flex items-center gap-6">
-                    <label
-                      className="flex items-center gap-2 cursor-pointer"
-                      data-testid="radio-servico"
-                    >
-                      <input
-                        type="radio"
-                        name="contactType"
-                        value="servico"
-                        checked={contactType === "servico"}
-                        onChange={() => form.setValue("contactType", "servico")}
-                        className="w-4 h-4 text-brand-blue accent-brand-blue"
-                      />
-                      <span className="text-white text-sm">Serviço</span>
-                    </label>
-                    <label
-                      className="flex items-center gap-2 cursor-pointer"
-                      data-testid="radio-parceiro"
-                    >
-                      <input
-                        type="radio"
-                        name="contactType"
-                        value="parceiro"
-                        checked={contactType === "parceiro"}
-                        onChange={() => form.setValue("contactType", "parceiro")}
-                        className="w-4 h-4 text-brand-blue accent-brand-blue"
-                      />
-                      <span className="text-white text-sm">Parceiro</span>
-                    </label>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="text-white/60 text-xs mb-1 block">Nome</label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Digite seu nome"
+                            className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50"
+                            data-testid="input-name"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-brand-orange text-xs" />
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="name"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
+                          <label className="text-white/60 text-xs mb-1 block">E-mail</label>
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder="Nome"
+                              type="email"
+                              placeholder="Digite seu e-mail"
                               className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50"
-                              data-testid="input-name"
+                              data-testid="input-email"
                             />
                           </FormControl>
                           <FormMessage className="text-brand-orange text-xs" />
@@ -235,50 +202,13 @@ export default function Contact() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
+                          <label className="text-white/60 text-xs mb-1 block">Telefone WhatsApp</label>
                           <FormControl>
                             <Input
                               {...field}
-                              placeholder="Telefone"
+                              placeholder="Digite seu telefone"
                               className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50"
                               data-testid="input-phone"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-brand-orange text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="company"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Empresa"
-                              className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50"
-                              data-testid="input-company"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-brand-orange text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="email"
-                              placeholder="E-mail"
-                              className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50"
-                              data-testid="input-email"
                             />
                           </FormControl>
                           <FormMessage className="text-brand-orange text-xs" />
@@ -292,12 +222,13 @@ export default function Contact() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
+                        <label className="text-white/60 text-xs mb-1 block">Mensagem</label>
                         <FormControl>
                           <Textarea
                             {...field}
                             value={field.value ?? ""}
-                            placeholder="Mensagem (opcional)"
-                            rows={3}
+                            placeholder="Digite sua mensagem"
+                            rows={4}
                             className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50 resize-none"
                             data-testid="input-message"
                           />
@@ -310,7 +241,7 @@ export default function Contact() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-brand-orange text-white py-3.5 rounded-md text-sm transition-all duration-200 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
+                    className="w-full bg-brand-orange text-white py-3.5 rounded-full text-sm font-medium transition-all duration-200 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
                     data-testid="button-submit"
                   >
                     {submitting ? (
@@ -319,7 +250,7 @@ export default function Contact() {
                         Enviando...
                       </>
                     ) : (
-                      "Enviar mensagem"
+                      "Enviar Mensagem"
                     )}
                   </button>
                 </form>

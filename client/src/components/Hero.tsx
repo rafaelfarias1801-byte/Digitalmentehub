@@ -24,23 +24,13 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-navy/80 via-brand-navy/70 to-brand-navy/95" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-        <div className="max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block bg-brand-orange/20 border border-brand-orange/40 text-brand-orange px-4 py-1.5 rounded-md text-xs tracking-wider uppercase mb-6">
-              Especialidade em Alimentos & Bebidas
-            </span>
-          </motion.div>
-
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 w-full">
+        <div className="max-w-4xl mx-auto text-center">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.05] mb-6"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-8"
           >
             Estratégias criativas pra transformar{" "}
             <span className="text-brand-orange">presença</span> em{" "}
@@ -51,45 +41,26 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="text-lg md:text-xl text-white/70 leading-relaxed mb-4 max-w-2xl"
+            className="text-lg md:text-xl text-white/70 leading-relaxed mb-10 max-w-2xl mx-auto"
           >
-            Somos a Digitalmente{" "}
-            <span className="font-display text-brand-orange text-2xl md:text-3xl align-middle">HUB</span>
-            : estratégia, conteúdo, tráfego e estrutura digital — com execução coordenada por especialistas.
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.45 }}
-            className="text-sm text-brand-blue mb-8"
-          >
-            E marcas que precisam de desejo de marca.
+            Somos a Dig, um <span className="text-brand-orange">HUB</span> de estratégia digital, onde conteúdo, marketing e criatividade viram presença online.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-col sm:flex-row gap-4"
           >
             <a
-              href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20saber%20mais."
+              href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20receber%20um%20diagn%C3%B3stico%20gratuito."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-8 py-4 rounded-md text-base transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
-              data-testid="button-hero-whatsapp"
-            >
-              <FaWhatsapp className="text-xl" />
-              Falar no WhatsApp
-            </a>
-            <button
-              onClick={() => scrollTo("#contato")}
-              className="inline-flex items-center justify-center gap-2 border border-white/20 text-white px-8 py-4 rounded-md text-base transition-all duration-200 hover:border-brand-orange hover:text-brand-orange"
+              className="inline-flex items-center justify-center gap-3 bg-brand-orange text-white px-10 py-4 rounded-full text-base font-medium transition-all duration-200 hover:brightness-110 hover:scale-[1.02]"
               data-testid="button-hero-diagnostico"
             >
-              Quero um diagnóstico
-            </button>
+              <FaWhatsapp className="text-xl" />
+              Receber um diagnóstico gratuito
+            </a>
           </motion.div>
         </div>
       </div>

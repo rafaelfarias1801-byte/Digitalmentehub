@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import BrandsServed from "@/components/BrandsServed";
 import About from "@/components/About";
 import Segments from "@/components/Segments";
 import Laboratory from "@/components/Laboratory";
@@ -16,6 +17,7 @@ export default function Home() {
     <div className="bg-brand-navy min-h-screen">
       <Navbar />
       <Hero />
+      <BrandsServed />
       <About />
       <Segments />
       <Laboratory />
