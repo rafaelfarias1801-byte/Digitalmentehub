@@ -1,4 +1,4 @@
-import { Megaphone, Target, Package, Globe, Smartphone, Palette, PenTool, Instagram } from "lucide-react";
+import { Megaphone, Target, Package, Globe, Smartphone, Search, PenTool, Instagram } from "lucide-react";
 
 export const services = [
   {
@@ -41,7 +41,7 @@ export const services = [
     id: "analise",
     title: "Análise de perfil",
     description: "Análise estratégica para estruturar perfis e fortalecer a presença no digital.",
-    icon: Palette,
+    icon: Search,
   },
   {
     id: "design",
