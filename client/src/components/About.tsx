@@ -13,7 +13,7 @@ export default function About() {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <h2 className="font-display md:text-5xl lg:text-6xl text-white mb-4 text-[40px]">
+            <h2 className="font-display text-[38px] text-white mb-4">
               Quem somos
             </h2>
 

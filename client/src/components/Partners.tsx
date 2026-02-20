@@ -12,7 +12,7 @@ export default function Partners() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="md:text-5xl lg:text-6xl text-white mb-4 font-display text-[40px]">
+          <h2 className="text-[38px] text-white mb-4 font-display">
             Parceiros
           </h2>
           <p className="max-w-xl mx-auto text-white">
