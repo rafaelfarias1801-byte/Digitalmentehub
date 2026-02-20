@@ -40,7 +40,6 @@ export default function Partners() {
               </div>
               <div className="text-center">
                 <h3 className="text-white text-base">{partner.name}</h3>
-                <span className="text-brand-blue/70 text-xs">{partner.area}</span>
               </div>
             </motion.div>
           ))}
