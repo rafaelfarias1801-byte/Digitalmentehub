@@ -5,6 +5,7 @@ import About from "@/components/About";
 import Laboratory from "@/components/Laboratory";
 import Services from "@/components/Services";
 import CaseStudy from "@/components/CaseStudy";
+import Packs from "@/components/Packs";
 import Partners from "@/components/Partners";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
@@ -21,6 +22,7 @@ export default function Home() {
       <Laboratory />
       <Services />
       <CaseStudy />
+      <Packs />
       <Partners />
       <FAQ />
       <Contact />
