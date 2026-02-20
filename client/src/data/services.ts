@@ -1,4 +1,4 @@
-import { Megaphone, Share2, Target, Package, Globe, Smartphone, Palette, PenTool } from "lucide-react";
+import { Megaphone, Target, Package, Globe, Smartphone, Palette, PenTool, Instagram } from "lucide-react";
 
 export const services = [
   {
@@ -11,7 +11,7 @@ export const services = [
     id: "conteudo",
     title: "Criação e Produção de Conteúdo",
     description: "Planejamento e produção de conteúdos estratégicos para redes sociais.",
-    icon: Share2,
+    icon: Instagram,
   },
   {
     id: "trafego",
