@@ -3,7 +3,7 @@ import { services } from "../data/services";
 
 export default function Services() {
   return (
-    <section id="servicos" className="pt-12 md:pt-16 pb-16 md:pb-20 bg-brand-pink relative scroll-mt-16" data-testid="section-services">
+    <section id="servicos" className="pt-8 md:pt-10 pb-16 md:pb-20 bg-brand-pink relative scroll-mt-16" data-testid="section-services">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -12,7 +12,7 @@ export default function Services() {
           transition={{ duration: 0.6 }}
           className="text-center mb-5"
         >
-          <h2 className="text-[38px] text-white mb-4 font-display">Nossos Serviços</h2>
+          <h2 className="text-[38px] text-white mb-2 font-display">Nossos Serviços</h2>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
