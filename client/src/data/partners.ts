@@ -15,7 +15,7 @@ export const partners = [
     logoPath: "/partners/uni-design.jpeg",
   },
   {
-    name: "XSolid",
+    name: "XSolidy",
     logoPath: xsolidLogo,
   },
   {

@@ -131,7 +131,7 @@ export default function Footer() {
                 className="block text-white/50 text-sm"
                 data-testid="footer-xsolid"
               >
-                XSolid
+                XSolidy
               </a>
               <a
                 href="https://www.figma.com/proto/Bd52kse9I8MlmtURocp4bd/Hub-360%C2%B0?page-id=0%3A1&node-id=1-3&viewport=530%2C50%2C0.12&t=V7oHi6DZJBQnPR4z-8&scaling=scale-down-width&content-scaling=fixed&hide-ui=1&starting-point-node-id=1%3A3&fbclid=PARlRTSAQFyBtleHRuA2FlbQIxMABzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAaf-o7ieqvFRHMjmT3JwsSA2cnfUKxA8-vPVMb5VC5Kwye0_UPux9WUsz-EHxQ_aem_P5AWbrjKOZ-F-a7czxOlJA"
