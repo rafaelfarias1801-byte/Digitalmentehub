@@ -1,0 +1,229 @@
+Você é um dev sênior + designer de UI/UX + copywriter. Crie um site premium, moderno e extremamente rápido para a agência **Digitalmente HUB**.
+
+IMPORTANTE (direção estratégica):
+- Nosso foco de aquisição a partir de agora é **Alimentos & Bebidas**, MAS isso NÃO significa criar uma aba/página específica “Alimentos & Bebidas”.
+- Em vez disso, destaque A&B de forma inteligente: como “especialidade/força” dentro do conteúdo (hero, provas, bullets, chips de segmentos, exemplos de entregáveis), mantendo o site como agência multi-nicho.
+- A experiência precisa parecer “marca de verdade”, com personalidade, não um template genérico.
+
+MATERIAL DA MARCA (OBRIGATÓRIO USAR):
+- Temos um PDF da apresentação da marca no projeto: **/mnt/data/Apresentação Digitalmente - A Marca.pdf**
+- Use imagens desse PDF como assets do site quando fizer sentido (hero, seções, mosaicos, fundos sutis, mockups, elementos decorativos).
+- Se necessário, extraia 4–8 imagens do PDF e salve em /public/brand/ (nomeie por página e conteúdo, ex: brand-p01-hero.jpg).
+- A estética do PDF é parte do DNA: energia criativa, ousada, moderna, com toque de humor e coragem. Traga isso pra UI com microinterações e detalhes visuais (sem pesar performance).
+
+STACK (Replit):
+- Next.js (App Router) + TypeScript
+- TailwindCSS
+- Framer Motion (animações leves e rápidas)
+- React Hook Form + Zod (validação)
+- React Icons (WhatsApp/Instagram/Email)
+- next/image (otimização)
+- SEO básico + performance alta (Lighthouse)
+
+IDENTIDADE VISUAL (seguir a hierarquia):
+Cores (hex):
+- Principal 1 (fundo/base): #152256
+- Principal 2 (variações/blocos): #671f75
+- Detalhe 1 (ênfase/tag): #c80180
+- Detalhe 2 (CTA/acento): #e4552d
+- Apoio: #7ba4da
+- Apoio muito claro: #e3f0fe
+- Excessões (quase-preto, evitar no digital): #131b34
+Regras:
+- Fundo predominante #152256, textos brancos.
+- Hover e destaque de interação: #e4552d (laranja).
+- Use #7ba4da para focus, linhas e estados.
+- Use #c80180 só em detalhes estratégicos (selos/badges).
+
+TIPOGRAFIA (2 fontes locais):
+- Baou Display: destaque (1–2 palavras, selos, títulos de impacto)
+- Navycula: H1/H2/H3 + textos + botões
+Arquivos disponíveis:
+- /mnt/data/Baou-Display (2).otf
+- /mnt/data/NavyculaFont-Bold (2).ttf
+→ Instruções: mover para /public/fonts e configurar via @font-face (ou next/font/local).
+Defina escalas de tipografia bonitas e consistentes.
+
+LOGO:
+- Usar no topo e rodapé:
+  /mnt/data/logo BRANCO E LARANJA - DIG - png transparente (3).png
+Coloque em /public/logo.png e use next/image.
+
+OBJETIVO DO SITE:
+- Converter via WhatsApp e formulário.
+- Passar autoridade de estratégia + execução em HUB (com parceiros).
+- Ser multi-nicho, mas com A&B como “special sauce” (sem página dedicada).
+- Ter um produto de entrada: Packs de Conteúdo.
+
+REFERÊNCIAS (inspire, não copie):
+- https://novatriade.com.br/
+- https://agenciailuck.com.br/
+- https://www.invente.com/
++ Busque inspiração em agências modernas (layout, grids, animações e seções).
+
+ARQUITETURA:
+Single-page com âncoras (e rotas opcionais):
+- / (home com seções)
+- /packs (opcional, reaproveitar seção)
+- /servicos (opcional, reaproveitar seção)
+- /parceiros (opcional, reaproveitar seção)
+- /contato (opcional, reaproveitar seção)
+Bônus: /cases (placeholder elegante, sem inventar números ou cases)
+
+IDEIA “SURPRESA” (quero que você proponha e implemente):
+Crie um bloco de impacto chamado **“Laboratório de Presença”**:
+- Uma seção interativa leve com 3 botões/abas pequenas (não rotas):
+  1) “Marca” (posicionamento + identidade)
+  2) “Presença” (conteúdo + redes)
+  3) “Performance” (tráfego + site)
+Cada opção troca um mini-texto + uma imagem do PDF + 3 bullets do que entregamos.
+Isso cria sensação de HUB e fica memorável, sem virar bagunça.
+
+SEÇÕES (home) — ORDEM SUGERIDA:
+1) NAVBAR (sticky, blur sutil)
+   - Links: Início | Sobre | Serviços | Packs | Parceiros | Contato
+   - Botão primário: “Falar no WhatsApp” (ícone) com hover laranja
+   - Scroll suave
+
+2) HERO (dobrada 1) — forte e visual:
+   - Headline (Navycula) direta, premium:
+     “Estratégias criativas pra transformar presença em resultado.”
+   - Subheadline:
+     “Somos a Digitalmente HUB: estratégia, conteúdo, tráfego e estrutura digital — com execução coordenada por especialistas.”
+   - Destaque sutil de especialidade (sem aba):
+     “Especialidade em Alimentos & Bebidas (e marcas que precisam de desejo de marca).”
+   - CTAs:
+     (1) WhatsApp
+     (2) “Quero um diagnóstico” (scroll pro formulário)
+   - Visual: use uma imagem marcante do PDF (ex: foto/identidade) com overlay e textura leve.
+   - Inclua um selo curto em Baou Display: “HUB”
+
+3) “O que é a Digitalmente HUB” (sobre rápido):
+   - Texto curto + 3 cards:
+     “Estratégia” | “Execução com parceiros” | “Otimização contínua”
+   - Sem clichê. Frases curtas.
+
+4) “Segmentos que atendemos” (chips + destaque inteligente):
+   - Exibir chips:
+     Alimentos • Bebidas • Eventos • Notícias • Achados (Shopee) • Marca pessoal • Outros
+   - Visual: chips com borda #7ba4da e hover laranja.
+   - Microcopy:
+     “Hoje atendemos vários mercados — e colocamos energia extra onde somos mais fortes: A&B.”
+
+5) “Laboratório de Presença” (a seção surpresa interativa)
+   - 3 botões/abas (Marca / Presença / Performance)
+   - Troca de conteúdo + imagem do PDF
+   - Animação Framer Motion suave
+
+6) SERVIÇOS (grid elegante e categorizado):
+   Cards com ícones + título + 1 linha:
+   - Estratégia de Marketing
+   - Gestão de Redes Sociais
+   - Tráfego Pago (parceria/gestão)
+   - Embalagens de Produtos (parceiros)
+   - Sites e Landing Pages
+   - Estruturação de Redes Sociais (do zero)
+   - Identidade Visual (parceiros)
+   - Design & Produção (parceiros)
+   Nota: “Planos personalizados conforme momento e meta.”
+
+7) “Como funciona” (4 passos):
+   1 Diagnóstico
+   2 Plano
+   3 Execução (Hub)
+   4 Otimização
+   Visual limpo, com números grandes.
+
+8) PACKS DE CONTEÚDO (produto para quem não tem capital de agência):
+   - Título: “Packs de Conteúdo”
+   - Sub: “Pra manter presença com qualidade — mesmo fazendo internamente.”
+   - 4 cards:
+     PACK BÁSICO — R$ 447,90
+     PACK INTERMEDIÁRIO — R$ 657,90
+     PACK PREMIUM — R$ 847,90
+     PACK DIAMANTE — R$ 1.249,90  (trocar Master por Diamante)
+   - Manter quantidades e estrutura conforme referência:
+     Básico:
+      - 10 artes estáticas
+      - 4 carrosséis
+      - criação de textos persuasivos
+      - artes editáveis: não inclusas
+     Intermediário:
+      - 15 artes estáticas
+      - 8 carrosséis
+      - criação de textos persuasivos
+      - Trello (organização)
+      - artes editáveis: não inclusas
+     Premium:
+      - 20 artes estáticas
+      - 12 carrosséis
+      - criação de textos persuasivos
+      - Trello (organização)
+      - (campo extra editável no código)
+     Diamante:
+      - posts ilimitados
+      - tudo que tem nos planos anteriores
+      - (campo extra editável no código)
+   - CTA em cada card: “Quero esse pack” → abre WhatsApp com mensagem pronta com o nome do pack.
+
+9) PARCEIROS:
+   - Preparar /public/partners e um array/JSON:
+     { name, logoPath, area }
+   - Filtro por área (chips)
+   - Texto:
+     “A gente coordena estratégia e direção. A execução acontece com especialistas por área.”
+
+10) FAQ (5–7 perguntas):
+   - Multi-nicho vs foco
+   - Planos personalizados
+   - Estruturação do zero
+   - Embalagem
+   - Tráfego com parceiro
+   - Começar por pack e migrar depois
+
+11) CONTATO + FORMULÁRIO (obrigatório e muito bem feito):
+   Endereço: Sitio Cercado, Curitiba-PR
+   WhatsApp: 41 98790-7321 e 41 92005-9509 (botões clicáveis com ícone)
+   Instagram: @digital.mentte
+   Email: digitalmente.oficial.mkt@gmail.com
+   - Botão flutuante WhatsApp (canto inferior direito)
+
+FORMULÁRIO (com validação):
+Campos:
+- Nome
+- Telefone
+- Empresa
+- Email
+- Tipo de contato (segmented control): “Serviço” | “Parceiro”
+- Mensagem (opcional)
+Comportamento:
+- Ao enviar: mostrar sucesso
+- Gerar fallback: botão para WhatsApp com texto pré-preenchido com os dados
+- Preparar endpoint futuro (/api/lead), mas pode simular por enquanto
+
+UI/UX:
+- Responsivo impecável
+- Microinterações: hover laranja, focus azul claro
+- Acessibilidade básica
+- Performance: imagens otimizadas, lazy loading, sem exagerar em animações
+- Evitar blocos gigantes de texto (objetivo é conversão)
+
+ESTRUTURA DE PASTAS:
+- /app
+- /components
+- /data (services, packs, faqs, partners)
+- /public (logo, partners, brand, fonts)
+- /styles (se necessário)
+Inclua README explicando:
+- como rodar
+- como adicionar imagens extraídas do PDF
+- como trocar textos/cores
+- como adicionar logos de parceiros
+- como editar packs e serviços
+
+REGRAS:
+- Não inventar cases, números ou depoimentos reais.
+- Copy humana, premium, direta (sem “coachzão”).
+- A&B aparece como especialidade, sem virar página dedicada.
+
+Agora gere o projeto completo com todo o código.
