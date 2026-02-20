@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertLeadSchema } from "@shared/schema";
 import type { InsertLead } from "@shared/schema";
-import { FaWhatsapp, FaInstagram, FaFacebookF, FaLinkedinIn, FaYoutube } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram } from "react-icons/fa";
+import { SiThreads } from "react-icons/si";
 import { Check, Loader2 } from "lucide-react";
 import {
   Form,
@@ -91,25 +92,14 @@ export default function Contact() {
                 Instagram
               </a>
               <a
-                href="#"
+                href="https://www.threads.net/@digital.mentte"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
+                data-testid="link-threads"
               >
-                <FaFacebookF className="text-base" />
-                Facebook
-              </a>
-              <a
-                href="#"
-                className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
-              >
-                <FaLinkedinIn className="text-base" />
-                LinkedIn
-              </a>
-              <a
-                href="#"
-                className="flex items-center gap-2 text-white/50 hover:text-brand-orange transition-colors text-sm"
-              >
-                <FaYoutube className="text-base" />
-                YouTube
+                <SiThreads className="text-base" />
+                Threads
               </a>
             </div>
 
