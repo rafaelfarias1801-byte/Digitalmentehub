@@ -32,7 +32,7 @@ export default function BrandsServed() {
   return (
     <section className="py-16 md:py-20 bg-brand-navy relative overflow-hidden" data-testid="section-brands">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="md:text-3xl text-white mb-10 text-center font-extrabold text-[32px]">
+        <h2 className="md:text-3xl text-white mb-10 text-center font-extrabold text-[28px]">
           Marcas atendidas
         </h2>
       </div>
