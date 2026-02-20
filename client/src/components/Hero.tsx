@@ -42,7 +42,7 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="text-lg md:text-xl text-white/70 leading-relaxed mb-10 max-w-2xl mx-auto"
           >
-            Somos a Dig, um <span className="text-brand-orange">HUB</span> de estratégia digital, onde conteúdo, marketing e criatividade viram presença online.
+            Somos a Dig, um <span className="text-brand-orange font-bold">HUB</span> de estratégia digital, onde conteúdo, marketing e criatividade viram presença online.
           </motion.p>
 
           <motion.div
