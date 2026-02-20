@@ -4,7 +4,7 @@ export const services = [
   {
     id: "performance",
     title: "Plano de Performance",
-    description: "Gestão de redes sociais, planejamento, criação, acompanhamento e ajustes para marcas e pessoas crescerem com consistência.",
+    description: "Gestão de redes sociais, planejamento, criação e ajustes para marcas crescerem com consistência.",
     icon: Megaphone,
   },
   {
@@ -22,7 +22,7 @@ export const services = [
   {
     id: "rotulos",
     title: "Rótulos e Branding",
-    description: "Criação de marca, branding, embalagens e materiais que reforçam posicionamento e tornam seu produto reconhecível no mercado.",
+    description: "Criação de marca, branding, embalagens e materiais que reforçam seu posicionamento no mercado.",
     icon: Package,
   },
   {
