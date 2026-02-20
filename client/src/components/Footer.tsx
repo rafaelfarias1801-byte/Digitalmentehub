@@ -145,10 +145,10 @@ export default function Footer() {
 
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/5 text-center">
-          <p className="text-white/30 text-xs">
-            Digitalmente HUB - Curitiba, PR
-          </p>
+        <div className="mt-12 pt-8 border-t border-white/5 text-left">
+          <p className="text-white/30 text-xs">Copyright © 2025 | Todos os direitos reservados.</p>
+          <p className="text-white/30 text-xs">Digitalmente Hub LTDA</p>
+          <p className="text-white/30 text-xs">CNPJ: 61.499.882/0001-76</p>
         </div>
       </div>
     </footer>
