@@ -1,5 +1,5 @@
-import partnerPhoto from "@assets/image_1771621674912.png";
-import partnerLogo from "@assets/Marcas_(1)_1771622435344.jpg";
+import xsolidLogo from "@assets/image_1771622738193.png";
+import novaTriadeLogo from "@assets/Marcas_(1)_1771622435344.jpg";
 
 export const partners = [
   {
@@ -15,11 +15,11 @@ export const partners = [
     logoPath: "/partners/uni-design.jpeg",
   },
   {
-    name: "Parceiro 4",
-    logoPath: partnerPhoto,
+    name: "XSolid",
+    logoPath: xsolidLogo,
   },
   {
-    name: "Parceiro 5",
-    logoPath: partnerLogo,
+    name: "Nova Tríade",
+    logoPath: novaTriadeLogo,
   },
 ];

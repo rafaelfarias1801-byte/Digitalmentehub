@@ -29,7 +29,7 @@ export default function Partners() {
           {[...partners, ...partners].map((partner, i) => (
             <div
               key={i}
-              className="flex-shrink-0 bg-[#1e2059] border border-white/[0.06] rounded-lg p-6 flex flex-col items-center gap-4 w-[200px]"
+              className="flex-shrink-0 bg-white/[0.08] rounded-lg p-6 flex flex-col items-center gap-4 w-[200px]"
               data-testid={`card-partner-${i}`}
             >
               <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/5">
