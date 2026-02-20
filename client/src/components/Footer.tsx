@@ -6,15 +6,15 @@ import { Link } from "wouter";
 export default function Footer() {
   return (
     <footer className="py-16 bg-brand-dark border-t border-white/5" data-testid="footer">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[auto_minmax(0,2fr)_1fr_1fr_minmax(0,1.5fr)_1fr] gap-8 lg:gap-6">
 
           <div>
             <img src="/logo.png" alt="Digitalmente HUB" className="h-16 w-auto mb-2" />
             <p className="text-white/50 text-sm">HUB digital</p>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h4 className="text-white font-medium mb-4">Contato</h4>
             <div className="space-y-3">
               <a
@@ -39,11 +39,11 @@ export default function Footer() {
               </a>
               <a
                 href="mailto:digitalmente.oficial.mkt@gmail.com"
-                className="flex items-start gap-2 text-white/50 text-sm break-all"
+                className="flex items-center gap-2 text-white/50 text-sm whitespace-nowrap overflow-hidden"
                 data-testid="footer-email"
               >
-                <Mail className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span className="break-all">digitalmente.oficial.mkt@gmail.com</span>
+                <Mail className="w-4 h-4 flex-shrink-0" />
+                digitalmente.oficial.mkt@gmail.com
               </a>
               <div className="flex items-start gap-2 text-white/50 text-sm">
                 <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
