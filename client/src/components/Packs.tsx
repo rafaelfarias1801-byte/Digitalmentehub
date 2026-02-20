@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
-import { Check, Star, X, Package, Compass, Search } from "lucide-react";
+import { Check, Star, Package, Compass, Search, FileText, Clock } from "lucide-react";
 import { packs } from "../data/packs";
 
 type ProductView = "main" | "packs" | "consultoria" | "analise";
@@ -240,15 +240,15 @@ export default function Packs() {
                     "Plano de ações essenciais para começar com estratégia",
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-2.5">
-                      <span className="text-brand-blue mt-0.5">✔️</span>
+                      <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
                       <span className="text-white/60 text-sm">{item}</span>
                     </li>
                   ))}
                 </ul>
 
                 <div className="text-white/50 text-sm space-y-1 mb-8">
-                  <p>📄 Resumo estratégico entregue após a consultoria</p>
-                  <p>⏱️ Duração: 60 a 90 minutos</p>
+                  <p className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resumo estratégico entregue após a consultoria</p>
+                  <p className="flex items-center gap-2"><Clock className="w-4 h-4" /> Duração: 60 a 90 minutos</p>
                 </div>
 
                 <div className="bg-brand-orange/[0.08] border border-brand-orange/20 rounded-lg p-5 mb-8">
@@ -328,15 +328,15 @@ export default function Packs() {
                     "Direcionamento de próximos passos (sem promessa vazia)",
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-2.5">
-                      <span className="text-brand-blue mt-0.5">✔️</span>
+                      <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
                       <span className="text-white/60 text-sm">{item}</span>
                     </li>
                   ))}
                 </ul>
 
                 <div className="text-white/50 text-sm space-y-1 mb-8">
-                  <p>📄 Entrega em PDF ou documento digital</p>
-                  <p>⏱️ Prazo médio: 3 a 5 dias úteis</p>
+                  <p className="flex items-center gap-2"><FileText className="w-4 h-4" /> Entrega em PDF ou documento digital</p>
+                  <p className="flex items-center gap-2"><Clock className="w-4 h-4" /> Prazo médio: 3 a 5 dias úteis</p>
                 </div>
 
                 <div className="bg-brand-orange/[0.08] border border-brand-orange/20 rounded-lg p-5 mb-8">
