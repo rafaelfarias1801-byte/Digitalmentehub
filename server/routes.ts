@@ -1,16 +1,34 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { insertLeadSchema } from "@shared/schema";
+import { ZodError, z } from "zod";
+
+const serverLeadSchema = insertLeadSchema.extend({
+  name: z.string().min(2, "Nome é obrigatório"),
+  phone: z.string().min(8, "Telefone inválido"),
+  company: z.string().min(1, "Empresa é obrigatória"),
+  email: z.string().email("E-mail inválido"),
+  contactType: z.string().min(1, "Selecione o tipo"),
+});
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
-
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.post("/api/lead", async (req, res) => {
+    try {
+      const data = serverLeadSchema.parse(req.body);
+      const lead = await storage.createLead(data);
+      res.json({ success: true, id: lead.id });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ success: false, errors: error.errors });
+      } else {
+        res.status(500).json({ success: false, message: "Erro interno" });
+      }
+    }
+  });
 
   return httpServer;
 }
