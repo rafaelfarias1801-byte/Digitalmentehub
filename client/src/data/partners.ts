@@ -1,19 +1,25 @@
+import partnerPhoto from "@assets/image_1771621674912.png";
+import partnerLogo from "@assets/Marcas_(1)_1771622435344.jpg";
+
 export const partners = [
   {
     name: "Create Studio",
     logoPath: "/partners/create-studio.jpeg",
-    area: "Design",
   },
   {
     name: "Alimentec",
     logoPath: "/partners/alimentec.jpeg",
-    area: "Alimentos",
   },
   {
     name: "Uni Design",
     logoPath: "/partners/uni-design.jpeg",
-    area: "Design",
+  },
+  {
+    name: "Parceiro 4",
+    logoPath: partnerPhoto,
+  },
+  {
+    name: "Parceiro 5",
+    logoPath: partnerLogo,
   },
 ];
-
-export const partnerAreas = ["Todos", "Design", "Alimentos", "Tráfego", "Produção"];

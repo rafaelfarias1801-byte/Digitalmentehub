@@ -3,7 +3,7 @@ import { partners } from "../data/partners";
 
 export default function Partners() {
   return (
-    <section id="parceiros" className="py-24 md:py-32 bg-brand-navy relative" data-testid="section-partners">
+    <section id="parceiros" className="py-24 md:py-32 bg-brand-pink relative overflow-hidden" data-testid="section-partners">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -15,20 +15,22 @@ export default function Partners() {
           <h2 className="md:text-5xl lg:text-6xl text-white mb-4 font-display text-[30px]">
             Parceiros
           </h2>
-          <p className="max-w-xl mx-auto text-[#ffffff]">
+          <p className="max-w-xl mx-auto text-white">
             A gente coordena estratégia e direção. A execução acontece com especialistas por área.
           </p>
         </motion.div>
+      </div>
 
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {partners.map((partner, i) => (
-            <motion.div
-              key={partner.name}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35, delay: i * 0.08 }}
-              className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-6 flex flex-col items-center gap-4 hover:border-brand-orange/20 transition-all duration-300"
+      <div className="relative w-full overflow-hidden">
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-brand-pink to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-brand-pink to-transparent pointer-events-none" />
+
+        <div className="flex animate-marquee items-center gap-8 md:gap-12 w-max">
+          {[...partners, ...partners].map((partner, i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 bg-[#1e2059] border border-white/[0.06] rounded-lg p-6 flex flex-col items-center gap-4 w-[200px]"
+              data-testid={`card-partner-${i}`}
             >
               <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/5">
                 <img
@@ -41,7 +43,7 @@ export default function Partners() {
               <div className="text-center">
                 <h3 className="text-white text-base">{partner.name}</h3>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
