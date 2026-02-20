@@ -11,7 +11,7 @@ const navLinks = [
   { label: "Case de Sucesso", href: "#case", isPage: false },
   { label: "Parceiros", href: "#parceiros", isPage: false },
   { label: "Contato", href: "#contato", isPage: false },
-  { label: "Produtos", href: "#packs", isPage: false },
+  { label: "Produtos", href: "/produtos", isPage: true },
 ];
 
 export default function Navbar() {
