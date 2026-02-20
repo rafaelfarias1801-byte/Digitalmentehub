@@ -65,7 +65,11 @@ export default function Laboratory() {
             <button
               key={tab.id}
               onClick={() => setActive(i)}
-              className="px-5 md:px-8 py-3 rounded-md text-sm transition-all duration-300 text-white font-semibold bg-[#c8018000]"
+              className={`px-5 md:px-8 py-3 rounded-md text-sm transition-all duration-300 font-semibold hover:bg-brand-orange hover:text-white ${
+                active === i
+                  ? "bg-brand-orange text-white"
+                  : "bg-white/[0.04] text-white/60 border border-white/10"
+              }`}
               data-testid={`button-lab-${tab.id}`}
             >
               {tab.label}
