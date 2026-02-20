@@ -72,7 +72,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); handleClick(link); }}
-                className="px-3 py-2 text-sm text-white/80 hover:text-brand-orange transition-colors"
+                className="px-3 py-2 text-sm text-white/80 hover:text-brand-orange transition-colors font-semibold"
                 data-testid={`link-nav-${link.label.toLowerCase()}`}
               >
                 {link.label}
