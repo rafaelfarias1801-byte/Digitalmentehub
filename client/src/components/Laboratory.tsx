@@ -55,7 +55,7 @@ export default function Laboratory() {
           <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4 font-bold">
             A sua marca não precisa de mais posts
           </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
+          <p className="text-white/50 max-w-xl mx-auto text-[19px] font-bold">
             Ela precisa de uma estratégia que funcione
           </p>
         </motion.div>
