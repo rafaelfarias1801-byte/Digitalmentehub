@@ -12,7 +12,7 @@ export default function Services() {
           transition={{ duration: 0.6 }}
           className="text-center mb-5"
         >
-          <h2 className="text-[38px] text-white mb-2 font-display">Nossos Serviços</h2>
+          <h2 className="text-[28px] md:text-[38px] text-white mb-2 font-display">Nossos Serviços</h2>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">

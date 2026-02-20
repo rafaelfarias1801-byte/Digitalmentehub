@@ -18,7 +18,7 @@ export default function AnaliseInstagram() {
           >
             <div className="text-center mb-12">
               <span className="font-display text-brand-pink text-lg">PRODUTOS</span>
-              <h2 className="font-display text-[38px] text-white mt-2 mb-4">
+              <h2 className="font-display text-[28px] md:text-[38px] text-white mt-2 mb-4">
                 Análise Estratégica de Instagram
               </h2>
             </div>

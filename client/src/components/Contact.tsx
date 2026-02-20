@@ -67,9 +67,9 @@ export default function Contact() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl mb-6" data-testid="text-contact-title">
-              <span className="font-display text-white">FALE </span>
-              <span className="font-display text-brand-orange">CONOSCO</span>
+            <h2 className="text-[28px] md:text-[38px] mb-6 font-display" data-testid="text-contact-title">
+              <span className="text-white">Fale </span>
+              <span className="text-brand-orange">Conosco</span>
             </h2>
 
             <p className="text-white/60 text-sm leading-relaxed mb-4">

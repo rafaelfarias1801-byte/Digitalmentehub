@@ -13,7 +13,7 @@ export default function About() {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <h2 className="font-display text-[38px] text-white mb-4">
+            <h2 className="font-display text-[28px] md:text-[38px] text-white mb-4">
               Quem somos
             </h2>
 
@@ -46,9 +46,9 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="hidden md:flex justify-end"
+            className="flex justify-center md:justify-end"
           >
-            <div className="relative w-[200px] lg:w-[220px] transform rotate-[5deg]">
+            <div className="relative w-[160px] md:w-[200px] lg:w-[220px] transform rotate-[5deg]">
               <div className="rounded-[2rem] overflow-hidden border-[5px] border-black/80 shadow-2xl shadow-black/40">
                 <img
                   src={instagramScreen}
