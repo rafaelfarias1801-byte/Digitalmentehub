@@ -85,7 +85,7 @@ export default {
           "navy-dark": "#0e1a42",
           purple: "#671f75",
           pink: "#c80180",
-          orange: "#e4552d",
+          orange: "#c80180",
           blue: "#7ba4da",
           "blue-light": "#e3f0fe",
           dark: "#131b34",

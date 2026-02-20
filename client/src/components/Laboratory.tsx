@@ -5,34 +5,34 @@ const tabs = [
   {
     id: "marca",
     label: "Marca",
-    title: "Posicionamento + Identidade",
+    title: "Posicionamento & Identidade",
     image: "/brand/lab-marca.png",
     bullets: [
-      "Diagnóstico de posicionamento e tom de voz",
-      "Identidade visual estratégica com parceiros",
-      "Manual de marca e aplicações",
+      "A gente entende onde sua marca está e onde ela pode chegar",
+      "Criamos a identidade visual certa com parceiros que entendem de marca",
+      "Manual de marca simples, prático e fácil de aplicar no dia a dia",
     ],
   },
   {
     id: "presenca",
     label: "Presença",
-    title: "Conteúdo + Redes",
+    title: "Conteúdo & Redes",
     image: "/brand/lab-presenca.png",
     bullets: [
-      "Gestão de redes sociais com calendário editorial",
-      "Criação de conteúdo visual e copywriting",
-      "Estruturação de perfis do zero",
+      "Planejamento de conteúdo que conversa com seu público",
+      "Criamos conteúdos visuais e copy que gera identidade",
+      "Estruturamos seu perfil pra crescer de verdade",
     ],
   },
   {
     id: "performance",
     label: "Performance",
-    title: "Tráfego + Site",
+    title: "Tráfego & Site",
     image: "/brand/lab-performance.png",
     bullets: [
-      "Campanhas de tráfego pago segmentadas",
-      "Landing pages e sites otimizados",
-      "Análise de métricas e otimização contínua",
+      "Anúncios pensados pra atrair as pessoas certas",
+      "Páginas e sites que guiam o usuário até a ação",
+      "Olhar estratégico pra cada resultado",
     ],
   },
 ];
@@ -52,12 +52,11 @@ export default function Laboratory() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <span className="font-display text-brand-pink text-lg">LAB</span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mt-2 mb-4">
-            Laboratório de Presença
+            A sua marca não precisa de mais posts
           </h2>
           <p className="text-white/50 max-w-xl mx-auto">
-            Três pilares que sustentam marcas fortes no digital.
+            Ela precisa de uma estratégia que funcione
           </p>
         </motion.div>
 
