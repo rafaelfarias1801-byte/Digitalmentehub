@@ -4,32 +4,32 @@ import caseBg from "@assets/image_1771623359585.png";
 
 export default function CaseStudy() {
   return (
-    <section id="case" className="relative overflow-hidden" data-testid="section-casestudy">
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="text-center py-12 md:py-16 bg-brand-navy"
-      >
-        <h2 className="text-[38px] text-white font-display">
-          Case de Sucesso
-        </h2>
-      </motion.div>
-
-      <div className="relative w-full min-h-[500px] md:min-h-[600px]">
+    <section id="case" className="relative overflow-hidden scroll-mt-16" data-testid="section-casestudy">
+      <div className="relative w-full min-h-[100vh]">
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${caseBg})` }}
         />
         <div className="absolute inset-0 bg-brand-navy/40" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12 md:py-16 flex flex-col justify-center h-full min-h-[500px] md:min-h-[600px]">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-20 pb-16 flex flex-col justify-center h-full min-h-[100vh]">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-10"
+          >
+            <h2 className="text-[38px] text-white font-display">
+              Case de Sucesso
+            </h2>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-2xl"
           >
             <img
