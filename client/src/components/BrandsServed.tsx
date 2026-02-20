@@ -32,11 +32,10 @@ export default function BrandsServed() {
   return (
     <section className="py-16 md:py-20 bg-brand-navy relative overflow-hidden" data-testid="section-brands">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl md:text-3xl text-white mb-10 text-center">
+        <h2 className="md:text-3xl text-white mb-10 text-center font-extrabold text-[32px]">
           Marcas atendidas
         </h2>
       </div>
-
       <div className="relative w-full overflow-hidden mb-10">
         <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-brand-navy to-transparent pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-brand-navy to-transparent pointer-events-none" />
@@ -57,7 +56,6 @@ export default function BrandsServed() {
           ))}
         </div>
       </div>
-
       <div className="text-center">
         <a
           href="https://wa.me/5541987907321?text=Ol%C3%A1!%20Quero%20fazer%20parte%20das%20marcas%20atendidas."
