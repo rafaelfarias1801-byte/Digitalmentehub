@@ -13,7 +13,7 @@ export default function Services() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4 font-bold">
             Serviços
           </h2>
           <p className="text-white/50 max-w-xl mx-auto">
