@@ -16,7 +16,7 @@ export default function Services() {
           <h2 className="text-3xl md:text-4xl lg:text-5xl text-white mb-4 font-bold">
             Serviços
           </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
+          <p className="max-w-xl mx-auto text-[18px] font-semibold text-[#ffffff]">
             Planos personalizados conforme momento e meta.
           </p>
         </motion.div>
