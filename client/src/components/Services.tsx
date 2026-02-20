@@ -3,7 +3,7 @@ import { services } from "../data/services";
 
 export default function Services() {
   return (
-    <section id="servicos" className="py-24 md:py-32 bg-brand-navy relative" data-testid="section-services">
+    <section id="servicos" className="py-24 md:py-32 bg-brand-navy relative text-[#c80180]" data-testid="section-services">
       <div className="absolute inset-0 bg-gradient-to-b from-brand-navy via-brand-dark/20 to-brand-navy pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
