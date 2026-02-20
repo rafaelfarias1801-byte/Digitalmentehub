@@ -63,7 +63,7 @@ export default function Navbar() {
             <img
               src="/logo.png"
               alt="Digitalmente HUB"
-              className="h-28 md:h-36 w-auto"
+              className="h-20 md:h-25 w-auto"
             />
           </a>
 
