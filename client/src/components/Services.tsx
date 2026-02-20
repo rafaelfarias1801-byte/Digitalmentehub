@@ -23,7 +23,7 @@ export default function Services() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="group bg-white/[0.03] border border-white/[0.06] rounded-lg p-6 hover:border-brand-orange/25 transition-all duration-300"
+              className="group border border-white/[0.06] rounded-lg p-6 hover:border-brand-orange/25 transition-all duration-300 bg-[#1e2059]"
             >
               <div className="w-10 h-10 rounded-md bg-brand-purple/15 flex items-center justify-center mb-4 group-hover:bg-brand-orange/15 transition-colors">
                 <service.icon className="w-5 h-5 text-brand-blue group-hover:text-brand-orange transition-colors" />
