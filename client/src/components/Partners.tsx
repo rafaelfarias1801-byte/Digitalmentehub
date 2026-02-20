@@ -15,7 +15,7 @@ export default function Partners() {
           <h2 className="md:text-5xl lg:text-6xl text-white mb-4 font-display text-[30px]">
             Parceiros
           </h2>
-          <p className="text-white/50 max-w-xl mx-auto">
+          <p className="max-w-xl mx-auto text-[#ffffff]">
             A gente coordena estratégia e direção. A execução acontece com especialistas por área.
           </p>
         </motion.div>
