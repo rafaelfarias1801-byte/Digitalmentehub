@@ -94,14 +94,24 @@ export default function Navbar() {
             </a>
           </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-white p-2"
-            data-testid="button-mobile-menu"
-            aria-label="Menu"
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <a
+              href="/produtos"
+              onClick={(e) => { e.preventDefault(); setMobileOpen(false); setLocation("/produtos"); }}
+              className="inline-flex items-center gap-1.5 bg-brand-pink text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:brightness-110"
+              data-testid="button-produtos-mobile"
+            >
+              Produtos
+            </a>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="text-white p-2"
+              data-testid="button-mobile-menu"
+              aria-label="Menu"
+            >
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
       <AnimatePresence>

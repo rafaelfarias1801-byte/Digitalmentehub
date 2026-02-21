@@ -209,6 +209,63 @@ export default function Contact() {
 
                   <FormField
                     control={form.control}
+                    name="company"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="text-white/60 text-xs mb-1 block">Empresa</label>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Nome da sua empresa"
+                            className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus:border-brand-blue/50"
+                            data-testid="input-company"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-brand-orange text-xs" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="contactType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="text-white/60 text-xs mb-1 block">O contato é para:</label>
+                        <FormControl>
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={() => field.onChange("servico")}
+                              className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                field.value === "servico"
+                                  ? "bg-brand-pink text-white"
+                                  : "bg-white/[0.04] border border-white/10 text-white/50 hover:border-white/20"
+                              }`}
+                              data-testid="button-tipo-servico"
+                            >
+                              Serviço
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => field.onChange("parceria")}
+                              className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                field.value === "parceria"
+                                  ? "bg-brand-pink text-white"
+                                  : "bg-white/[0.04] border border-white/10 text-white/50 hover:border-white/20"
+                              }`}
+                              data-testid="button-tipo-parceria"
+                            >
+                              Parceria
+                            </button>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="message"
                     render={({ field }) => (
                       <FormItem>
