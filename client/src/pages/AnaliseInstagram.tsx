@@ -9,56 +9,62 @@ export default function AnaliseInstagram() {
   return (
     <div className="bg-brand-navy min-h-screen">
       <Navbar />
-      <div className="pt-28 md:pt-36 pb-24">
+      <div className="pt-32 md:pt-40 pb-28">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="text-center mb-16">
-              <span className="font-display text-brand-pink text-lg">PRODUTOS</span>
-              <h2 className="font-display text-[32px] md:text-[46px] text-white mt-3 mb-6 leading-tight">
-                Análise de Perfil Estratégica
+            <div className="text-center mb-20">
+              <span className="font-display text-brand-pink text-lg tracking-wider">PRODUTOS</span>
+              <h2 className="font-display text-[34px] md:text-[50px] text-white mt-4 mb-3 leading-[1.05] tracking-tight">
+                Análise de Perfil<br />Estratégica
               </h2>
-              <p className="text-white/50 text-lg md:text-xl italic">
+              <p className="text-white/40 text-lg md:text-xl">
                 Antes de postar mais, é preciso entender melhor.
               </p>
             </div>
 
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 md:p-12">
+            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-12">
 
-              <div className="mb-12">
-                <p className="text-white/70 leading-relaxed mb-4 text-[15px]">
+              <div className="mb-10">
+                <p className="text-white/65 leading-[1.8] mb-5 text-[15px]">
                   Se o seu perfil não cresce, não gera resposta ou não transmite autoridade, o problema nem sempre é falta de conteúdo. Na maioria das vezes é falta de clareza.
                 </p>
-                <p className="text-white/70 leading-relaxed mb-4 text-[15px]">
+                <p className="text-white/65 leading-[1.8] mb-8 text-[15px]">
                   A Análise de Perfil é uma leitura estratégica do seu Instagram para identificar o que está travando seu crescimento, o que está desalinhado no seu posicionamento e quais ajustes precisam ser feitos para gerar mais percepção, coerência e resultado.
                 </p>
-                <p className="text-brand-pink font-semibold text-[15px] leading-relaxed">
-                  Nada de achismo. Nada de promessa vazia. Aqui você entende, de forma objetiva, onde está errando e como corrigir.
-                </p>
               </div>
 
-              <div className="w-full h-px bg-white/[0.06] mb-12" />
+              <div className="relative mb-14">
+                <div className="absolute -left-8 md:-left-12 top-0 bottom-0 w-[3px] bg-brand-pink/60 rounded-full" />
+                <div className="bg-brand-pink/[0.06] border border-brand-pink/10 rounded-xl px-6 py-5">
+                  <p className="text-brand-pink font-semibold text-[15px] leading-relaxed">
+                    Nada de achismo. Nada de promessa vazia. Aqui você entende, de forma objetiva, onde está errando e como corrigir.
+                  </p>
+                </div>
+              </div>
 
-              <h4 className="text-brand-orange text-xl font-semibold mb-6">Para quem é</h4>
-              <div className="mb-12">
-                <p className="text-white/70 leading-relaxed mb-6 text-[15px]">
+              <div className="w-full h-px bg-white/[0.04] mb-14" />
+
+              <h4 className="text-brand-orange text-xl font-semibold mb-8 tracking-tight">Para quem é</h4>
+              <div className="mb-14">
+                <p className="text-white/65 leading-[1.8] mb-8 text-[15px]">
                   Este serviço é ideal para empreendedores, criadores e marcas que já produzem conteúdo, mas sentem estagnação. Também para quem não sabe se o problema é estética, posicionamento ou narrativa. E para quem pensa em investir em tráfego ou social media, mas quer clareza antes.
                 </p>
-                <div className="space-y-4 mb-6">
-                  <p className="text-white/60 text-[15px]">Se você posta, mas não cresce.</p>
-                  <p className="text-white/60 text-[15px]">Se o perfil parece bonito, mas não comunica.</p>
-                  <p className="text-white/60 text-[15px]">Se o engajamento não vira oportunidade.</p>
+                <div className="space-y-5 mb-8 pl-1">
+                  <p className="text-white/70 text-[15px] font-medium">Se você posta, mas não cresce.</p>
+                  <p className="text-white/70 text-[15px] font-medium">Se o perfil parece bonito, mas não comunica.</p>
+                  <p className="text-white/70 text-[15px] font-medium">Se o engajamento não vira oportunidade.</p>
                 </div>
-                <p className="text-brand-pink font-semibold text-lg">Essa análise é para você.</p>
+                <p className="text-brand-pink font-bold text-lg tracking-tight">Essa análise é para você.</p>
               </div>
 
-              <div className="w-full h-px bg-white/[0.06] mb-12" />
+              <div className="w-full h-px bg-white/[0.04] mb-14" />
 
-              <h4 className="text-brand-orange text-xl font-semibold mb-6">O que analisamos</h4>
-              <div className="space-y-4 mb-12">
+              <h4 className="text-brand-orange text-xl font-semibold mb-8 tracking-tight">O que analisamos</h4>
+              <div className="space-y-3 mb-14">
                 {[
                   {
                     num: "1",
@@ -86,15 +92,15 @@ export default function AnaliseInstagram() {
                     items: ["Ajustes simples que destravam percepção", "O que mudar agora", "O que parar de fazer"],
                   },
                 ].map((block) => (
-                  <div key={block.num} className="bg-white/[0.02] border border-white/[0.05] rounded-lg p-5">
-                    <p className="text-white font-medium mb-2">
-                      <span className="text-brand-pink mr-2 font-semibold">{block.num}.</span>
+                  <div key={block.num} className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5 md:p-6">
+                    <p className="text-white font-medium mb-3 text-[15px]">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-pink/15 text-brand-pink text-xs font-bold mr-3">{block.num}</span>
                       {block.title}
                     </p>
-                    <div className="pl-6 space-y-1">
+                    <div className="pl-9 space-y-1.5">
                       {block.items.map((item, j) => (
-                        <p key={j} className="text-white/45 text-sm flex items-center gap-2">
-                          <span className="w-1 h-1 rounded-full bg-brand-blue flex-shrink-0" />
+                        <p key={j} className="text-white/40 text-sm flex items-center gap-2.5">
+                          <span className="w-1 h-1 rounded-full bg-white/20 flex-shrink-0" />
                           {item}
                         </p>
                       ))}
@@ -103,10 +109,10 @@ export default function AnaliseInstagram() {
                 ))}
               </div>
 
-              <div className="w-full h-px bg-white/[0.06] mb-12" />
+              <div className="w-full h-px bg-white/[0.04] mb-14" />
 
-              <h4 className="text-brand-orange text-xl font-semibold mb-6">O que você recebe</h4>
-              <div className="space-y-3 mb-4">
+              <h4 className="text-brand-orange text-xl font-semibold mb-8 tracking-tight">O que você recebe</h4>
+              <div className="space-y-3.5 mb-6">
                 {[
                   "Análise estratégica completa do perfil",
                   "Relatório claro e direto, sem linguagem técnica desnecessária",
@@ -116,53 +122,54 @@ export default function AnaliseInstagram() {
                   "Direcionamento de próximos passos, sem promessa vazia",
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
-                    <span className="text-white/60 text-[15px]">{item}</span>
+                    <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue/70 mt-0.5 flex-shrink-0" />
+                    <span className="text-white/55 text-[15px] leading-snug">{item}</span>
                   </div>
                 ))}
               </div>
-              <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg px-4 py-3 inline-flex items-center gap-2 text-white/50 text-sm mb-12">
+              <div className="bg-white/[0.03] border border-white/[0.05] rounded-lg px-5 py-3.5 inline-flex items-center gap-2.5 text-white/40 text-sm mb-14">
                 <FileText className="w-4 h-4" />
                 Entrega em PDF ou documento digital
               </div>
 
-              <div className="w-full h-px bg-white/[0.06] mb-12" />
+              <div className="w-full h-px bg-white/[0.04] mb-14" />
 
-              <h4 className="text-brand-orange text-xl font-semibold mb-6">Prazo e investimento</h4>
-              <div className="text-white/50 text-[15px] mb-4 flex items-center gap-2">
+              <h4 className="text-brand-orange text-xl font-semibold mb-8 tracking-tight">Prazo e investimento</h4>
+              <div className="text-white/45 text-[15px] mb-5 flex items-center gap-2.5">
                 <Clock className="w-4 h-4 flex-shrink-0" />
                 Prazo médio de entrega: 3 a 5 dias úteis
               </div>
-              <div className="bg-brand-orange/[0.06] border border-brand-orange/15 rounded-xl p-6 mb-12">
-                <p className="text-brand-orange text-2xl font-semibold">Investimento: R$397,00</p>
+              <div className="bg-white/[0.02] border border-brand-orange/10 rounded-xl p-8 mb-14 text-center">
+                <p className="text-white/40 text-sm mb-2 tracking-wide uppercase">Investimento</p>
+                <p className="text-brand-orange text-3xl md:text-4xl font-bold tracking-tight">R$397,00</p>
               </div>
 
-              <div className="w-full h-px bg-white/[0.06] mb-12" />
+              <div className="w-full h-px bg-white/[0.04] mb-14" />
 
-              <h4 className="text-brand-orange text-xl font-semibold mb-6">Por que começar pela análise</h4>
-              <div className="mb-14">
-                <p className="text-white/70 leading-relaxed mb-4 text-[15px]">
+              <h4 className="text-brand-orange text-xl font-semibold mb-8 tracking-tight">Por que começar pela análise</h4>
+              <div className="mb-16">
+                <p className="text-white/65 leading-[1.8] mb-5 text-[15px]">
                   Muitas pessoas investem mais tempo, mais postagens ou mais dinheiro em tráfego sem antes entender o básico.
                 </p>
-                <p className="text-white font-medium text-[15px] mb-4">
+                <p className="text-white font-semibold text-base mb-5 italic">
                   O perfil está preparado para o próximo passo?
                 </p>
-                <p className="text-white/70 leading-relaxed text-[15px]">
+                <p className="text-white/65 leading-[1.8] text-[15px]">
                   A Análise de Perfil existe para evitar desperdício de energia e investimento. Ela traz clareza e direção antes da execução.
                 </p>
               </div>
 
-              <div className="text-center pt-2 pb-4">
+              <div className="text-center pt-4 pb-6">
                 <a
                   href={`https://wa.me/5541987907321?text=${encodeURIComponent(
                     "Olá! Quero minha Análise de Perfil. Pode me contar mais?"
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2.5 bg-brand-orange text-white px-10 py-4 rounded-full text-base font-semibold transition-all duration-200 hover:brightness-110 hover:scale-[1.02] shadow-lg shadow-brand-orange/20"
+                  className="inline-flex items-center justify-center gap-3 bg-brand-orange text-white px-12 py-5 rounded-full text-[17px] font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.03] shadow-xl shadow-brand-orange/25"
                   data-testid="button-analise-whatsapp"
                 >
-                  <FaWhatsapp className="text-xl" />
+                  <FaWhatsapp className="text-2xl" />
                   Quero minha Análise de Perfil
                 </a>
               </div>

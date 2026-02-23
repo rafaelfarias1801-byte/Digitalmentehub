@@ -1,0 +1,63 @@
+Você é um designer e desenvolvedor front end especialista em UX e conversão para produtos digitais
+
+Objetivo
+Refinar visualmente a pagina Analise de Perfil Estrategica da Dig
+O foco é elevar a percepcao de produto premium
+Nao alterar nenhum texto
+Nao alterar valores
+Nao alterar identidade visual da marca
+Nao alterar cores base
+Nao alterar tipografia global
+
+Ajustes solicitados
+
+Hero section
+Reforcar impacto visual do titulo principal Analise de Perfil Estrategica
+Ajustar peso e espacamento entre as linhas do titulo para parecer mais firme e autoritativo
+Aproximar levemente o subtitulo do titulo principal
+Criar mais sensacao de decisao e menos de contemplacao
+
+Bloco Nada de achismo
+Manter o texto exatamente como esta
+Transformar esse trecho em uma assinatura visual da pagina
+Adicionar divisor sutil ou fundo translúcido
+Garantir que esse bloco se destaque como diferencial da Dig
+
+Secao Para quem e
+Manter todo o texto
+Aumentar espacamento entre as frases curtas
+Dar mais destaque tipografico as frases
+Se voce posta, mas nao cresce
+Se o perfil parece bonito, mas nao comunica
+Se o engajamento nao vira oportunidade
+Essa secao deve gerar identificacao imediata
+
+Secao O que analisamos
+Manter os cards existentes
+Garantir espacamento consistente entre eles
+Aprimorar leitura mobile
+Os numeros 1 a 5 devem guiar o olhar com clareza
+
+Secao O que voce recebe
+Manter lista atual
+Dar mais destaque visual ao titulo da secao
+Criar sensacao de entrega concreta
+Isolar o item Entrega em PDF ou documento digital como fechamento visual
+
+Secao Prazo e investimento
+Manter valor e texto
+Refinar box do investimento para parecer decisao consciente
+Menos promocional e mais estrategico
+Dar mais respiro ao valor
+
+CTA final
+Manter botao Quero minha Analise de Perfil
+Garantir que seja o maior ponto de contraste da pagina
+Adicionar espacamento generoso antes e depois
+O CTA deve parecer seguro e profissional
+
+Resultado esperado
+Pagina mais elegante
+Mais impacto emocional sem mudar a copy
+Sensacao clara de metodo e estrategia
+Produto premium e confiavel
