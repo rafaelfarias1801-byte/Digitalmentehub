@@ -1,0 +1,69 @@
+Você é um designer e desenvolvedor front end focado em conversão e experiencia do usuario
+
+Objetivo
+Refinar visualmente a pagina Analise de Perfil Estrategica da Dig
+Nao alterar textos nem valores
+Nao alterar identidade da marca
+Nao alterar cores base
+Apenas melhorar hierarquia visual, escaneabilidade e destaque estrategico
+
+Diretrizes gerais
+Manter fundo azul escuro
+Manter rosa como cor de destaque
+Nao mudar tipografia global
+Nao mudar rotas nem funcionamento do site
+
+Ajustes solicitados
+
+Hero section
+Aumentar hierarquia visual do titulo principal
+Dar mais destaque ao subtitulo Antes de postar mais, e preciso entender melhor
+Adicionar leve espacamento entre titulo subtitulo e bloco de texto inicial
+Criar sensacao de respiro e autoridade logo no topo
+
+Bloco de introducao
+Manter o texto atual
+Aplicar melhor largura de leitura para evitar bloco muito largo
+Destacar visualmente a frase Nada de achismo Nada de promessa vazia
+Esse destaque pode usar cor rosa ou peso de fonte
+
+Secao Para quem e
+Manter o texto
+Aumentar espacamento vertical entre frases curtas
+Destacar visualmente a frase Essa analise e para voce
+Esse destaque deve funcionar como fechamento emocional da secao
+
+Secao O que analisamos
+Manter estrutura numerada
+Criar maior separacao visual entre os itens 1 2 3 4 5
+Aplicar leve contraste ou card sutil para cada bloco analisado
+Garantir que o usuario consiga escanear rapidamente cada topico
+
+Secao O que voce recebe
+Manter lista numerada
+Dar mais peso visual ao titulo da secao
+Usar icones simples ou hierarquia tipografica para reforcar entrega de valor
+Entrega em PDF ou documento digital deve aparecer como reforco visual final da lista
+
+Secao Prazo e investimento
+Manter texto e valor
+Destacar Investimento R$ 397,00 como decisao consciente e acessivel
+Usar contraste sutil ou box de destaque
+Nao parecer promocional
+
+Secao Por que comecar pela analise
+Manter texto
+Melhorar espacamento para leitura confortavel
+Garantir que a pergunta O perfil esta preparado para o proximo passo se destaque
+
+CTA final
+Manter botao Quero minha Analise de Perfil
+Garantir que seja o ponto de maior contraste visual da pagina
+Posicionar com espacamento generoso acima e abaixo
+Botao deve parecer decisao clara e segura
+
+Resultado esperado
+Pagina mais leve visualmente
+Melhor leitura em desktop e mobile
+Mais clareza de valor sem mudar a copy
+Sensacao de produto estrategico e profissional
