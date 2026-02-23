@@ -1,0 +1,104 @@
+Você é um copywriter e web designer focado em conversão
+
+Objetivo
+Atualizar a seção do site da Dig referente ao serviço Analise de Perfil
+Substituir o texto atual pela nova copy abaixo
+Manter layout e estilos existentes
+Apenas trocar o conteúdo textual
+Usar headings e parágrafos com boa escaneabilidade
+Não usar aspas
+Não usar listas com hífen
+Pode usar números 1 2 3 ou bullets com ponto
+Sem promessas vazias e sem garantir crescimento
+Tom profissional, direto e humano
+
+Nova copy para inserir no site
+
+Titulo
+Analise de Perfil Estrategica
+
+Subtitulo
+Antes de postar mais, e preciso entender melhor
+
+Bloco de abertura
+Se o seu perfil nao cresce, nao gera resposta ou nao transmite autoridade, o problema nem sempre e falta de conteudo. Na maioria das vezes e falta de clareza.
+A Analise de Perfil e uma leitura estrategica do seu Instagram para identificar o que esta travando seu crescimento, o que esta desalinhado no seu posicionamento e quais ajustes precisam ser feitos para gerar mais percepcao, coerencia e resultado.
+Nada de achismo. Nada de promessa vazia. Aqui voce entende, de forma objetiva, onde esta errando e como corrigir.
+
+Secao
+Para quem e
+
+Texto
+Este servico e ideal para empreendedores, criadores e marcas que ja produzem conteudo, mas sentem estagnacao.
+Tambem para quem nao sabe se o problema e estetica, posicionamento ou narrativa.
+E para quem pensa em investir em trafego ou social media, mas quer clareza antes.
+Se voce posta, mas nao cresce.
+Se o perfil parece bonito, mas nao comunica.
+Se o engajamento nao vira oportunidade.
+Essa analise e para voce.
+
+Secao
+O que analisamos
+
+Itens em lista numerada
+1 Estrutura do perfil
+Nome e bio
+Clareza de proposta
+Leitura rapida para novos visitantes
+
+2 Foto de perfil e identidade visual
+Coerencia com a marca
+Percepcao profissional
+Alinhamento visual com o posicionamento
+
+3 Conteudo publicado
+Tipos de post
+Consistencia
+Narrativa
+Alinhamento com o objetivo do perfil
+
+4 Engajamento e comportamento do publico
+O que gera resposta real
+O que passa despercebido
+Padroes de interacao
+
+5 Pontos de melhoria imediatos
+Ajustes simples que destravam percepcao
+O que mudar agora
+O que parar de fazer
+
+Secao
+O que voce recebe
+
+Itens em lista numerada
+1 Analise estrategica completa do perfil
+2 Relatorio claro e direto sem linguagem tecnica desnecessaria
+3 Diagnostico do que esta travando o perfil
+4 Lista de ajustes prioritarios
+5 Recomendacoes praticas de conteudo e posicionamento
+6 Direcionamento de proximos passos sem promessa vazia
+Entrega em PDF ou documento digital
+
+Secao
+Prazo e investimento
+
+Texto
+Prazo medio de entrega 3 a 5 dias uteis
+Investimento R$ 397,00
+
+Secao
+Por que comecar pela analise
+
+Texto
+Muitas pessoas investem mais tempo, mais postagens ou mais dinheiro em trafego sem antes entender o basico. O perfil esta preparado para o proximo passo
+A Analise de Perfil existe para evitar desperdicio de energia e investimento. Ela traz clareza e direcao antes da execucao.
+
+CTA
+Quero minha Analise de Perfil
+
+Instrucoes de implementacao
+Atualizar os componentes da pagina para refletir exatamente os titulos e textos acima
+Garantir que acentos e caracteres especiais sejam exibidos corretamente
+Manter responsividade e spacing consistente com o restante do site
+Se houver um botao, aplicar o CTA exatamente como escrito
+Não alterar rotas, não alterar cores, não alterar tipografia global
