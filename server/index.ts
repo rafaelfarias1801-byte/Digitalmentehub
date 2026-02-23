@@ -58,6 +58,18 @@ app.use((req, res, next) => {
 
   next();
 });
+app.get("/sitemap.xml", (_req, res) => {
+  res.setHeader("Content-Type", "application/xml; charset=utf-8");
+
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://digitalmentehub.com.br/</loc></url>
+  <url><loc>https://digitalmentehub.com.br/quem-somos</loc></url>
+  <url><loc>https://digitalmentehub.com.br/servicos</loc></url>
+  <url><loc>https://digitalmentehub.com.br/cases</loc></url>
+  <url><loc>https://digitalmentehub.com.br/contato</loc></url>
+</urlset>`);
+});
 
 (async () => {
   await registerRoutes(httpServer, app);
