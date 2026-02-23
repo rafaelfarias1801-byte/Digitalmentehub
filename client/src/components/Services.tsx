@@ -30,6 +30,7 @@ export default function Services() {
               </div>
               <h3 className="text-base text-white mb-2 font-semibold">{service.title}</h3>
               <p className="text-white/45 text-sm leading-relaxed">{service.description}</p>
+              {service.seoContext && <span className="sr-only">{service.seoContext}</span>}
             </motion.div>
           ))}
         </div>

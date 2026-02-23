@@ -1,0 +1,78 @@
+Você é um dev sênior. Quero melhorar o SEO do site https://digitalmentehub.com.br/ (projeto Replit com Vite + Express/TS) SEM alterar design, cores, fontes, espaçamentos, imagens, componentes visuais ou estrutura dos blocos. Não mexa no CSS, não altere classes, não reposicione elementos e não quebre seções existentes.
+
+OBJETIVO
+- Melhorar entendimento do Google (semântica e metadados) mantendo a mesma UI/UX.
+- Apenas adicionar/ajustar: <title>, meta description, canonical, Open Graph, Twitter cards, headings (H1/H2/H3) e textos de apoio “SEO-only” (visíveis ou discretos, mas sem afetar layout).
+
+REGRAS
+1) NÃO alterar estilos (CSS/Tailwind/etc). Não criar novos componentes visuais.
+2) Se precisar inserir texto para SEO, faça:
+   - como elementos sem impacto visual (ex.: sr-only) OU
+   - em blocos já existentes, no final do conteúdo, usando a mesma tipografia e sem mudar layout.
+3) Manter exatamente as seções e ordem da Home.
+4) Não alterar links do menu, imagens, ícones, botões e CTAs.
+5) Não remover nada existente.
+
+TAREFAS (FAÇA EM ORDEM)
+A) HEAD / METADADOS (global)
+- Garantir que a Home tenha:
+  - <title> único e descritivo
+  - <meta name="description"> (150–160 caracteres)
+  - <link rel="canonical" href="https://digitalmentehub.com.br/">
+  - Open Graph: og:title, og:description, og:url, og:type=website
+  - Twitter: twitter:card=summary_large_image, twitter:title, twitter:description
+- Se houver rota SPA, garantir que essas tags estejam no HTML base (index.html) ou no componente/arquivo que controla o head (ex.: react-helmet-async). Implementar a solução mais simples e segura sem mudar UI.
+
+Sugestões de conteúdo (pode ajustar levemente):
+TITLE: "Dig | Agência de Marketing Digital, Conteúdo e Performance"
+DESCRIPTION: "Agência de marketing digital focada em estratégia, conteúdo e performance. Transformamos presença online em crescimento real para marcas e empreendedores."
+OG/TW: usar os mesmos textos.
+
+B) SEMÂNTICA DE HEADINGS (HOME)
+- Garantir 1 único H1 na dobra principal (hero), sem mudar aparência:
+  - Se o texto grande atual não puder virar H1 sem afetar estilo, envolva com H1 mantendo a mesma classe.
+- Criar H2 para seções principais (sem mudar visual):
+  - “Marcas atendidas”
+  - “Quem somos”
+  - “Nossos Serviços”
+  - “Case de Sucesso”
+  - “Parceiros”
+  - “Fale Conosco”
+  - “Perguntas Frequentes”
+  - Footer/navegação (se aplicável)
+
+C) TEXTO DE CONTEXTO PARA SERVIÇOS (SEM MUDAR DESIGN)
+- Em cada card de serviço na seção “Nossos Serviços”, adicionar 1 frase curta de contexto SEO (mantendo mesmas classes do texto existente, sem alterar tamanho/estilo). Se não houver espaço sem quebrar layout, adicionar como texto “sr-only” dentro do card.
+Exemplos (ajuste conforme nomes reais dos cards):
+- Plano de Performance: "Gestão de redes sociais com estratégia, planejamento e otimização para crescimento consistente."
+- Criação e Produção de Conteúdo: "Conteúdo estratégico para Instagram e redes sociais com foco em posicionamento e conversão."
+- Tráfego Pago: "Campanhas no Google e Meta com planejamento, execução e otimização contínua."
+- Rótulos e Branding: "Identidade visual, branding e embalagens para fortalecer posicionamento e percepção de valor."
+- Criação de Sites: "Sites e landing pages rápidas, responsivas e pensadas para conversão e SEO."
+- Consultoria Estratégica para Empreendedores: "Consultoria para organizar marketing, posicionamento e plano de ação."
+- Análise de perfil: "Diagnóstico de Instagram com melhorias práticas de conteúdo, perfil e estratégia."
+- Design Gráfico: "Peças visuais para redes sociais, campanhas e materiais de marca."
+
+D) SEO LOCAL (DISCRETO, SEM ALTERAR LAYOUT)
+- Inserir 1 menção curta e natural (preferencialmente no “Fale Conosco” ou rodapé, sem mudar layout):
+  "Atendemos Curitiba e todo o Brasil."
+- Se houver endereço no rodapé, garantir que esteja em texto (não só imagem) e com formatação existente.
+
+E) IMAGENS (ALT TEXT)
+- Garantir que imagens relevantes tenham atributo alt descritivo (sem keyword stuffing).
+  Ex.: logos de marcas atendidas: alt="Logo INATE", etc.
+  Case INATE: alt="Case de sucesso INATE - crescimento no Instagram".
+
+F) CANONICAL E ROTA /SITEMAP
+- Não mexer na rota do sitemap já criada (/sitemap.xml).
+- Se existir robots.txt, manter.
+
+ENTREGÁVEIS
+1) Faça as alterações diretamente nos arquivos corretos (ex.: client/index.html, ou componente principal da Home, ou head manager).
+2) Liste exatamente quais arquivos foram alterados e o que foi feito em cada um.
+3) Garanta que o build continue funcionando e que nada no layout mude visualmente.
+
+IMPORTANTE
+- Se precisar escolher entre duas abordagens, escolha a que altera menos arquivos.
+- Não adicione bibliotecas pesadas sem necessidade.
+- Não remova nada existente.

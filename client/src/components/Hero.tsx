@@ -17,7 +17,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <img
           src="/brand/hero-bg.png"
-          alt=""
+          alt="Dig - Agência de marketing digital em Curitiba"
           className="w-full h-full object-cover"
           loading="eager"
         />

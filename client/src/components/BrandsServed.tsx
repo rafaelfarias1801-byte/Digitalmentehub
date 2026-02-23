@@ -14,18 +14,18 @@ import brandThaline from "@assets/Marcas_(3)_1771613465836.png";
 import brandAbarduzido from "@assets/Marcas_(4)_1771613521728.png";
 
 const brands = [
-  { src: brand4, alt: "Comuniquei" },
-  { src: brand5, alt: "Achados da Nina" },
-  { src: brand6, alt: "Carlos Cavalheiro" },
-  { src: brand7, alt: "Rhaissa Ament" },
-  { src: brand8, alt: "Alimentec" },
-  { src: brand1, alt: "Cite Nacibe" },
-  { src: brand2, alt: "Inate" },
-  { src: brandExpe, alt: "Expe." },
-  { src: brand9, alt: "Atâmara Empório Saudável" },
-  { src: brandTecas, alt: "Tecas" },
-  { src: brandThaline, alt: "Thaline Leticia" },
-  { src: brandAbarduzido, alt: "Abarduzido" },
+  { src: brand4, alt: "Logo Comuniquei - marca atendida pela Dig" },
+  { src: brand5, alt: "Logo Achados da Nina - marca atendida pela Dig" },
+  { src: brand6, alt: "Logo Carlos Cavalheiro - marca atendida pela Dig" },
+  { src: brand7, alt: "Logo Rhaissa Ament - marca atendida pela Dig" },
+  { src: brand8, alt: "Logo Alimentec - marca atendida pela Dig" },
+  { src: brand1, alt: "Logo Cite Nacibe - marca atendida pela Dig" },
+  { src: brand2, alt: "Logo INATE - marca atendida pela Dig" },
+  { src: brandExpe, alt: "Logo Expe - marca atendida pela Dig" },
+  { src: brand9, alt: "Logo Atâmara Empório Saudável - marca atendida pela Dig" },
+  { src: brandTecas, alt: "Logo Tecas - marca atendida pela Dig" },
+  { src: brandThaline, alt: "Logo Thaline Leticia - marca atendida pela Dig" },
+  { src: brandAbarduzido, alt: "Logo Abarduzido - marca atendida pela Dig" },
 ];
 
 export default function BrandsServed() {

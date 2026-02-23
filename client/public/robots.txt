@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://digitalmentehub.com.br/sitemap.xml

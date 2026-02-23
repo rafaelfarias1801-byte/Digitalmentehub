@@ -148,6 +148,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/5 text-left">
+          <span className="sr-only">Atendemos Curitiba e todo o Brasil.</span>
           <p className="text-white/30 text-xs">Copyright © 2025 | Todos os direitos reservados.</p>
           <p className="text-white/30 text-xs">Digitalmente Hub LTDA</p>
           <p className="text-white/30 text-xs">CNPJ: 61.499.882/0001-76</p>

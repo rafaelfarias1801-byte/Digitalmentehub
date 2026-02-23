@@ -21,12 +21,12 @@ export default function CaseStudy() {
         <div className="relative w-full">
           <img
             src={caseBg}
-            alt="Case de Sucesso - INATE"
+            alt="Case de sucesso INATE - crescimento no Instagram"
             className="w-full h-auto block"
           />
           <img
             src={inateLogo}
-            alt="INATE"
+            alt="Logo INATE"
             className="absolute top-3 left-4 w-14"
           />
         </div>
@@ -50,7 +50,7 @@ export default function CaseStudy() {
       <div className="hidden md:block relative w-full">
         <img
           src={caseBg}
-          alt="Case de Sucesso - INATE"
+          alt="Case de sucesso INATE - crescimento no Instagram"
           className="w-full h-auto block"
         />
 
@@ -75,7 +75,7 @@ export default function CaseStudy() {
             >
               <img
                 src={inateLogo}
-                alt="INATE"
+                alt="Logo INATE"
                 className="w-24 lg:w-28 mb-2"
               />
 
