@@ -1,0 +1,73 @@
+Atualize APENAS os textos do site (copy). Não altere layout, cores, fontes, espaçamentos, botões, ícones, imagens, estrutura de seções nem CSS. Não criar novas seções além do que já existe. Apenas substituir as escritas existentes pelos textos abaixo, mantendo os mesmos componentes.
+
+1) Atualizar preços dos 4 packs:
+Básico: R$ 447
+Intermediário: R$ 697
+Premium: R$ 897
+Diamante: R$ 1.297
+
+2) Atualizar textos dos cards dos 4 packs (título, subtítulo/descrição, lista de entregáveis, frase de ancoragem, texto auxiliar pequeno e CTA do botão). Manter o botão com o texto "Quero esse pack" em todos.
+
+CARD 1 - PACK BÁSICO
+Título: PACK BÁSICO
+Linha de apoio: Para começar com presença
+Descrição: Ideal para quem precisa manter o perfil ativo, com conteúdos bem apresentados, sem entrar em gestão ou estratégia aprofundada.
+Entregáveis (em lista):
+- 10 artes estáticas
+- 4 carrosséis (até 5 telas)
+- Textos claros e objetivos para acompanhar cada post
+Destaque/observação curta: Organização simples, entrega direta e organizada.
+Frase de ancoragem (em destaque): O essencial para não ficar parado.
+Texto auxiliar pequeno (se houver espaço abaixo): Indicado para perfis em fase inicial ou manutenção.
+Botão: Quero esse pack
+
+CARD 2 - PACK INTERMEDIÁRIO
+Título: PACK INTERMEDIÁRIO
+Linha de apoio: Mais conteúdo, mais consistência
+Descrição: Para marcas que já entenderam a importância de postar com frequência e querem mais volume de conteúdo pronto.
+Entregáveis (em lista):
+- 15 artes estáticas
+- 6 carrosséis (até 5 telas)
+- Textos persuasivos alinhados à comunicação da marca
+Destaque/observação curta: Mais ritmo e presença no feed.
+Frase de ancoragem (em destaque): Ideal para quem quer crescer com constância.
+Texto auxiliar pequeno (se houver espaço abaixo): Indicado para quem já tem rotina de postagens.
+Botão: Quero esse pack
+
+CARD 3 - PACK PREMIUM (marcar como "Mais escolhido" se já existir selo/label)
+Título: PACK PREMIUM
+Linha de apoio: O equilíbrio perfeito entre volume e organização
+Selo/label (se existir no layout): Mais escolhido
+Descrição: Pensado para quem quer um perfil ativo, profissional e visualmente consistente ao longo do mês.
+Entregáveis (em lista):
+- 20 artes estáticas
+- 8 carrosséis (até 5 telas)
+- Textos persuasivos estratégicos
+- Organização semanal dos conteúdos
+Destaque/observação curta: Presença constante com comunicação bem construída.
+Frase de ancoragem (em destaque): O plano ideal para quem leva o digital a sério.
+Texto auxiliar pequeno (se houver espaço abaixo): Indicado para quem quer constância sem contratar gestão.
+Botão: Quero esse pack
+
+CARD 4 - PACK DIAMANTE
+Título: PACK DIAMANTE
+Linha de apoio: Presença máxima no digital
+Descrição: Para marcas que precisam de alto volume de conteúdo e querem manter o feed sempre atualizado.
+Entregáveis (em lista):
+- 30 artes estáticas
+- 10 carrosséis (até 5 telas)
+- Comunicação alinhada ao posicionamento visual da marca
+Destaque/observação curta: Alta frequência, alto impacto visual.
+Frase de ancoragem (em destaque): Mais conteúdo. Mais impacto. Mais presença.
+Texto auxiliar pequeno (se houver espaço abaixo): Indicado para marcas com alta demanda de conteúdo.
+Botão: Quero esse pack
+
+3) Inserir um texto curto de blindagem (nota/rodapé/abaixo dos cards, no espaço que já existir para observações). Não criar seção nova se não existir; apenas substituir o texto atual de observação pelo texto abaixo:
+Importante: Os packs são focados na criação de conteúdo (arte + legenda). Não incluem gestão de perfil, estratégia contínua, acompanhamento de métricas ou interação diária. Para gestão completa e crescimento estratégico, oferecemos planos personalizados.
+
+4) Revisar para consistência:
+- Manter linguagem clara e objetiva
+- Não usar emojis
+- Manter capitalização dos títulos como acima
+- Garantir que os preços apareçam exatamente como informados
+- Não alterar nada além do texto

@@ -45,28 +45,31 @@ export default function PacksConteudo() {
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="inline-flex items-center gap-1 bg-brand-pink text-white text-xs px-3 py-1 rounded-md">
                       <Star className="w-3 h-3" />
-                      Popular
+                      Mais escolhido
                     </span>
                   </div>
                 )}
 
                 <h3 className="text-base text-white mb-1">{pack.name}</h3>
-                <p className="text-2xl md:text-3xl text-brand-orange mb-5">{pack.price}</p>
+                <p className="text-white/40 text-sm mb-3">{pack.subtitle}</p>
+                <p className="text-2xl md:text-3xl text-brand-orange mb-4">{pack.price}</p>
+                <p className="text-white/50 text-sm leading-relaxed mb-5">{pack.description}</p>
 
-                <ul className="space-y-3 mb-6 flex-1">
+                <ul className="space-y-3 mb-4 flex-1">
                   {pack.features.map((feat, fi) => (
                     <li key={fi} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
                       <span className="text-white/60 text-sm">{feat}</span>
                     </li>
                   ))}
-                  {pack.extras && (
-                    <li className="flex items-start gap-2.5">
-                      <span className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span className="text-white/35 text-xs italic">{pack.extras}</span>
-                    </li>
-                  )}
                 </ul>
+
+                {pack.extras && (
+                  <p className="text-white/35 text-xs mb-3">{pack.extras}</p>
+                )}
+
+                <p className="text-white/80 text-sm font-semibold mb-2">{pack.anchorPhrase}</p>
+                <p className="text-white/30 text-xs mb-5">{pack.auxiliaryText}</p>
 
                 <a
                   href={`https://wa.me/5541987907321?text=${encodeURIComponent(
@@ -87,6 +90,17 @@ export default function PacksConteudo() {
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-10 max-w-3xl mx-auto"
+          >
+            <p className="text-white/30 text-xs leading-relaxed text-center" data-testid="text-packs-disclaimer">
+              Importante: Os packs são focados na criação de conteúdo (arte + legenda). Não incluem gestão de perfil, estratégia contínua, acompanhamento de métricas ou interação diária. Para gestão completa e crescimento estratégico, oferecemos planos personalizados.
+            </p>
+          </motion.div>
         </div>
       </div>
       <Footer />
