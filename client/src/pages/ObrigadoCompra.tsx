@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
@@ -5,6 +6,24 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 
 export default function ObrigadoCompra() {
+  const notified = useRef(false);
+
+  useEffect(() => {
+    if (notified.current) return;
+    notified.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment_id") || params.get("collection_id") || undefined;
+    const status = params.get("status") || params.get("collection_status") || undefined;
+    const merchantOrderId = params.get("merchant_order_id") || undefined;
+
+    fetch("/api/payment-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId, status, merchantOrderId }),
+    }).catch(() => {});
+  }, []);
+
   return (
     <div className="bg-brand-navy min-h-screen">
       <Navbar />

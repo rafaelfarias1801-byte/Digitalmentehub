@@ -64,6 +64,81 @@ const contactTypeLabels: Record<string, string> = {
   outro: "Outro",
 };
 
+interface PaymentData {
+  paymentId?: string;
+  status?: string;
+  merchantOrderId?: string;
+}
+
+export async function sendPaymentNotification(payment: PaymentData) {
+  const gmail = await getUncachableGmailClient();
+
+  const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #e4552d; padding: 20px; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 22px;">Pagamento Confirmado - Digitalmente HUB</h1>
+      </div>
+      <div style="background: #f9f9f9; padding: 24px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
+        <p style="color: #333; font-size: 15px; margin-bottom: 16px;">Um cliente finalizou o pagamento via Mercado Pago e foi direcionado para a página de confirmação.</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #333; width: 180px;">Data/Hora:</td>
+            <td style="padding: 8px 0; color: #555;">${now}</td>
+          </tr>
+          ${payment.paymentId ? `
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #333;">ID do Pagamento:</td>
+            <td style="padding: 8px 0; color: #555;">${payment.paymentId}</td>
+          </tr>` : ''}
+          ${payment.status ? `
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #333;">Status:</td>
+            <td style="padding: 8px 0; color: #555;">${payment.status}</td>
+          </tr>` : ''}
+          ${payment.merchantOrderId ? `
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #333;">ID do Pedido:</td>
+            <td style="padding: 8px 0; color: #555;">${payment.merchantOrderId}</td>
+          </tr>` : ''}
+        </table>
+        <div style="margin-top: 20px; padding: 16px; background: #fff3e0; border-radius: 6px; border-left: 4px solid #e4552d;">
+          <p style="color: #333; margin: 0; font-size: 14px;">O cliente foi orientado a preencher o briefing em: <a href="https://tally.so/r/jaBQgJ" style="color: #e4552d;">https://tally.so/r/jaBQgJ</a></p>
+        </div>
+      </div>
+      <p style="color: #999; font-size: 12px; margin-top: 16px; text-align: center;">
+        Enviado automaticamente pelo site digitalmentehub.com.br
+      </p>
+    </div>
+  `;
+
+  const to = "digitalmente.oficial.mkt@gmail.com";
+  const subject = `Pagamento Confirmado - Digitalmente HUB`;
+
+  const message = [
+    `To: ${to}`,
+    `Subject: =?UTF-8?B?${Buffer.from(subject).toString('base64')}?=`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=UTF-8',
+    '',
+    htmlBody,
+  ].join('\r\n');
+
+  const encodedMessage = Buffer.from(message)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: {
+      raw: encodedMessage,
+    },
+  });
+}
+
 export async function sendLeadNotification(lead: LeadData) {
   const gmail = await getUncachableGmailClient();
 

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertLeadSchema } from "@shared/schema";
 import { ZodError, z } from "zod";
-import { sendLeadNotification } from "./gmail";
+import { sendLeadNotification, sendPaymentNotification } from "./gmail";
 
 const serverLeadSchema = insertLeadSchema.extend({
   name: z.string().min(2, "Nome é obrigatório"),
@@ -17,6 +17,17 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.post("/api/payment-notification", async (req, res) => {
+    try {
+      const { paymentId, status, merchantOrderId } = req.body || {};
+      await sendPaymentNotification({ paymentId, status, merchantOrderId });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Erro ao enviar notificação de pagamento:", error);
+      res.json({ success: false });
+    }
+  });
+
   app.post("/api/lead", async (req, res) => {
     try {
       const data = serverLeadSchema.parse(req.body);
