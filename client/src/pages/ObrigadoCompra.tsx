@@ -1,12 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
+import { Mail, Phone } from "lucide-react";
 
 export default function ObrigadoCompra() {
   const notified = useRef(false);
+  const [email, setEmail] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (notified.current) return;
@@ -23,6 +28,25 @@ export default function ObrigadoCompra() {
       body: JSON.stringify({ paymentId, status, merchantOrderId }),
     }).catch(() => {});
   }, []);
+
+  const handleSubmit = async () => {
+    if (!email && !whatsapp) return;
+    setSending(true);
+
+    try {
+      await fetch("/api/payment-customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, whatsapp }),
+      });
+      setSent(true);
+      window.open("https://tally.so/r/jaBQgJ", "_blank");
+    } catch {
+      window.open("https://tally.so/r/jaBQgJ", "_blank");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="bg-brand-navy min-h-screen">
@@ -51,17 +75,68 @@ export default function ObrigadoCompra() {
               </p>
             </div>
 
-            <div className="mt-10">
-              <a
-                href="https://tally.so/r/jaBQgJ"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-10 py-4 rounded-full text-[15px] font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.03] shadow-lg shadow-brand-orange/20"
-                data-testid="button-preencher-briefing"
-              >
-                Preencher briefing
-              </a>
-            </div>
+            {!sent ? (
+              <div className="mt-10 max-w-md mx-auto">
+                <p className="text-white/50 text-sm mb-5">
+                  Informe seus dados para receber o link do briefing e acompanhar sua produção:
+                </p>
+                <div className="space-y-3 mb-6">
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type="email"
+                      placeholder="Seu melhor e-mail"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg pl-11 pr-4 py-3.5 text-white text-sm placeholder:text-white/25 outline-none focus:border-brand-orange/40 transition-colors"
+                      data-testid="input-email-compra"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      type="tel"
+                      placeholder="Seu WhatsApp (com DDD)"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] rounded-lg pl-11 pr-4 py-3.5 text-white text-sm placeholder:text-white/25 outline-none focus:border-brand-orange/40 transition-colors"
+                      data-testid="input-whatsapp-compra"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={sending || (!email && !whatsapp)}
+                  className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-10 py-4 rounded-full text-[15px] font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.03] shadow-lg shadow-brand-orange/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  data-testid="button-preencher-briefing"
+                >
+                  {sending ? "Enviando..." : "Preencher briefing"}
+                </button>
+
+                <p className="text-white/20 text-xs mt-4">
+                  Ao clicar, você será redirecionado para o briefing e receberá o link por e-mail.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-10">
+                <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6 max-w-md mx-auto mb-6">
+                  <p className="text-white/60 text-sm">
+                    Enviamos o link do briefing para o seu e-mail. Nossa equipe entrará em contato pelo WhatsApp informado.
+                  </p>
+                </div>
+
+                <a
+                  href="https://tally.so/r/jaBQgJ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-10 py-4 rounded-full text-[15px] font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.03] shadow-lg shadow-brand-orange/20"
+                  data-testid="button-preencher-briefing-again"
+                >
+                  Abrir briefing novamente
+                </a>
+              </div>
+            )}
 
             <p className="text-white/30 text-xs leading-relaxed mt-6 max-w-md mx-auto" data-testid="text-obrigado-compra-auxiliar">
               Se você não puder preencher agora, salve este link para concluir depois:{" "}

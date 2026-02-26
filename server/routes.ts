@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertLeadSchema } from "@shared/schema";
 import { ZodError, z } from "zod";
-import { sendLeadNotification, sendPaymentNotification } from "./gmail";
+import { sendLeadNotification, sendPaymentNotification, sendCustomerBriefingEmail, sendCustomerDataToAgency } from "./gmail";
 
 const serverLeadSchema = insertLeadSchema.extend({
   name: z.string().min(2, "Nome é obrigatório"),
@@ -24,6 +24,27 @@ export async function registerRoutes(
       res.json({ success: true });
     } catch (error) {
       console.error("Erro ao enviar notificação de pagamento:", error);
+      res.json({ success: false });
+    }
+  });
+
+  app.post("/api/payment-customer", async (req, res) => {
+    try {
+      const { email, whatsapp } = req.body || {};
+
+      const results = await Promise.allSettled([
+        email ? sendCustomerBriefingEmail({ email, whatsapp }) : Promise.resolve(),
+        (email || whatsapp) ? sendCustomerDataToAgency({ email, whatsapp }) : Promise.resolve(),
+      ]);
+
+      const errors = results.filter((r) => r.status === "rejected");
+      if (errors.length > 0) {
+        console.error("Erro parcial ao enviar emails do cliente:", errors);
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Erro ao processar dados do cliente:", error);
       res.json({ success: false });
     }
   });
