@@ -56,16 +56,16 @@ export default function PacksConteudo() {
 
                 <ul className="space-y-3 flex-1">
                   {pack.features.map((feat, fi) => (
-                    <li key={fi} className="flex items-start gap-2.5">
-                      <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
-                      <span className={`text-sm ${feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
+                    <li key={fi} className={`flex items-start gap-2.5 ${feat.muted ? "mt-1" : ""}`}>
+                      {feat.muted ? (
+                        <span className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
+                      )}
+                      <span className={`text-sm ${feat.muted ? "text-white/35 italic text-xs" : feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
                     </li>
                   ))}
                 </ul>
-
-                {pack.extras && (
-                  <p className="text-white/35 text-xs italic mt-4 mb-1">{pack.extras}</p>
-                )}
 
                 <p className="text-white/80 text-sm font-semibold mt-4 mb-5">{pack.anchorPhrase}</p>
 
