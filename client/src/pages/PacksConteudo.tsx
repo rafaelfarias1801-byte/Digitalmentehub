@@ -52,10 +52,9 @@ export default function PacksConteudo() {
 
                 <h3 className="text-base text-white mb-1">{pack.name}</h3>
                 <p className="text-white/40 text-sm mb-3">{pack.subtitle}</p>
-                <p className="text-2xl md:text-3xl text-brand-orange mb-4">{pack.price}</p>
-                <p className="text-white/50 text-sm leading-relaxed mb-5">{pack.description}</p>
+                <p className="text-2xl md:text-3xl text-brand-orange mb-5">{pack.price}</p>
 
-                <ul className="space-y-3 mb-4 flex-1">
+                <ul className="space-y-3 mb-5 flex-1">
                   {pack.features.map((feat, fi) => (
                     <li key={fi} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
@@ -64,12 +63,7 @@ export default function PacksConteudo() {
                   ))}
                 </ul>
 
-                {pack.extras && (
-                  <p className="text-white/35 text-xs mb-3">{pack.extras}</p>
-                )}
-
-                <p className="text-white/80 text-sm font-semibold mb-2">{pack.anchorPhrase}</p>
-                <p className="text-white/30 text-xs mb-5">{pack.auxiliaryText}</p>
+                <p className="text-white/80 text-sm font-semibold mb-5">{pack.anchorPhrase}</p>
 
                 <a
                   href={`https://wa.me/5541987907321?text=${encodeURIComponent(
@@ -98,7 +92,7 @@ export default function PacksConteudo() {
             className="mt-10 max-w-3xl mx-auto"
           >
             <p className="text-white/30 text-xs leading-relaxed text-center" data-testid="text-packs-disclaimer">
-              Importante: Os packs são focados na criação de conteúdo (arte + legenda). Não incluem gestão de perfil, estratégia contínua, acompanhamento de métricas ou interação diária. Para gestão completa e crescimento estratégico, oferecemos planos personalizados.
+              Importante: Os packs são focados na criação de conteúdo (arte + legenda). Não incluem gestão de perfil, estratégia contínua, acompanhamento de métricas ou interação diária. Para marcas que buscam crescimento estratégico e gestão completa, oferecemos planos personalizados.
             </p>
           </motion.div>
         </div>

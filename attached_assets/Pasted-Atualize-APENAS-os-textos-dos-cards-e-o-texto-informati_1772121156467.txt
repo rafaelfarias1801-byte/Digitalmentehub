@@ -1,0 +1,108 @@
+Atualize APENAS os textos dos cards e o texto informativo abaixo deles. 
+Não altere layout, cores, fontes, tamanhos, ícones, botões, espaçamentos, CSS ou estrutura do site. 
+Apenas substitua os textos existentes pelos textos abaixo.
+
+====================================
+1) PREÇOS DOS PACKS
+====================================
+Básico: R$ 447
+Intermediário: R$ 697
+Premium: R$ 897
+Diamante: R$ 1.297
+
+====================================
+2) TEXTOS ENXUTOS DOS CARDS
+====================================
+
+CARD 1 — PACK BÁSICO
+Título: PACK BÁSICO
+Subtítulo: Para começar com presença
+Preço: R$ 447
+
+Lista de entregáveis:
+- 10 artes estáticas
+- 4 carrosséis (até 5 telas)
+- Textos claros e objetivos para acompanhar cada post
+- Artes editáveis: não inclusas
+
+Frase de ancoragem (em destaque):
+O essencial para não ficar parado.
+
+Botão:
+Quero esse pack
+
+------------------------------------
+
+CARD 2 — PACK INTERMEDIÁRIO
+Título: PACK INTERMEDIÁRIO
+Subtítulo: Mais conteúdo, mais consistência
+Preço: R$ 697
+
+Lista de entregáveis:
+- 15 artes estáticas
+- 6 carrosséis (até 5 telas)
+- Textos persuasivos alinhados à comunicação da marca
+- Artes editáveis: não inclusas
+
+Frase de ancoragem (em destaque):
+Ideal para quem quer crescer com constância.
+
+Botão:
+Quero esse pack
+
+------------------------------------
+
+CARD 3 — PACK PREMIUM
+Título: PACK PREMIUM
+Subtítulo: O equilíbrio perfeito entre volume e organização
+Selo/Label (se já existir): Mais escolhido
+Preço: R$ 897
+
+Lista de entregáveis:
+- 20 artes estáticas
+- 8 carrosséis (até 5 telas)
+- Textos persuasivos estratégicos
+- Organização semanal dos conteúdos
+- Inclui acesso às artes editáveis
+
+Frase de ancoragem (em destaque):
+O plano ideal para quem leva o digital a sério.
+
+Botão:
+Quero esse pack
+
+------------------------------------
+
+CARD 4 — PACK DIAMANTE
+Título: PACK DIAMANTE
+Subtítulo: Presença máxima no digital
+Preço: R$ 1.297
+
+Lista de entregáveis:
+- 30 artes estáticas
+- 10 carrosséis (até 5 telas)
+- Textos persuasivos alinhados ao posicionamento da marca
+- Organização semanal dos conteúdos
+- Inclui acesso às artes editáveis
+
+Frase de ancoragem (em destaque):
+Mais conteúdo. Mais impacto. Mais presença.
+
+Botão:
+Quero esse pack
+
+====================================
+3) TEXTO GERAL (FORA DOS CARDS) 
+====================================
+Substituir o texto informativo existente abaixo dos cards por:
+
+Importante: Os packs são focados na criação de conteúdo (arte + legenda). Não incluem gestão de perfil, estratégia contínua, acompanhamento de métricas ou interação diária. Para "marcas que buscam crescimento estratégico e gestão completa, oferecemos planos personalizados." 
+
+====================================
+4) REGRAS FINAIS
+====================================
+- Manter exatamente os textos acima
+- Não adicionar novos textos
+- Não remover botões
+- Não alterar ordem dos cards
+- Não modificar nada além do conteúdo textual
