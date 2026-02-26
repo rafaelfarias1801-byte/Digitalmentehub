@@ -122,7 +122,7 @@ export default function ObrigadoCompra() {
               <div className="mt-10">
                 <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6 max-w-md mx-auto mb-6">
                   <p className="text-white/60 text-sm">
-                    Enviamos o link do briefing para o seu e-mail. Nossa equipe entrará em contato pelo WhatsApp informado.
+                    Enviamos o link do briefing para o seu e-mail.
                   </p>
                 </div>
 
