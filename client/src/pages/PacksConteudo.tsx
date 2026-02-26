@@ -54,7 +54,7 @@ export default function PacksConteudo() {
                 <p className="text-white/40 text-sm mb-3">{pack.subtitle}</p>
                 <p className="text-2xl md:text-3xl text-brand-orange mb-5">{pack.price}</p>
 
-                <ul className="space-y-3 mb-5 flex-1">
+                <ul className="space-y-3 flex-1">
                   {pack.features.map((feat, fi) => (
                     <li key={fi} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
@@ -63,7 +63,11 @@ export default function PacksConteudo() {
                   ))}
                 </ul>
 
-                <p className="text-white/80 text-sm font-semibold mb-5">{pack.anchorPhrase}</p>
+                {pack.extras && (
+                  <p className="text-white/35 text-xs italic mt-4 mb-1">{pack.extras}</p>
+                )}
+
+                <p className="text-white/80 text-sm font-semibold mt-4 mb-5">{pack.anchorPhrase}</p>
 
                 <a
                   href={`https://wa.me/5541987907321?text=${encodeURIComponent(
