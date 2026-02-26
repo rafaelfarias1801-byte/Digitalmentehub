@@ -2,8 +2,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion } from "framer-motion";
-import { FaWhatsapp } from "react-icons/fa";
 import { Check, Star } from "lucide-react";
+import { Link } from "wouter";
 import { packs } from "../data/packs";
 
 export default function PacksConteudo() {
@@ -69,12 +69,8 @@ export default function PacksConteudo() {
 
                 <p className="text-white/80 text-sm font-semibold mt-4 mb-5">{pack.anchorPhrase}</p>
 
-                <a
-                  href={`https://wa.me/5541987907321?text=${encodeURIComponent(
-                    `Olá! Tenho interesse no ${pack.name}. Pode me contar mais?`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={`/checkout-${pack.id}`}
                   className={`inline-flex items-center justify-center gap-2 w-full py-3 rounded-md text-sm transition-all duration-200 ${
                     pack.highlight
                       ? "bg-brand-orange text-white"
@@ -82,9 +78,8 @@ export default function PacksConteudo() {
                   }`}
                   data-testid={`button-pack-${pack.id}`}
                 >
-                  <FaWhatsapp />
                   Quero esse pack
-                </a>
+                </Link>
               </motion.div>
             ))}
           </div>

@@ -1,0 +1,71 @@
+Crie 4 novas rotas/páginas de checkout dentro do site existente, mantendo exatamente o mesmo layout, cores e fontes do site atual (header, menu, fundo, botões e estilo). Não altere páginas existentes. Apenas adicionar as novas rotas e linkar os botões da seção de packs para essas rotas.
+
+Objetivo do funil:
+Página de Packs (/produtos ou seção atual) -> Checkout dentro do site (/checkout-basico etc.) -> Pagamento Mercado Pago (via botão embed) -> Redirecionamento do MP para /obrigado-compra (já existe) -> Botão "Preencher briefing" abrindo o Tally externo -> Tally redireciona para /obrigado-briefing (já existe)
+
+1) Rotas novas a criar:
+- /checkout-basico
+- /checkout-intermediario
+- /checkout-premium
+- /checkout-diamante
+
+2) Em cada página de checkout:
+- Título grande: "Checkout do Pack [Básico/Intermediário/Premium/Diamante]"
+- Subtítulo curto: "Pagamento seguro via Mercado Pago. Após o pagamento, você será direcionado para preencher o briefing."
+- Um card central (mesmo estilo dos cards do site) com:
+  - Nome do pack
+  - Lista curta de entregáveis (igual aparece nos cards atuais)
+  - Preço do pack
+- Inserir o botão de pagamento do Mercado Pago (embed) logo abaixo do resumo do pack
+- Texto pequeno abaixo do botão: "Se você tiver qualquer problema no pagamento, fale com a gente pelo WhatsApp."
+- Botão secundário: "Voltar para os packs" que leva para a seção/página de packs existente (usar o mesmo caminho atual do menu "Produtos")
+
+3) Embeds (colar exatamente como estão, sem alterar nada):
+- Básico:
+<script src="https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js"
+data-preference-id="3035532652-2c14a7e7-188a-45bf-983a-4d9b7e34b3bd" data-source="button">
+</script>
+
+- Intermediário:
+<script src="https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js"
+data-preference-id="3035532652-7925d708-1102-4fe4-9e13-3220d9148e6b" data-source="button">
+</script>
+
+- Premium:
+<script src="https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js"
+data-preference-id="3035532652-ee68e755-9433-4ae6-bd27-8c3b8158040c" data-source="button">
+</script>
+
+- Diamante:
+<script src="https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js"
+data-preference-id="3035532652-fa82901e-8c1e-46dd-ab68-044cf8948c7a" data-source="button">
+</script>
+
+4) Preços e entregáveis a exibir em cada checkout (iguais aos cards):
+- Básico: R$ 447,00 | 10 artes estáticas | 4 carrosséis (até 5 telas) | Textos desenvolvidos para cada post | Artes editáveis: não inclusas
+- Intermediário: R$ 697,00 | 15 artes estáticas | 6 carrosséis (até 5 telas) | Textos desenvolvidos para cada post | Artes editáveis: não inclusas
+- Premium: R$ 897,00 | 20 artes estáticas | 8 carrosséis (até 5 telas) | Textos desenvolvidos para cada post | Organização semanal dos conteúdos | Inclui acesso às artes editáveis
+- Diamante: R$ 1.297,00 | 25 artes estáticas | 10 carrosséis (até 5 telas) | Textos desenvolvidos para cada post | Organização semanal dos conteúdos | Identidade visual para o perfil | Link para a bio personalizado | Inclui acesso às artes editáveis
+
+5) Linkar botões "Quero esse pack" dos cards atuais:
+- Card Básico -> /checkout-basico
+- Card Intermediário -> /checkout-intermediario
+- Card Premium -> /checkout-premium
+- Card Diamante -> /checkout-diamante
+
+6) SEO/título:
+- Definir title de cada página como:
+  - "Checkout Pack Básico | Digitalmente Hub"
+  - "Checkout Pack Intermediário | Digitalmente Hub"
+  - "Checkout Pack Premium | Digitalmente Hub"
+  - "Checkout Pack Diamante | Digitalmente Hub"
+
+7) Garantir responsivo (mobile):
+- Card central com largura adequada (max-width)
+- Botão do Mercado Pago não deve quebrar layout
+- Espaçamentos iguais ao padrão do site
+
+Entregar:
+- Implementação completa das 4 rotas
+- Alteração mínima nos botões atuais para apontar para as rotas
+- Sem alterar cores, fontes, componentes globais ou layout das páginas já existentes

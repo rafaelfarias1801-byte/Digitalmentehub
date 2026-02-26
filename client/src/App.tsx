@@ -10,6 +10,7 @@ import Consultoria from "@/pages/Consultoria";
 import AnaliseInstagram from "@/pages/AnaliseInstagram";
 import ObrigadoBriefing from "@/pages/ObrigadoBriefing";
 import ObrigadoCompra from "@/pages/ObrigadoCompra";
+import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,10 @@ function Router() {
       <Route path="/produtos/analise-instagram" component={AnaliseInstagram} />
       <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
       <Route path="/obrigado-compra" component={ObrigadoCompra} />
+      <Route path="/checkout-basico">{() => <Checkout packId="basico" />}</Route>
+      <Route path="/checkout-intermediario">{() => <Checkout packId="intermediario" />}</Route>
+      <Route path="/checkout-premium">{() => <Checkout packId="premium" />}</Route>
+      <Route path="/checkout-diamante">{() => <Checkout packId="diamante" />}</Route>
       <Route component={NotFound} />
     </Switch>
   );
