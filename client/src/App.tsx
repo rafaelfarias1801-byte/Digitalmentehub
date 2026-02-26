@@ -8,6 +8,7 @@ import Produtos from "@/pages/Produtos";
 import PacksConteudo from "@/pages/PacksConteudo";
 import Consultoria from "@/pages/Consultoria";
 import AnaliseInstagram from "@/pages/AnaliseInstagram";
+import ObrigadoBriefing from "@/pages/ObrigadoBriefing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/produtos/packs" component={PacksConteudo} />
       <Route path="/produtos/consultoria" component={Consultoria} />
       <Route path="/produtos/analise-instagram" component={AnaliseInstagram} />
+      <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
       <Route component={NotFound} />
     </Switch>
   );
