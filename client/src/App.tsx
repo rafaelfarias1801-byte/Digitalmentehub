@@ -9,6 +9,7 @@ import PacksConteudo from "@/pages/PacksConteudo";
 import Consultoria from "@/pages/Consultoria";
 import AnaliseInstagram from "@/pages/AnaliseInstagram";
 import ObrigadoBriefing from "@/pages/ObrigadoBriefing";
+import ObrigadoCompra from "@/pages/ObrigadoCompra";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/produtos/consultoria" component={Consultoria} />
       <Route path="/produtos/analise-instagram" component={AnaliseInstagram} />
       <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
+      <Route path="/obrigado-compra" component={ObrigadoCompra} />
       <Route component={NotFound} />
     </Switch>
   );
