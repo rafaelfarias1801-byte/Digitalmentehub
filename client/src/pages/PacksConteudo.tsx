@@ -58,7 +58,7 @@ export default function PacksConteudo() {
                   {pack.features.map((feat, fi) => (
                     <li key={fi} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
-                      <span className="text-white/60 text-sm">{feat}</span>
+                      <span className={`text-sm ${feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
                     </li>
                   ))}
                 </ul>
