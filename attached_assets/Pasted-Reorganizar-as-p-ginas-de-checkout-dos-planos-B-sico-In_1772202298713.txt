@@ -1,0 +1,160 @@
+Reorganizar as páginas de checkout dos planos Básico, Intermediário, Premium e Diamante com foco em conversão.
+
+OBJETIVO
+Colocar o botão de pagamento imediatamente abaixo do card do plano e posicionar o FAQ abaixo como suporte de decisão, não como bloqueio.
+
+1️⃣ REORGANIZAÇÃO DA ESTRUTURA
+
+Nova ordem obrigatória:
+
+Card do plano com descrição e preço
+
+Botão Mercado Pago imediatamente abaixo do card
+
+Texto pequeno de segurança abaixo do botão
+
+Microcopy de dúvida direcionando para o FAQ
+
+Seção de FAQ
+
+Botão Mercado Pago repetido no final da página
+
+2️⃣ MICROCOPY ABAIXO DO BOTÃO
+
+Inserir abaixo do botão principal:
+
+Pagamento processado com segurança pelo Mercado Pago.
+Após a confirmação, você será direcionado para o briefing.
+
+Inserir abaixo disso:
+
+Tem alguma dúvida antes de finalizar?
+Leia as perguntas frequentes abaixo e feche com segurança.
+
+3️⃣ CORRIGIR FAQ PARA CADA PLANO
+
+IMPORTANTE
+Cada plano deve ter respostas específicas.
+Não apenas alterar a primeira pergunta.
+Todas as respostas devem refletir exatamente o que cada plano inclui.
+
+🔵 PACK BÁSICO
+
+Artes editáveis: NÃO INCLUI
+
+Perguntas e respostas:
+
+O que eu recebo exatamente no PACK BÁSICO
+10 artes estáticas, 4 carrosséis (até 5 telas) e textos desenvolvidos para cada post.
+
+As artes são editáveis
+Não. As peças são entregues prontas para publicação.
+
+Organização semanal está inclusa
+Não. Organização estratégica está disponível a partir do Premium.
+
+Inclui identidade visual
+Não. Trabalhamos com sua identidade atual.
+
+🔵 PACK INTERMEDIÁRIO
+
+Artes editáveis: NÃO INCLUI
+
+O que eu recebo exatamente no PACK INTERMEDIÁRIO
+15 artes estáticas, 6 carrosséis (até 5 telas) e textos desenvolvidos para cada post.
+
+As artes são editáveis
+Não. As peças são entregues prontas para publicação.
+
+Organização semanal está inclusa
+Não. Organização estratégica está disponível a partir do Premium.
+
+Inclui identidade visual
+Não. Mantemos a identidade já existente.
+
+🟣 PACK PREMIUM
+
+Artes editáveis: SIM INCLUI
+
+O que eu recebo exatamente no PACK PREMIUM
+20 artes estáticas, 8 carrosséis (até 5 telas), textos desenvolvidos para cada post e organização semanal dos conteúdos.
+
+As artes são editáveis
+Sim. O plano Premium inclui acesso às artes editáveis.
+
+Organização semanal está inclusa
+Sim. Estruturamos a distribuição estratégica dos conteúdos ao longo da semana.
+
+Inclui identidade visual
+Não. A criação de identidade visual está inclusa no Diamante.
+
+🟡 PACK DIAMANTE
+
+Artes editáveis: SIM INCLUI
+
+O que eu recebo exatamente no PACK DIAMANTE
+25 artes estáticas, 10 carrosséis (até 5 telas), textos desenvolvidos, organização semanal dos conteúdos, identidade visual para o perfil e link de bio personalizado.
+
+As artes são editáveis
+Sim. O plano Diamante inclui acesso às artes editáveis.
+
+Organização semanal está inclusa
+Sim. Conteúdos organizados estrategicamente por semana.
+
+Inclui identidade visual
+Sim. Desenvolvemos identidade visual alinhada ao seu posicionamento.
+
+Inclui link personalizado
+Sim. Criamos link de bio personalizado para estruturar sua presença digital.
+
+4️⃣ PADRONIZAÇÃO DAS PERGUNTAS EM TODOS OS PLANOS
+
+Manter estas perguntas em todos os planos, mas adaptar respostas conforme acima:
+
+O que eu recebo exatamente neste plano
+
+O que acontece depois do pagamento
+
+Em quanto tempo recebo o material
+
+Posso pedir ajustes
+
+As artes são editáveis
+
+Vocês fazem a postagem no meu perfil
+
+Serve para qualquer nicho
+
+Preciso já ter identidade visual
+
+Posso parcelar
+
+Esse pack vai fazer meu perfil crescer
+
+IMPORTANTE
+As respostas devem mudar conforme o plano.
+Não reutilizar texto incorreto.
+
+5️⃣ GATILHO FINAL ANTES DO SEGUNDO BOTÃO
+
+Adicionar antes do botão final:
+
+Pronto para sair do improviso e estruturar sua presença digital?
+
+Botão Mercado Pago novamente.
+
+6️⃣ REGRAS TÉCNICAS
+
+Manter layout atual
+
+Não alterar identidade visual
+
+Manter acordeão com apenas um item aberto por vez
+
+Garantir responsividade
+
+Não usar bibliotecas externas
+
+Não duplicar conteúdo incorreto
+
+Garantir que cada página use o FAQ correspondente ao plano correto

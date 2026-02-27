@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ShieldCheck, Clock, MessageCircle, Plus, Minus } from "lucide-react";
+import { Check, Plus, Minus } from "lucide-react";
 import { Link } from "wouter";
 import { FaWhatsapp } from "react-icons/fa";
 import { packs } from "../data/packs";
@@ -29,55 +29,65 @@ const displayNames: Record<string, string> = {
   diamante: "Diamante",
 };
 
-function getFaqs(packName: string) {
-  return [
-    {
-      q: `O que eu recebo exatamente no ${packName}?`,
-      a: (() => {
-        const pack = packs.find(p => p.name === packName);
-        if (!pack) return "Consulte os detalhes do pack acima.";
-        const items = pack.features.filter(f => !f.muted).map(f => f.text.toLowerCase()).join(", ");
-        return `Você recebe ${items}. É o essencial para começar com presença e consistência.`;
-      })(),
-    },
-    {
-      q: "O que acontece depois do pagamento?",
-      a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário.",
-    },
-    {
-      q: "Em quanto tempo eu recebo o material?",
-      a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido.",
-    },
-    {
-      q: "Posso pedir ajustes?",
-      a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa.",
-    },
-    {
-      q: "As artes são editáveis?",
-      a: "Não. As peças são entregues prontas para publicar. Se precisar de arquivos editáveis, temos a opção de upgrade.",
-    },
-    {
-      q: "Vocês fazem a postagem no meu perfil?",
-      a: "Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, oferecemos planos mensais.",
-    },
-    {
-      q: "Serve para qualquer nicho?",
-      a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post.",
-    },
-    {
-      q: "Preciso já ter identidade visual?",
-      a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho.",
-    },
-    {
-      q: "Posso parcelar?",
-      a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento.",
-    },
-    {
-      q: "Esse pack vai fazer meu perfil crescer?",
-      a: "Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua.",
-    },
-  ];
-}
+const packFaqs: Record<string, { q: string; a: string }[]> = {
+  basico: [
+    { q: "O que eu recebo exatamente no PACK BÁSICO?", a: "10 artes estáticas, 4 carrosséis (até 5 telas) e textos desenvolvidos para cada post." },
+    { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
+    { q: "As artes são editáveis?", a: "Não. As peças são entregues prontas para publicação." },
+    { q: "Organização semanal está inclusa?", a: "Não. Organização estratégica está disponível a partir do Premium." },
+    { q: "Inclui identidade visual?", a: "Não. Trabalhamos com sua identidade atual." },
+    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, oferecemos planos mensais." },
+    { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
+    { q: "Preciso já ter identidade visual?", a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho." },
+    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua." },
+  ],
+  intermediario: [
+    { q: "O que eu recebo exatamente no PACK INTERMEDIÁRIO?", a: "15 artes estáticas, 6 carrosséis (até 5 telas) e textos desenvolvidos para cada post." },
+    { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
+    { q: "As artes são editáveis?", a: "Não. As peças são entregues prontas para publicação." },
+    { q: "Organização semanal está inclusa?", a: "Não. Organização estratégica está disponível a partir do Premium." },
+    { q: "Inclui identidade visual?", a: "Não. Mantemos a identidade já existente." },
+    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, oferecemos planos mensais." },
+    { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
+    { q: "Preciso já ter identidade visual?", a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho." },
+    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua." },
+  ],
+  premium: [
+    { q: "O que eu recebo exatamente no PACK PREMIUM?", a: "20 artes estáticas, 8 carrosséis (até 5 telas), textos desenvolvidos para cada post e organização semanal dos conteúdos." },
+    { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
+    { q: "As artes são editáveis?", a: "Sim. O plano Premium inclui acesso às artes editáveis." },
+    { q: "Organização semanal está inclusa?", a: "Sim. Estruturamos a distribuição estratégica dos conteúdos ao longo da semana." },
+    { q: "Inclui identidade visual?", a: "Não. A criação de identidade visual está inclusa no Diamante." },
+    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos + organização semanal. Para gestão e postagem, oferecemos planos mensais." },
+    { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
+    { q: "Preciso já ter identidade visual?", a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho." },
+    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele organiza sua comunicação, melhora sua presença com consistência visual e texto alinhado, e estrutura seus conteúdos semanalmente. Crescimento depende também de frequência, oferta e estratégia contínua." },
+  ],
+  diamante: [
+    { q: "O que eu recebo exatamente no PACK DIAMANTE?", a: "25 artes estáticas, 10 carrosséis (até 5 telas), textos desenvolvidos, organização semanal dos conteúdos, identidade visual para o perfil e link de bio personalizado." },
+    { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
+    { q: "As artes são editáveis?", a: "Sim. O plano Diamante inclui acesso às artes editáveis." },
+    { q: "Organização semanal está inclusa?", a: "Sim. Conteúdos organizados estrategicamente por semana." },
+    { q: "Inclui identidade visual?", a: "Sim. Desenvolvemos identidade visual alinhada ao seu posicionamento." },
+    { q: "Inclui link personalizado?", a: "Sim. Criamos link de bio personalizado para estruturar sua presença digital." },
+    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação completa + organização + identidade visual. Para gestão e postagem, oferecemos planos mensais." },
+    { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
+    { q: "Preciso já ter identidade visual?", a: "Não. Neste pack, criamos a identidade visual para o seu perfil, alinhada ao seu posicionamento." },
+    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele estrutura toda sua presença digital: comunicação, identidade visual, organização semanal e link de bio. Crescimento depende também de frequência, oferta e estratégia contínua." },
+  ],
+};
 
 function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -126,31 +136,37 @@ function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
   );
 }
 
-export default function Checkout({ packId }: { packId: string }) {
-  const mpRef = useRef<HTMLDivElement>(null);
-  const pack = packs.find((p) => p.id === packId);
-  const faqs = getFaqs(pack?.name || "");
+function MercadoPagoButton({ packId, refProp }: { packId: string; refProp?: React.RefObject<HTMLDivElement | null> }) {
+  const localRef = useRef<HTMLDivElement>(null);
+  const targetRef = refProp || localRef;
 
   useEffect(() => {
-    document.title = pageTitles[packId] || "Checkout | Digitalmente Hub";
-  }, [packId]);
+    if (!targetRef.current || !preferenceIds[packId]) return;
 
-  useEffect(() => {
-    if (!mpRef.current || !preferenceIds[packId]) return;
-
-    mpRef.current.innerHTML = "";
+    targetRef.current.innerHTML = "";
 
     const script = document.createElement("script");
     script.src = "https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js";
     script.setAttribute("data-preference-id", preferenceIds[packId]);
     script.setAttribute("data-source", "button");
-    mpRef.current.appendChild(script);
+    targetRef.current.appendChild(script);
 
     return () => {
-      if (mpRef.current) {
-        mpRef.current.innerHTML = "";
+      if (targetRef.current) {
+        targetRef.current.innerHTML = "";
       }
     };
+  }, [packId]);
+
+  return <div ref={targetRef} className="inline-block" />;
+}
+
+export default function Checkout({ packId }: { packId: string }) {
+  const pack = packs.find((p) => p.id === packId);
+  const faqs = packFaqs[packId] || [];
+
+  useEffect(() => {
+    document.title = pageTitles[packId] || "Checkout | Digitalmente Hub";
   }, [packId]);
 
   if (!pack) return null;
@@ -174,7 +190,7 @@ export default function Checkout({ packId }: { packId: string }) {
               </p>
             </div>
 
-            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 mb-10">
+            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 mb-6">
               <h3 className="text-lg text-white font-medium mb-1" data-testid={`text-checkout-pack-name-${packId}`}>{pack.name}</h3>
               <p className="text-white/40 text-sm mb-5">{pack.subtitle}</p>
 
@@ -196,70 +212,37 @@ export default function Checkout({ packId }: { packId: string }) {
               </div>
             </div>
 
+            <div className="text-center mb-3" data-testid={`container-mp-button-${packId}`}>
+              <MercadoPagoButton packId={packId} />
+            </div>
+
+            <div className="text-center mb-10">
+              <p className="text-white/30 text-xs leading-relaxed mb-1">
+                Pagamento processado com segurança pelo Mercado Pago.
+              </p>
+              <p className="text-white/30 text-xs leading-relaxed">
+                Após a confirmação, você será direcionado para o briefing.
+              </p>
+            </div>
+
+            <div className="text-center mb-10">
+              <p className="text-white/50 text-sm mb-1">Tem alguma dúvida antes de finalizar?</p>
+              <p className="text-white/30 text-xs">Leia as perguntas frequentes abaixo e feche com segurança.</p>
+            </div>
+
             <div className="mb-10">
-              <div className="text-center mb-6">
-                <p className="text-white/70 text-sm font-semibold mb-1">Feche com segurança</p>
-                <p className="text-white/40 text-xs max-w-sm mx-auto">
-                  Checkout simples, entrega clara e processo guiado. Você sabe exatamente o que recebe antes de pagar.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 mb-10">
-                <span className="flex items-center gap-2 text-white/45 text-xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
-                  Pagamento seguro via Mercado Pago
-                </span>
-                <span className="flex items-center gap-2 text-white/45 text-xs">
-                  <Clock className="w-3.5 h-3.5 text-brand-blue" />
-                  Prazo e entregáveis transparentes
-                </span>
-                <span className="flex items-center gap-2 text-white/45 text-xs">
-                  <MessageCircle className="w-3.5 h-3.5 text-brand-blue" />
-                  Suporte no briefing
-                </span>
-              </div>
-
-              <div className="mb-8">
-                <h4 className="text-white text-lg font-semibold mb-1 text-center">Perguntas Frequentes</h4>
-                <p className="text-white/35 text-sm text-center mb-6">Tudo o que você precisa saber para finalizar com confiança.</p>
-                <FaqAccordion faqs={faqs} />
-              </div>
-
-              <div className="bg-white/[0.025] border border-white/[0.05] rounded-xl p-6 text-center mb-10">
-                <p className="text-white/60 text-sm mb-4">Pronto para sair do improviso e começar com um pacote objetivo?</p>
-                <a
-                  href="https://wa.me/5541987907321?text=Olá! Tenho uma dúvida sobre o checkout."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 border border-white/10 text-white/50 px-6 py-2.5 rounded-full text-xs font-medium transition-all duration-200 hover:bg-white/[0.04] hover:text-white/70"
-                  data-testid={`button-checkout-whatsapp-${packId}`}
-                >
-                  <FaWhatsapp className="text-sm" />
-                  Tirar uma dúvida no WhatsApp
-                </a>
-              </div>
+              <h4 className="text-white text-lg font-semibold mb-1 text-center">Perguntas Frequentes</h4>
+              <p className="text-white/35 text-sm text-center mb-6">Tudo o que você precisa saber para finalizar com confiança.</p>
+              <FaqAccordion faqs={faqs} />
             </div>
 
-            <div className="text-center mb-4" data-testid={`container-mp-button-${packId}`}>
-              <div ref={mpRef} className="inline-block" />
+            <div className="bg-white/[0.025] border border-white/[0.05] rounded-xl p-6 text-center mb-6">
+              <p className="text-white/60 text-sm">Pronto para sair do improviso e estruturar sua presença digital?</p>
             </div>
 
-            <p className="text-white/30 text-xs text-center leading-relaxed mb-8">
-              Pagamento processado com segurança pelo Mercado Pago. Após pagar, você já segue para o briefing.
-            </p>
-
-            <p className="text-white/30 text-xs text-center leading-relaxed mb-8">
-              Se você tiver qualquer problema no pagamento, fale com a gente pelo{" "}
-              <a
-                href="https://wa.me/5541987907321"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/40 underline"
-              >
-                WhatsApp
-              </a>
-              .
-            </p>
+            <div className="text-center mb-8" data-testid={`container-mp-button-bottom-${packId}`}>
+              <MercadoPagoButton packId={packId} />
+            </div>
 
             <div className="text-center">
               <Link
