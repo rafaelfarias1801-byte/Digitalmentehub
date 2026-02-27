@@ -1,0 +1,82 @@
+Crie uma seção de FAQ persuasiva e moderna para a página Checkout do Pack Básico, posicionada logo acima do botão de pagamento (e duplicar um mini resumo de confiança logo abaixo do botão).
+
+Objetivo
+Aumentar conversão removendo objeções comuns antes do pagamento com gatilhos de clareza, segurança, redução de risco e orientação.
+
+Requisitos de design
+- Manter o estilo do site (fundo azul escuro, textos brancos/cinza claro, destaque em rosa do preço)
+- Layout elegante e minimalista
+- FAQ em acordeão (abre/fecha) com animação suave
+- Ícone + que vira – quando aberto
+- Bordas arredondadas, sombra suave, espaçamento confortável
+- Totalmente responsivo
+- Sem bibliotecas externas
+- Não quebrar o layout atual
+
+Conteúdo acima do FAQ (microcopy com gatilhos)
+Adicionar um bloco pequeno acima do título com:
+Título curto
+Feche com segurança
+Texto
+Checkout simples, entrega clara e processo guiado. Você sabe exatamente o que recebe antes de pagar.
+
+Adicionar também 3 chips ou bullets curtos (ícones simples em CSS ou unicode):
+- Pagamento seguro via Mercado Pago
+- Prazo e entregáveis transparentes
+- Suporte no briefing (sem travar)
+
+Título do FAQ
+Perguntas Frequentes
+
+Subtítulo
+Tudo o que você precisa saber para finalizar com confiança.
+
+Perguntas e respostas (usar linguagem direta e humana)
+
+1) O que eu recebo exatamente no Pack Básico
+Você recebe 10 artes estáticas, 4 carrosséis (até 5 telas) e textos prontos para cada post. É o essencial para começar com presença e consistência.
+
+2) O que acontece depois do pagamento
+Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário.
+
+3) Em quanto tempo eu recebo o material
+Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido.
+
+4) Posso pedir ajustes
+Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa.
+
+5) As artes são editáveis
+Não. As peças são entregues prontas para publicar. Se você quiser arquivos editáveis, ofereça um upgrade com preço e prazo à parte (apenas mencionar “upgrade”, sem valores).
+
+6) Vocês fazem a postagem no meu perfil
+Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, ofereça um plano mensal.
+
+7) Serve para qualquer nicho
+Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post.
+
+8) Preciso já ter identidade visual
+Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho.
+
+9) Posso parcelar
+Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento.
+
+10) Esse pack vai fazer meu perfil crescer
+Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua.
+
+Gatilho de ação (bloco final antes do botão)
+Criar um box discreto com:
+Texto
+Pronto para sair do improviso e começar com um pacote objetivo?
+Botão secundário (não o de pagamento) com link para WhatsApp:
+Tirar uma dúvida no WhatsApp
+
+Mini bloco abaixo do botão de pagamento (reforço de segurança)
+Adicionar texto pequeno:
+Pagamento processado com segurança pelo Mercado Pago. Após pagar, você já segue para o briefing.
+
+Implementação
+- Criar com HTML + CSS + JavaScript
+- Acordeão: ao abrir um item, fechar os outros (comportamento “um de cada vez”)
+- Animação suave de altura e opacidade
+- Acessibilidade: permitir abrir com Enter/Espaço, usar aria-expanded e aria-controls
+- Não modificar o restante do checkout, apenas inserir os novos blocos nos locais indicados

@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
-import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, ShieldCheck, Clock, MessageCircle, Plus, Minus } from "lucide-react";
 import { Link } from "wouter";
 import { FaWhatsapp } from "react-icons/fa";
 import { packs } from "../data/packs";
@@ -29,9 +29,107 @@ const displayNames: Record<string, string> = {
   diamante: "Diamante",
 };
 
+function getFaqs(packName: string) {
+  return [
+    {
+      q: `O que eu recebo exatamente no ${packName}?`,
+      a: (() => {
+        const pack = packs.find(p => p.name === packName);
+        if (!pack) return "Consulte os detalhes do pack acima.";
+        const items = pack.features.filter(f => !f.muted).map(f => f.text.toLowerCase()).join(", ");
+        return `Você recebe ${items}. É o essencial para começar com presença e consistência.`;
+      })(),
+    },
+    {
+      q: "O que acontece depois do pagamento?",
+      a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário.",
+    },
+    {
+      q: "Em quanto tempo eu recebo o material?",
+      a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido.",
+    },
+    {
+      q: "Posso pedir ajustes?",
+      a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa.",
+    },
+    {
+      q: "As artes são editáveis?",
+      a: "Não. As peças são entregues prontas para publicar. Se precisar de arquivos editáveis, temos a opção de upgrade.",
+    },
+    {
+      q: "Vocês fazem a postagem no meu perfil?",
+      a: "Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, oferecemos planos mensais.",
+    },
+    {
+      q: "Serve para qualquer nicho?",
+      a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post.",
+    },
+    {
+      q: "Preciso já ter identidade visual?",
+      a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho.",
+    },
+    {
+      q: "Posso parcelar?",
+      a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento.",
+    },
+    {
+      q: "Esse pack vai fazer meu perfil crescer?",
+      a: "Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua.",
+    },
+  ];
+}
+
+function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <div className="space-y-2">
+      {faqs.map((faq, i) => {
+        const isOpen = openIndex === i;
+        return (
+          <div
+            key={i}
+            className="bg-white/[0.02] border border-white/[0.05] rounded-xl overflow-hidden transition-colors"
+          >
+            <button
+              onClick={() => setOpenIndex(isOpen ? null : i)}
+              className="w-full flex items-center justify-between px-5 py-4 text-left gap-3"
+              aria-expanded={isOpen}
+              aria-controls={`faq-answer-${i}`}
+              data-testid={`button-faq-${i}`}
+            >
+              <span className="text-white/80 text-sm font-medium leading-snug">{faq.q}</span>
+              <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-brand-orange">
+                {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              </span>
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  id={`faq-answer-${i}`}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-5 pb-4">
+                    <p className="text-white/45 text-sm leading-relaxed">{faq.a}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Checkout({ packId }: { packId: string }) {
   const mpRef = useRef<HTMLDivElement>(null);
   const pack = packs.find((p) => p.id === packId);
+  const faqs = getFaqs(pack?.name || "");
 
   useEffect(() => {
     document.title = pageTitles[packId] || "Checkout | Digitalmente Hub";
@@ -76,7 +174,7 @@ export default function Checkout({ packId }: { packId: string }) {
               </p>
             </div>
 
-            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 mb-8">
+            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 mb-10">
               <h3 className="text-lg text-white font-medium mb-1" data-testid={`text-checkout-pack-name-${packId}`}>{pack.name}</h3>
               <p className="text-white/40 text-sm mb-5">{pack.subtitle}</p>
 
@@ -98,9 +196,57 @@ export default function Checkout({ packId }: { packId: string }) {
               </div>
             </div>
 
-            <div className="text-center mb-6" data-testid={`container-mp-button-${packId}`}>
+            <div className="mb-10">
+              <div className="text-center mb-6">
+                <p className="text-white/70 text-sm font-semibold mb-1">Feche com segurança</p>
+                <p className="text-white/40 text-xs max-w-sm mx-auto">
+                  Checkout simples, entrega clara e processo guiado. Você sabe exatamente o que recebe antes de pagar.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 mb-10">
+                <span className="flex items-center gap-2 text-white/45 text-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
+                  Pagamento seguro via Mercado Pago
+                </span>
+                <span className="flex items-center gap-2 text-white/45 text-xs">
+                  <Clock className="w-3.5 h-3.5 text-brand-blue" />
+                  Prazo e entregáveis transparentes
+                </span>
+                <span className="flex items-center gap-2 text-white/45 text-xs">
+                  <MessageCircle className="w-3.5 h-3.5 text-brand-blue" />
+                  Suporte no briefing
+                </span>
+              </div>
+
+              <div className="mb-8">
+                <h4 className="text-white text-lg font-semibold mb-1 text-center">Perguntas Frequentes</h4>
+                <p className="text-white/35 text-sm text-center mb-6">Tudo o que você precisa saber para finalizar com confiança.</p>
+                <FaqAccordion faqs={faqs} />
+              </div>
+
+              <div className="bg-white/[0.025] border border-white/[0.05] rounded-xl p-6 text-center mb-10">
+                <p className="text-white/60 text-sm mb-4">Pronto para sair do improviso e começar com um pacote objetivo?</p>
+                <a
+                  href="https://wa.me/5541987907321?text=Olá! Tenho uma dúvida sobre o checkout."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 border border-white/10 text-white/50 px-6 py-2.5 rounded-full text-xs font-medium transition-all duration-200 hover:bg-white/[0.04] hover:text-white/70"
+                  data-testid={`button-checkout-whatsapp-${packId}`}
+                >
+                  <FaWhatsapp className="text-sm" />
+                  Tirar uma dúvida no WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <div className="text-center mb-4" data-testid={`container-mp-button-${packId}`}>
               <div ref={mpRef} className="inline-block" />
             </div>
+
+            <p className="text-white/30 text-xs text-center leading-relaxed mb-8">
+              Pagamento processado com segurança pelo Mercado Pago. Após pagar, você já segue para o briefing.
+            </p>
 
             <p className="text-white/30 text-xs text-center leading-relaxed mb-8">
               Se você tiver qualquer problema no pagamento, fale com a gente pelo{" "}
