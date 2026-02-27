@@ -1,0 +1,84 @@
+Quero implementar um sistema de escassez e prova social FICTÍCIOS, elegante e leve, sem qualquer requisição ao backend (zero chamadas para API). Tudo deve rodar no frontend usando localStorage e a data/hora real do navegador.
+
+Objetivo
+- Exibir um badge sutil de escassez (sem números de vagas)
+- Exibir 1 ou 2 push notifications por visita (com nomes fictícios), e parar
+- Reconhecer dia/mês atual (calendário real) para variar mensagens e resetar a lógica diariamente
+- Não gerar custos com requisições ao Replit
+
+1) Badge de escassez (sem número)
+- Aparecer 5 segundos após carregar a página
+- Desktop: canto superior esquerdo do bloco principal do checkout
+- Mobile: barra discreta no topo ou card flutuante pequeno no canto superior
+- Visual premium, discreto, sem vermelho, com animação fade-in suave
+
+Texto do badge deve variar conforme horário real:
+Manhã (05:00–11:59)
+"Agenda do dia abrindo agora. Poucas vagas disponíveis."
+Tarde (12:00–17:59)
+"Agenda de produção quase completa hoje."
+Noite (18:00–23:59)
+"Últimas vagas na agenda de hoje."
+
+Texto também deve variar conforme o plano (mantendo o sentido):
+Basico: "Agenda de produção quase completa hoje."
+Intermediario: "Agenda de produção com poucas aberturas hoje."
+Premium: "Agenda estratégica com poucas janelas hoje."
+Diamante: "Projetos completos com disponibilidade reduzida hoje."
+
+2) Mensagem especial ao virar o dia
+- Criar dayKey = YYYY-MM-DD com a data real
+- Salvar lastVisitDayKey no localStorage
+- Se dayKey atual for diferente do lastVisitDayKey:
+  - mostrar 1 vez um aviso sutil (pode ser no mesmo estilo do badge, por 6s):
+    "Agenda atualizada hoje. Poucas vagas liberadas."
+  - atualizar lastVisitDayKey
+
+3) Push notifications (prova social) — 1 ou 2 por visita
+- Mostrar o primeiro push entre 8 e 12 segundos após carregar
+- Mostrar o segundo push opcional entre 20 e 35 segundos após o primeiro
+- Não mostrar mais do que 2 pushes por visita
+- Também limitar a no máximo 2 pushes por dia por usuário usando localStorage:
+  - pushShownCountToday
+  - pushDayKey
+- Se já mostrou 2 pushes no dia, não mostrar mais
+
+Texto do push (sem números):
+Variações para alternar:
+"{Nome} garantiu o Pack {Plano} agora há pouco."
+"{Nome} fechou o Pack {Plano} hoje."
+"{Nome} acabou de reservar o Pack {Plano}."
+"Mais um Pack {Plano} confirmado hoje."
+
+Noite pode reforçar urgência:
+"Últimas janelas de produção hoje para o Pack {Plano}."
+
+Nomes fictícios
+Usar lista BR:
+João, Maria, Carla, Ana, Lucas, Beatriz, Pedro, Camila, Rafael, Mariana, Bruno, Juliana, Felipe, Larissa, Gustavo, Renata
+
+4) Detecção do plano
+Detectar o plano automaticamente pela rota/slug ou pelo título do checkout (ex: "Checkout do Pack Diamante").
+O push deve usar o plano atual da página.
+
+5) Visual do push
+- Desktop: canto inferior esquerdo
+- Mobile: centro inferior
+- Animação suave (slide + fade)
+- Sumir após 6–7 segundos
+- Estilo premium, discreto, coerente com o site
+- Sem bibliotecas externas
+
+6) Implementação
+Criar funções:
+- getCurrentPlan()
+- getDayKey()
+- getTimePeriod() (manhã/tarde/noite)
+- shouldShowDailyRefreshMessage()
+- showBadge()
+- showDailyRefreshMessage()
+- showPush()
+- schedulePushesForVisit()
+
+Garantir que nada faça fetch/axios/chamada de API.
+Garantir que não quebre layout atual dos checkouts.

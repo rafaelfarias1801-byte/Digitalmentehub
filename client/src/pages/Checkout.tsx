@@ -7,6 +7,7 @@ import { Check, Plus, Minus } from "lucide-react";
 import { Link } from "wouter";
 import { FaWhatsapp } from "react-icons/fa";
 import { packs } from "../data/packs";
+import CheckoutSocialProof from "@/components/CheckoutSocialProof";
 
 const preferenceIds: Record<string, string> = {
   basico: "3035532652-2c14a7e7-188a-45bf-983a-4d9b7e34b3bd",
@@ -189,6 +190,8 @@ export default function Checkout({ packId }: { packId: string }) {
                 Pagamento seguro via Mercado Pago. Após o pagamento, você será direcionado para preencher o briefing.
               </p>
             </div>
+
+            <CheckoutSocialProof packId={packId} />
 
             <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 mb-6">
               <h3 className="text-lg text-white font-medium mb-1" data-testid={`text-checkout-pack-name-${packId}`}>{pack.name}</h3>
