@@ -25,30 +25,86 @@ function getTimePeriod(): "morning" | "afternoon" | "night" {
   return "night";
 }
 
-function getBadgeText(packId: string, period: "morning" | "afternoon" | "night") {
-  const texts: Record<string, Record<string, string>> = {
+function getPlanBadgeMessage(packId: string, period: "morning" | "afternoon" | "night") {
+  const messages: Record<string, Record<string, string[]>> = {
     basico: {
-      morning: "Agenda do dia abrindo agora. Poucas vagas disponíveis.",
-      afternoon: "Agenda de produção quase completa hoje.",
-      night: "Últimas janelas de produção hoje.",
+      morning: [
+        "Agenda de produção abrindo agora. Bom momento para garantir seu espaço.",
+        "Primeiros pedidos do dia já entrando. Vagas limitadas para hoje.",
+        "A agenda de hoje está abrindo. Garanta seu pack enquanto há espaço.",
+      ],
+      afternoon: [
+        "Agenda de produção movimentada hoje. Poucas vagas restantes.",
+        "A produção de hoje já está quase completa. Não deixe para amanhã.",
+        "Ritmo forte hoje. Últimas aberturas na agenda de produção.",
+      ],
+      night: [
+        "Últimas janelas de produção disponíveis para hoje.",
+        "A agenda de hoje está fechando. Garanta antes da virada.",
+        "Produção quase encerrada hoje. Amanhã recomeça, mas sem garantia.",
+      ],
     },
     intermediario: {
-      morning: "Agenda do dia abrindo agora. Poucas aberturas disponíveis.",
-      afternoon: "Agenda de produção quase completa hoje.",
-      night: "Últimas janelas de produção hoje.",
+      morning: [
+        "Agenda do dia abrindo agora. Poucas aberturas para packs intermediários.",
+        "Bom momento para fechar: agenda de produção com vagas disponíveis.",
+        "A fila de produção está curta agora. Aproveite o início do dia.",
+      ],
+      afternoon: [
+        "Poucas aberturas restantes na agenda de produção hoje.",
+        "Volume alto de pedidos hoje. Aberturas se esgotando.",
+        "Agenda de produção quase fechada. Últimas janelas disponíveis.",
+      ],
+      night: [
+        "Últimas janelas de produção hoje para packs intermediários.",
+        "Agenda quase encerrada. Quem fecha agora entra direto na fila.",
+        "Noite movimentada. Poucas vagas restantes na produção de hoje.",
+      ],
     },
     premium: {
-      morning: "Agenda estratégica do dia abrindo agora. Poucas janelas disponíveis.",
-      afternoon: "Agenda estratégica quase completa hoje.",
-      night: "Últimas janelas estratégicas hoje.",
+      morning: [
+        "Agenda estratégica do dia abrindo. Poucas janelas para projetos premium.",
+        "Início de dia com disponibilidade limitada para projetos estratégicos.",
+        "Bom momento para garantir sua vaga na agenda estratégica de hoje.",
+      ],
+      afternoon: [
+        "Agenda estratégica quase completa. Janelas reduzidas para hoje.",
+        "Projetos estratégicos em alta demanda hoje. Poucas janelas abertas.",
+        "Tarde movimentada na agenda premium. Disponibilidade diminuindo.",
+      ],
+      night: [
+        "Últimas janelas estratégicas abertas para hoje.",
+        "Agenda premium do dia quase encerrada. Garanta antes da virada.",
+        "Disponibilidade mínima na agenda estratégica hoje à noite.",
+      ],
     },
     diamante: {
-      morning: "Projetos completos: agenda do dia abrindo agora. Disponibilidade reduzida.",
-      afternoon: "Projetos completos: agenda quase completa hoje.",
-      night: "Projetos completos: últimas janelas de produção hoje.",
+      morning: [
+        "Projetos completos: agenda exclusiva abrindo agora. Disponibilidade reduzida.",
+        "Início do dia com poucas vagas para projetos completos de alto nível.",
+        "Agenda de projetos exclusivos abrindo. Poucas janelas para hoje.",
+      ],
+      afternoon: [
+        "Projetos completos: agenda quase fechada para hoje.",
+        "Alta procura por projetos exclusivos. Disponibilidade muito limitada.",
+        "Agenda de projetos completos em ritmo acelerado. Últimas aberturas.",
+      ],
+      night: [
+        "Projetos completos: últimas janelas de produção hoje.",
+        "Agenda exclusiva quase encerrada. Garanta seu projeto antes da virada.",
+        "Disponibilidade mínima para projetos completos hoje à noite.",
+      ],
     },
   };
-  return texts[packId]?.[period] || texts.basico[period];
+
+  const pool = messages[packId]?.[period] || messages.basico[period];
+  const lastMsg = localStorage.getItem("dh_lastBadgeMessage") || "";
+  const filtered = pool.filter(m => m !== lastMsg);
+  const chosen = filtered.length > 0
+    ? filtered[Math.floor(Math.random() * filtered.length)]
+    : pool[Math.floor(Math.random() * pool.length)];
+  localStorage.setItem("dh_lastBadgeMessage", chosen);
+  return chosen;
 }
 
 function getNeutralMessages(planName: string, name: string) {
@@ -175,7 +231,7 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
 
   useEffect(() => {
     const period = getTimePeriod();
-    setBadgeText(getBadgeText(packId, period));
+    setBadgeText(getPlanBadgeMessage(packId, period));
     startTime.current = Date.now();
     pushesThisVisit.current = 0;
     lastName.current = "";
@@ -184,6 +240,13 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     timers.push(setTimeout(() => setShowBadge(true), 5000));
+
+    const periodCheck = setInterval(() => {
+      const newPeriod = getTimePeriod();
+      if (newPeriod !== period) {
+        setBadgeText(getPlanBadgeMessage(packId, newPeriod));
+      }
+    }, 60000);
 
     if (shouldShowDailyRefresh()) {
       timers.push(setTimeout(() => {
@@ -241,7 +304,10 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
       }, delay2));
     }, delay1));
 
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      timers.forEach(clearTimeout);
+      clearInterval(periodCheck);
+    };
   }, [packId, buildMessage]);
 
   return (
