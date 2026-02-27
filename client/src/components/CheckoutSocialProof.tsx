@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAMES = [
@@ -48,19 +48,11 @@ function getBadgeText(packId: string, period: "morning" | "afternoon" | "night")
       night: "Projetos completos: últimas janelas de produção hoje.",
     },
   };
-
   return texts[packId]?.[period] || texts.basico[period];
 }
 
-function pickName() {
-  return NAMES[Math.floor(Math.random() * NAMES.length)];
-}
-
-function pickPushMessage(packId: string, period: "morning" | "afternoon" | "night") {
-  const planName = displayNames[packId] || "Básico";
-  const name = pickName();
-
-  const neutral = [
+function getNeutralMessages(planName: string, name: string) {
+  return [
     `${name} garantiu o Pack ${planName} agora há pouco.`,
     `${name} fechou o Pack ${planName} hoje.`,
     `${name} acabou de reservar o Pack ${planName}.`,
@@ -70,23 +62,20 @@ function pickPushMessage(packId: string, period: "morning" | "afternoon" | "nigh
     `Novo pedido do Pack ${planName} registrado há poucos minutos.`,
     `${name} finalizou o Pack ${planName} e já entrou na agenda.`,
   ];
+}
 
-  const urgent = [
+function getUrgentMessages(planName: string, name: string) {
+  return [
     `Agenda de hoje movimentada: ${name} pegou o Pack ${planName}.`,
     `Poucas janelas hoje: ${name} garantiu o Pack ${planName}.`,
     `${name} entrou na agenda do Pack ${planName} hoje.`,
     `Últimas janelas de produção hoje para o Pack ${planName}.`,
   ];
+}
 
-  let pool: string[];
-  if (period === "morning") {
-    pool = neutral;
-  } else if (period === "afternoon") {
-    pool = [...neutral, ...urgent.slice(0, 3)];
-  } else {
-    pool = urgent;
-  }
-
+function pickFromRange(arr: string[], start: number, end: number, lastMsg: string): string {
+  const pool = arr.slice(start, end + 1).filter(m => m !== lastMsg);
+  if (pool.length === 0) return arr[start];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -100,18 +89,15 @@ function shouldShowDailyRefresh() {
   return false;
 }
 
-function canShowPushToday() {
+function getPushCount() {
   const dayKey = getDayKey();
   const pushDayKey = localStorage.getItem("dh_pushDayKey");
-  let count = parseInt(localStorage.getItem("dh_pushShownCountToday") || "0", 10);
-
   if (pushDayKey !== dayKey) {
     localStorage.setItem("dh_pushDayKey", dayKey);
     localStorage.setItem("dh_pushShownCountToday", "0");
-    count = 0;
+    return 0;
   }
-
-  return count < 2;
+  return parseInt(localStorage.getItem("dh_pushShownCountToday") || "0", 10);
 }
 
 function incrementPushCount() {
@@ -134,11 +120,66 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
   const [dailyRefresh, setDailyRefresh] = useState(false);
   const [pushText, setPushText] = useState("");
   const [showPush, setShowPush] = useState(false);
+
   const pushesThisVisit = useRef(0);
+  const lastName = useRef("");
+  const lastMessage = useRef("");
+  const startTime = useRef(Date.now());
+
+  const pickName = useCallback(() => {
+    let name: string;
+    do {
+      name = NAMES[Math.floor(Math.random() * NAMES.length)];
+    } while (name === lastName.current && NAMES.length > 1);
+    lastName.current = name;
+    return name;
+  }, []);
+
+  const buildMessage = useCallback((pushNumber: number) => {
+    const planName = displayNames[packId] || "Básico";
+    const period = getTimePeriod();
+    const name = pickName();
+    const neutral = getNeutralMessages(planName, name);
+    const urgent = getUrgentMessages(planName, name);
+    const all = [...neutral, ...urgent];
+
+    let msg: string;
+
+    if (pushNumber === 1) {
+      msg = pickFromRange(all, 0, 3, lastMessage.current);
+    } else if (pushNumber === 2) {
+      msg = pickFromRange(all, 2, 7, lastMessage.current);
+    } else if (pushNumber === 3) {
+      if (period === "morning") msg = pickFromRange(all, 4, 7, lastMessage.current);
+      else if (period === "afternoon") msg = pickFromRange(all, 4, 10, lastMessage.current);
+      else msg = pickFromRange(all, 8, 11, lastMessage.current);
+    } else {
+      if (period === "morning") {
+        msg = Math.random() < 0.7
+          ? pickFromRange(all, 0, 7, lastMessage.current)
+          : pickFromRange(all, 8, 11, lastMessage.current);
+      } else if (period === "afternoon") {
+        msg = Math.random() < 0.5
+          ? pickFromRange(all, 0, 7, lastMessage.current)
+          : pickFromRange(all, 8, 11, lastMessage.current);
+      } else {
+        msg = Math.random() < 0.2
+          ? pickFromRange(all, 0, 7, lastMessage.current)
+          : pickFromRange(all, 8, 11, lastMessage.current);
+      }
+    }
+
+    lastMessage.current = msg;
+    return msg;
+  }, [packId, pickName]);
 
   useEffect(() => {
     const period = getTimePeriod();
     setBadgeText(getBadgeText(packId, period));
+    startTime.current = Date.now();
+    pushesThisVisit.current = 0;
+    lastName.current = "";
+    lastMessage.current = "";
 
     const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -151,10 +192,13 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
       }, 3000));
     }
 
-    const tryShowPush = () => {
-      if (pushesThisVisit.current >= 2 || !canShowPushToday() || !checkCooldown()) return false;
-      const period = getTimePeriod();
-      setPushText(pickPushMessage(packId, period));
+    const doShowPush = (pushNum: number): boolean => {
+      if (getPushCount() >= 8) return false;
+      if (!checkCooldown()) return false;
+      if (Date.now() - startTime.current > 600000) return false;
+
+      const msg = buildMessage(pushNum);
+      setPushText(msg);
       setShowPush(true);
       incrementPushCount();
       setCooldown();
@@ -163,16 +207,42 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
       return true;
     };
 
+    const getLoopDelay = () => {
+      const p = getTimePeriod();
+      if (p === "morning") return 180000 + Math.random() * 120000;
+      if (p === "afternoon") return 120000 + Math.random() * 120000;
+      return 60000 + Math.random() * 120000;
+    };
+
+    const scheduleLoop = () => {
+      if (Date.now() - startTime.current > 600000) return;
+      if (getPushCount() >= 8) return;
+      const delay = getLoopDelay();
+      timers.push(setTimeout(() => {
+        if (doShowPush(pushesThisVisit.current + 1)) {
+          scheduleLoop();
+        }
+      }, delay));
+    };
+
     const delay1 = 8000 + Math.random() * 4000;
     timers.push(setTimeout(() => {
-      if (tryShowPush()) {
-        const delay2 = 20000 + Math.random() * 15000;
-        timers.push(setTimeout(() => tryShowPush(), delay2));
-      }
+      if (!doShowPush(1)) return;
+
+      const delay2 = 20000 + Math.random() * 15000;
+      timers.push(setTimeout(() => {
+        if (!doShowPush(2)) return;
+
+        const delay3 = 45000 + Math.random() * 25000;
+        timers.push(setTimeout(() => {
+          if (!doShowPush(3)) return;
+          scheduleLoop();
+        }, delay3));
+      }, delay2));
     }, delay1));
 
     return () => timers.forEach(clearTimeout);
-  }, [packId]);
+  }, [packId, buildMessage]);
 
   return (
     <>

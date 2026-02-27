@@ -1,0 +1,100 @@
+Ajustar o sistema de push notifications fictícias para funcionar com sequência estratégica de mensagens, usando as variações fornecidas, com lógica por etapa e por horário.
+
+Objetivo:
+Criar sensação real de movimento na agenda, aumentando levemente urgência ao longo da sessão, sem parecer spam.
+
+1) Frequência
+
+Primeira fase (entrada do usuário):
+- Push 1 entre 8–12 segundos
+- Push 2 entre 20–35 segundos após o primeiro
+- Push 3 entre 45–70 segundos após o segundo
+
+Segunda fase (loop leve):
+- Após os 3 primeiros pushes, iniciar loop
+- Intervalos:
+  manhã: 3–5 minutos
+  tarde: 2–4 minutos
+  noite: 1–3 minutos
+- Parar após 10 minutos na página
+
+Limite diário:
+- Máximo 8 pushes por dia por usuário
+- Controlar com localStorage:
+  pushDayKey
+  pushShownCountToday
+  lastPushTimestamp
+- Resetar quando virar o dia
+
+2) Lógica de seleção de mensagens
+
+Criar dois arrays:
+
+NEUTRAS:
+1 "{Nome} garantiu o Pack {Plano} agora há pouco."
+2 "{Nome} fechou o Pack {Plano} hoje."
+3 "{Nome} acabou de reservar o Pack {Plano}."
+4 "Mais um Pack {Plano} confirmado hoje."
+5 "{Nome} escolheu o Pack {Plano} para este mês."
+6 "{Nome} acabou de garantir o Pack {Plano}."
+7 "Novo pedido do Pack {Plano} registrado há poucos minutos."
+8 "{Nome} finalizou o Pack {Plano} e já entrou na agenda."
+
+URGÊNCIA LEVE:
+9 "Agenda de hoje movimentada: {Nome} pegou o Pack {Plano}."
+10 "Poucas janelas hoje: {Nome} garantiu o Pack {Plano}."
+11 "{Nome} entrou na agenda do Pack {Plano} hoje."
+12 "Últimas janelas de produção hoje para o Pack {Plano}."
+
+3) Sequência estratégica
+
+Push 1:
+- Sempre escolher entre mensagens 1–4 (neutras simples)
+
+Push 2:
+- Escolher entre 3–8 (neutras reforçadas)
+
+Push 3:
+- Se manhã: escolher entre 5–8
+- Se tarde: escolher entre 5–11
+- Se noite: escolher entre 9–12
+
+Loop:
+- manhã: 70% neutras (1–8), 30% urgência leve (9–12)
+- tarde: 50% neutras, 50% urgência leve
+- noite: 80% urgência leve (9–12)
+
+4) Nomes fictícios
+
+Lista:
+João, Maria, Carla, Ana, Lucas, Beatriz, Pedro, Camila, Rafael, Mariana, Bruno, Juliana, Felipe, Larissa, Gustavo, Renata
+
+Criar função pickName() que evita repetir o mesmo nome duas vezes seguidas.
+
+5) Detecção de horário
+
+Criar função getTimePeriod():
+morning: 05:00–11:59
+afternoon: 12:00–17:59
+night: 18:00–23:59
+
+6) Anti-spam
+
+- Cooldown mínimo de 45 segundos entre pushes
+- Não repetir a mesma mensagem duas vezes seguidas
+- Não repetir o mesmo nome imediatamente
+
+7) Visual
+
+- Desktop: canto inferior esquerdo
+- Mobile: centro inferior
+- Animação suave (slide + fade)
+- Duração: 6–7 segundos
+- Estilo premium, discreto, sem vermelho alarmista
+
+8) Integração
+
+- Detectar plano automaticamente (getCurrentPlan)
+- Substituir {Plano} dinamicamente
+- Funcionar em todos os checkouts
+- 100% frontend (sem API, sem requisição)
