@@ -22,11 +22,11 @@ export default function Packs() {
     },
     {
       id: "analise",
-      title: "Análise Estratégica de Instagram",
-      description: "Leitura estratégica do seu perfil para destravar crescimento.",
+      title: "Diagnóstico Estratégico",
+      description: "Raio X completo do seu perfil + reunião individual para traçar um plano real de crescimento.",
       icon: Search,
       image: "/products/analise-instagram.png",
-      href: "/produtos/analise-instagram",
+      href: "/produtos/diagnostico-estrategico",
     },
   ];
 

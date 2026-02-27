@@ -8,7 +8,7 @@ import Home from "@/pages/Home";
 import Produtos from "@/pages/Produtos";
 import PacksConteudo from "@/pages/PacksConteudo";
 import Consultoria from "@/pages/Consultoria";
-import AnaliseInstagram from "@/pages/AnaliseInstagram";
+import DiagnosticoEstrategico from "@/pages/DiagnosticoEstrategico";
 import ObrigadoBriefing from "@/pages/ObrigadoBriefing";
 import ObrigadoCompra from "@/pages/ObrigadoCompra";
 import Checkout from "@/pages/Checkout";
@@ -31,7 +31,7 @@ function Router() {
       <Route path="/produtos" component={Produtos} />
       <Route path="/produtos/packs" component={PacksConteudo} />
       <Route path="/produtos/consultoria" component={Consultoria} />
-      <Route path="/produtos/analise-instagram" component={AnaliseInstagram} />
+      <Route path="/produtos/diagnostico-estrategico" component={DiagnosticoEstrategico} />
       <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
       <Route path="/obrigado-compra" component={ObrigadoCompra} />
       <Route path="/checkout-basico">{() => <Checkout packId="basico" />}</Route>

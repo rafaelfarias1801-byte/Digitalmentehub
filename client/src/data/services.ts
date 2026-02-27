@@ -45,9 +45,9 @@ export const services = [
   },
   {
     id: "analise",
-    title: "Análise de perfil",
-    description: "Análise estratégica para estruturar perfis e fortalecer a presença no digital.",
-    seoContext: "Diagnóstico de Instagram com melhorias práticas de conteúdo, perfil e estratégia.",
+    title: "Diagnóstico Estratégico",
+    description: "Raio X completo do seu perfil para identificar gargalos e traçar um plano real de crescimento.",
+    seoContext: "Diagnóstico estratégico de Instagram com análise de perfil, plano de ação e reunião individual.",
     icon: Search,
   },
   {

@@ -97,8 +97,8 @@ export default function Footer() {
               <Link href="/produtos/consultoria" className="block text-white/50 text-sm" data-testid="footer-consultoria">
                 Consultoria estratégica para empreendedores
               </Link>
-              <Link href="/produtos/analise-instagram" className="block text-white/50 text-sm" data-testid="footer-analise">
-                Análise estratégica de Instagram
+              <Link href="/produtos/diagnostico-estrategico" className="block text-white/50 text-sm" data-testid="footer-analise">
+                Diagnóstico Estratégico
               </Link>
             </div>
           </div>
