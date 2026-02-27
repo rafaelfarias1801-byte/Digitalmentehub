@@ -1,0 +1,108 @@
+Criar ajustes na página do produto Diagnóstico Estratégico mantendo identidade visual da Digitalmente, mas melhorando conversão e percepção premium.
+
+Objetivo
+Deixar a página mais elegante, menos gritante, mais objetiva e com foco em decisão rápida.
+
+Alterações necessárias:
+
+Hero Section
+
+Reduzir altura da hero para ocupar no máximo 70 por cento da primeira dobra.
+Diminuir tamanho da headline principal.
+Evitar quebra excessiva de linhas.
+Manter elegância e leitura confortável.
+
+Substituir headline atual por:
+
+Diagnóstico Estratégico de Instagram
+
+Subheadline:
+
+Descubra o que está travando seu crescimento e receba um plano claro para vender com estratégia.
+Reunião individual de 20 minutos inclusa.
+
+Botão principal com texto:
+
+Quero meu Diagnóstico
+
+Manter botão destacado na cor rosa da marca.
+Reduzir espaçamento vertical exagerado.
+
+Seção de Dor
+
+Diminuir tamanho do título.
+Reduzir espaçamento vertical excessivo.
+Deixar lista mais compacta.
+Aumentar contraste do texto da lista para melhorar leitura.
+
+Manter frase final destacada:
+
+O problema não é esforço. É falta de estratégia.
+
+Seção O que é
+
+Adicionar frase de autoridade abaixo do texto principal:
+
+Baseado em metodologia aplicada em marcas reais.
+
+Manter layout centralizado e elegante.
+
+Seção O que você recebe
+
+Manter layout em cards.
+Destacar visualmente o card da Reunião individual de 20 minutos.
+
+O destaque pode ser feito com:
+
+Borda rosa
+Selo pequeno escrito Incluso
+Leve sombra diferenciada
+
+Esse card precisa parecer o diferencial do produto.
+
+Seção Como funciona
+
+Reduzir tamanho dos textos explicativos.
+Deixar frases mais curtas e diretas.
+Manter estrutura em quatro passos numerados.
+
+Seção Investimento
+
+Remover botão padrão amarelo do Mercado Pago.
+Criar botão personalizado com identidade visual da Digitalmente.
+
+Botão deve ter:
+
+Fundo rosa
+Texto branco
+Leve sombra
+Hover mais escuro
+
+Manter integração com Mercado Pago via link externo, mas visual do botão deve seguir identidade da marca.
+
+Seção Autoridade
+
+Manter bloco simples com fundo azul escuro.
+Texto centralizado:
+
+Não é para quem quer fórmula mágica.
+É para quem quer clareza estratégica e crescimento estruturado.
+
+FAQ
+
+Adicionar duas perguntas estratégicas:
+
+Isso substitui uma gestão de Instagram
+Esse diagnóstico pode evoluir para um trabalho estratégico maior
+
+Manter layout acordeão minimalista.
+
+Regras gerais
+
+Reduzir espaçamentos verticais exagerados.
+Evitar tipografia gigante.
+Manter visual premium e limpo.
+Priorizar conversão e clareza.
+Responsivo no mobile.
+Sem bibliotecas externas.
+Sem alterar identidade visual da marca.

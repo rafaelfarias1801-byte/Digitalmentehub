@@ -6,45 +6,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, PenTool, LayoutGrid, ShoppingBag, CalendarCheck, Video, Plus, Minus } from "lucide-react";
 
 const PREFERENCE_ID = "3035532652-2c14a7e7-188a-45bf-983a-4d9b7e34b3bd";
+const MP_INIT_POINT = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${PREFERENCE_ID}`;
 
 const deliverables = [
-  {
-    icon: Search,
-    title: "Diagnóstico completo do perfil",
-    desc: "Análise de posicionamento, promessa e diferenciação.",
-  },
-  {
-    icon: PenTool,
-    title: "Ajuste estratégico de bio e jornada",
-    desc: "Reestruturação para conversão.",
-  },
-  {
-    icon: LayoutGrid,
-    title: "Estrutura de conteúdo",
-    desc: "Definição de pilares e linha editorial.",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Estratégia de vendas simplificada",
-    desc: "Modelo prático para começar a vender.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Plano de ação 30 dias",
-    desc: "Passo a passo organizado.",
-  },
-  {
-    icon: Video,
-    title: "Reunião individual de 20 minutos",
-    desc: "Explicação detalhada + direcionamento.",
-  },
+  { icon: Search, title: "Diagnóstico completo do perfil", desc: "Posicionamento, promessa e diferenciação.", highlight: false },
+  { icon: PenTool, title: "Ajuste estratégico de bio e jornada", desc: "Reestruturação para conversão.", highlight: false },
+  { icon: LayoutGrid, title: "Estrutura de conteúdo", desc: "Pilares e linha editorial.", highlight: false },
+  { icon: ShoppingBag, title: "Estratégia de vendas simplificada", desc: "Modelo prático para vender.", highlight: false },
+  { icon: CalendarCheck, title: "Plano de ação 30 dias", desc: "Passo a passo organizado.", highlight: false },
+  { icon: Video, title: "Reunião individual de 20 minutos", desc: "Explicação detalhada + direcionamento.", highlight: true },
 ];
 
 const steps = [
-  { num: "1", title: "Você garante seu diagnóstico", desc: "Pagamento seguro via Mercado Pago." },
-  { num: "2", title: "Preenche um formulário estratégico", desc: "Informações sobre seu perfil e objetivos." },
-  { num: "3", title: "Recebe seu PDF em até 5 dias úteis", desc: "Análise completa e personalizada." },
-  { num: "4", title: "Participa da reunião individual", desc: "20 minutos de direcionamento estratégico." },
+  { num: "1", title: "Garanta seu diagnóstico", desc: "Pagamento seguro." },
+  { num: "2", title: "Preencha o formulário", desc: "Perfil e objetivos." },
+  { num: "3", title: "Receba o PDF", desc: "Em até 5 dias úteis." },
+  { num: "4", title: "Reunião individual", desc: "20 min de direcionamento." },
 ];
 
 const faqs = [
@@ -56,26 +33,9 @@ const faqs = [
   { q: "O que acontece depois do pagamento?", a: "Você será direcionado para preencher um formulário estratégico com informações sobre seu perfil e objetivos. A partir dele, iniciamos a análise." },
   { q: "É diferente dos Packs de Conteúdo?", a: "Sim. Os Packs entregam conteúdo pronto para publicação. O Diagnóstico entrega estratégia, clareza e direção para o seu perfil crescer de forma estruturada." },
   { q: "Preciso ter muitos seguidores?", a: "Não. O diagnóstico funciona para perfis de qualquer tamanho. O foco é estratégia, não volume." },
+  { q: "Isso substitui uma gestão de Instagram?", a: "Não. O Diagnóstico entrega clareza e direção estratégica. A gestão envolve execução contínua. São complementares: o diagnóstico mostra o caminho, a gestão executa." },
+  { q: "Esse diagnóstico pode evoluir para um trabalho estratégico maior?", a: "Sim. Muitos clientes que começam pelo diagnóstico evoluem para acompanhamento estratégico ou packs de conteúdo com mais segurança, porque já têm clareza do que precisam." },
 ];
-
-function MercadoPagoButton() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    ref.current.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js";
-    script.setAttribute("data-preference-id", PREFERENCE_ID);
-    script.setAttribute("data-source", "button");
-    ref.current.appendChild(script);
-    return () => {
-      if (ref.current) ref.current.innerHTML = "";
-    };
-  }, []);
-
-  return <div ref={ref} className="inline-block" />;
-}
 
 function FaqAccordion() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -88,7 +48,7 @@ function FaqAccordion() {
           <div key={i} className="bg-white/[0.02] border border-white/[0.05] rounded-xl overflow-hidden">
             <button
               onClick={() => setOpenIndex(isOpen ? null : i)}
-              className="w-full flex items-center justify-between px-5 py-4 text-left gap-3"
+              className="w-full flex items-center justify-between px-5 py-3.5 text-left gap-3"
               data-testid={`button-diag-faq-${i}`}
             >
               <span className="text-white/80 text-sm font-medium leading-snug">{faq.q}</span>
@@ -119,10 +79,10 @@ function FaqAccordion() {
 }
 
 const fadeUp = {
-  initial: { opacity: 0, y: 30 },
+  initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
-  transition: { duration: 0.6 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.5 },
 };
 
 export default function DiagnosticoEstrategico() {
@@ -140,38 +100,40 @@ export default function DiagnosticoEstrategico() {
     <div className="bg-brand-navy min-h-screen">
       <Navbar />
 
-      {/* HERO */}
-      <section className="pt-32 md:pt-44 pb-20 md:pb-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-navy via-brand-purple/[0.06] to-brand-navy pointer-events-none" />
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="pt-28 md:pt-36 pb-14 md:pb-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-navy via-brand-purple/[0.04] to-brand-navy pointer-events-none" />
+        <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
             <h1
-              className="font-display text-[32px] md:text-[52px] text-white leading-[1.1] tracking-tight mb-6"
+              className="font-display text-[26px] md:text-[40px] text-white leading-[1.15] tracking-tight mb-4"
               data-testid="text-diag-headline"
             >
-              Seu Instagram não cresce porque falta direção estratégica.
+              Diagnóstico Estratégico de Instagram
             </h1>
-            <p className="text-white/50 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-              Receba um diagnóstico completo do seu perfil + reunião individual de 20 minutos para traçar um plano real de crescimento e vendas.
+            <p className="text-white/50 text-base md:text-lg max-w-xl mx-auto mb-3 leading-relaxed">
+              Descubra o que está travando seu crescimento e receba um plano claro para vender com estratégia.
+            </p>
+            <p className="text-white/35 text-sm mb-7">
+              Reunião individual de 20 minutos inclusa.
             </p>
             <button
               onClick={scrollToCheckout}
-              className="inline-flex items-center justify-center bg-brand-orange text-white px-10 md:px-14 py-4 md:py-5 rounded-full text-base md:text-lg font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.03] shadow-xl shadow-brand-orange/25 mb-8"
+              className="inline-flex items-center justify-center bg-brand-pink text-white px-10 md:px-12 py-3.5 md:py-4 rounded-full text-[15px] md:text-base font-bold transition-all duration-200 hover:bg-brand-pink/85 shadow-lg shadow-brand-pink/20 mb-6"
               data-testid="button-diag-hero-cta"
             >
-              Quero meu Diagnóstico Estratégico
+              Quero meu Diagnóstico
             </button>
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/40 text-sm">
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-blue/60" />
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-white/40 text-xs md:text-sm">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-brand-blue/60" />
                 Análise personalizada
               </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-blue/60" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-brand-blue/60" />
                 Plano de ação 30 dias
               </span>
-              <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-blue/60" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-brand-blue/60" />
                 Reunião estratégica inclusa
               </span>
             </div>
@@ -179,28 +141,27 @@ export default function DiagnosticoEstrategico() {
         </div>
       </section>
 
-      {/* DOR */}
-      <section className="py-20 md:py-28 bg-white/[0.02]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-20 bg-white/[0.02]">
+        <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp}>
-            <h2 className="font-display text-[24px] md:text-[36px] text-white text-center mb-10 leading-tight tracking-tight">
+            <h2 className="font-display text-[20px] md:text-[28px] text-white text-center mb-6 leading-tight tracking-tight">
               Você sente que está fazendo tudo e mesmo assim não avança?
             </h2>
-            <div className="space-y-4 mb-10">
+            <div className="space-y-2.5 mb-7">
               {[
                 "Posta com frequência mas não vende",
                 "Não sabe qual conteúdo realmente gera resultado",
                 "Sua bio não converte visitantes em clientes",
                 "Você sente que está improvisando",
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-pink/60 mt-2 flex-shrink-0" />
-                  <p className="text-white/55 text-[15px] md:text-base leading-relaxed">{item}</p>
+                <div key={i} className="flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-pink/60 mt-[7px] flex-shrink-0" />
+                  <p className="text-white/65 text-[14px] md:text-[15px] leading-relaxed">{item}</p>
                 </div>
               ))}
             </div>
-            <div className="bg-brand-pink/[0.06] border border-brand-pink/10 rounded-xl px-6 py-5 text-center">
-              <p className="text-brand-pink font-semibold text-[15px] md:text-base leading-relaxed">
+            <div className="bg-brand-pink/[0.06] border border-brand-pink/10 rounded-xl px-5 py-4 text-center">
+              <p className="text-brand-pink font-semibold text-[14px] md:text-[15px] leading-relaxed">
                 O problema não é esforço. É falta de estratégia.
               </p>
             </div>
@@ -208,136 +169,147 @@ export default function DiagnosticoEstrategico() {
         </div>
       </section>
 
-      {/* O QUE É */}
-      <section className="py-20 md:py-28">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-14 md:py-20">
+        <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
-            <h2 className="font-display text-[24px] md:text-[36px] text-white mb-6 leading-tight tracking-tight">
+            <h2 className="font-display text-[20px] md:text-[28px] text-white mb-4 leading-tight tracking-tight">
               O que é o Diagnóstico Estratégico
             </h2>
-            <p className="text-white/55 text-[15px] md:text-base leading-relaxed mb-4">
+            <p className="text-white/55 text-[14px] md:text-[15px] leading-relaxed mb-3">
               Um Raio X completo do seu perfil para identificar gargalos, oportunidades e estruturar um plano claro de crescimento e vendas.
             </p>
-            <p className="text-white/40 text-sm leading-relaxed">
+            <p className="text-white/40 text-[13px] leading-relaxed mb-4">
               Nada genérico. Nada superficial. Análise real baseada no seu posicionamento e objetivo.
+            </p>
+            <p className="text-white/30 text-xs italic">
+              Baseado em metodologia aplicada em marcas reais.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* O QUE VOCÊ RECEBE */}
-      <section className="py-20 md:py-28 bg-white/[0.02]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center mb-12">
-            <h2 className="font-display text-[24px] md:text-[36px] text-white mb-4 leading-tight tracking-tight">
+      <section className="py-14 md:py-20 bg-white/[0.02]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center mb-8">
+            <h2 className="font-display text-[20px] md:text-[28px] text-white mb-3 leading-tight tracking-tight">
               O que você recebe
             </h2>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {deliverables.map((item, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="bg-white/[0.025] border border-white/[0.05] rounded-xl p-6"
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                className={`rounded-xl p-5 relative ${
+                  item.highlight
+                    ? "bg-brand-pink/[0.06] border border-brand-pink/20 shadow-lg shadow-brand-pink/[0.04]"
+                    : "bg-white/[0.025] border border-white/[0.05]"
+                }`}
                 data-testid={`card-deliverable-${i}`}
               >
-                <item.icon className="w-6 h-6 text-brand-orange mb-4" />
-                <h3 className="text-white font-medium text-[15px] mb-1.5">{item.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                {item.highlight && (
+                  <span className="absolute top-3 right-3 bg-brand-pink/20 text-brand-pink text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full">
+                    Incluso
+                  </span>
+                )}
+                <item.icon className={`w-5 h-5 mb-3 ${item.highlight ? "text-brand-pink" : "text-brand-orange"}`} />
+                <h3 className="text-white font-medium text-[14px] mb-1">{item.title}</h3>
+                <p className="text-white/40 text-[13px] leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="py-20 md:py-28">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center mb-12">
-            <h2 className="font-display text-[24px] md:text-[36px] text-white mb-4 leading-tight tracking-tight">
+      <section className="py-14 md:py-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center mb-8">
+            <h2 className="font-display text-[20px] md:text-[28px] text-white mb-3 leading-tight tracking-tight">
               Como funciona
             </h2>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {steps.map((step, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
                 className="text-center"
                 data-testid={`step-${i}`}
               >
-                <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange font-bold text-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-9 h-9 rounded-full bg-brand-orange/10 text-brand-orange font-bold text-sm flex items-center justify-center mx-auto mb-3">
                   {step.num}
                 </div>
-                <h3 className="text-white font-medium text-[15px] mb-1.5">{step.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed">{step.desc}</p>
+                <h3 className="text-white font-medium text-[13px] md:text-[14px] mb-1">{step.title}</h3>
+                <p className="text-white/40 text-[12px] md:text-[13px] leading-relaxed">{step.desc}</p>
               </motion.div>
             ))}
           </div>
-          <p className="text-center text-white/30 text-sm mt-10">Simples. Direto. Aplicável.</p>
+          <p className="text-center text-white/25 text-xs mt-7">Simples. Direto. Aplicável.</p>
         </div>
       </section>
 
-      {/* INVESTIMENTO */}
-      <section className="py-20 md:py-28 bg-white/[0.02]" ref={checkoutRef}>
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-20 bg-white/[0.02]" ref={checkoutRef}>
+        <div className="max-w-sm mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp}>
-            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 text-center">
-              <p className="text-white/40 text-xs tracking-[0.15em] uppercase mb-2">Investimento</p>
-              <h3 className="text-white font-medium text-lg mb-1">Diagnóstico Estratégico + Reunião</h3>
-              <p className="text-brand-orange text-4xl md:text-5xl font-bold tracking-tight my-5" data-testid="text-diag-price">
+            <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-7 md:p-9 text-center">
+              <p className="text-white/40 text-[10px] tracking-[0.15em] uppercase mb-2">Investimento</p>
+              <h3 className="text-white font-medium text-base mb-1">Diagnóstico Estratégico + Reunião</h3>
+              <p className="text-brand-orange text-3xl md:text-4xl font-bold tracking-tight my-4" data-testid="text-diag-price">
                 R$ 397
               </p>
-              <p className="text-white/40 text-sm mb-8">Entrega em até 5 dias úteis</p>
-              <div className="mb-4" data-testid="container-mp-diag">
-                <MercadoPagoButton />
-              </div>
-              <p className="text-white/25 text-xs">Pagamento seguro via Mercado Pago</p>
+              <p className="text-white/40 text-[13px] mb-6">Entrega em até 5 dias úteis</p>
+              <a
+                href={MP_INIT_POINT}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-full bg-brand-pink text-white py-3.5 rounded-full text-[15px] font-bold transition-all duration-200 hover:bg-brand-pink/80 shadow-lg shadow-brand-pink/20"
+                data-testid="button-diag-checkout"
+              >
+                Garantir meu Diagnóstico
+              </a>
+              <p className="text-white/20 text-[11px] mt-3">Pagamento seguro via Mercado Pago</p>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* AUTORIDADE */}
-      <section className="py-16 md:py-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-12 md:py-16">
+        <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
-            <p className="text-white/55 text-[15px] md:text-base leading-relaxed mb-2">
+            <p className="text-white/50 text-[14px] leading-relaxed mb-1.5">
               Não é para quem quer fórmula mágica.
             </p>
-            <p className="text-white font-semibold text-base md:text-lg">
+            <p className="text-white font-semibold text-[15px] md:text-base">
               É para quem quer clareza estratégica e crescimento estruturado.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-20 md:py-28 bg-white/[0.02]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center mb-10">
-            <h2 className="font-display text-[24px] md:text-[36px] text-white mb-3 leading-tight tracking-tight">
+      <section className="py-14 md:py-20 bg-white/[0.02]">
+        <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center mb-7">
+            <h2 className="font-display text-[20px] md:text-[28px] text-white mb-2 leading-tight tracking-tight">
               Perguntas Frequentes
             </h2>
-            <p className="text-white/40 text-sm">Tudo o que você precisa saber para decidir com segurança.</p>
+            <p className="text-white/35 text-[13px]">Tudo o que você precisa saber para decidir com segurança.</p>
           </motion.div>
           <FaqAccordion />
         </div>
       </section>
 
-      {/* BOTÃO FINAL */}
-      <section className="py-16 md:py-20">
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-12 md:py-16">
+        <div className="max-w-sm mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
             <button
               onClick={scrollToCheckout}
-              className="inline-flex items-center justify-center bg-brand-orange text-white px-10 md:px-14 py-4 md:py-5 rounded-full text-base md:text-lg font-bold transition-all duration-200 hover:brightness-110 hover:scale-[1.03] shadow-xl shadow-brand-orange/25"
+              className="inline-flex items-center justify-center bg-brand-pink text-white px-10 md:px-12 py-3.5 md:py-4 rounded-full text-[15px] md:text-base font-bold transition-all duration-200 hover:bg-brand-pink/85 shadow-lg shadow-brand-pink/20"
               data-testid="button-diag-final-cta"
             >
               Garantir meu Diagnóstico agora
