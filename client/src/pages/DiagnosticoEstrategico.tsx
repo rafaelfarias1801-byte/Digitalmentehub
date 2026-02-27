@@ -5,7 +5,7 @@ import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, PenTool, LayoutGrid, ShoppingBag, CalendarCheck, Video, Plus, Minus } from "lucide-react";
 
-const PREFERENCE_ID = "3035532652-2c14a7e7-188a-45bf-983a-4d9b7e34b3bd";
+const PREFERENCE_ID = "3035532652-b219d96e-ba16-4e54-b1e4-23ba3fcea307";
 const MP_INIT_POINT = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${PREFERENCE_ID}`;
 
 const deliverables = [

@@ -12,6 +12,7 @@ import DiagnosticoEstrategico from "@/pages/DiagnosticoEstrategico";
 import ObrigadoBriefing from "@/pages/ObrigadoBriefing";
 import ObrigadoCompra from "@/pages/ObrigadoCompra";
 import ObrigadoCompraDiagnostico from "@/pages/ObrigadoCompraDiagnostico";
+import ObrigadoBriefingDiagnostico from "@/pages/ObrigadoBriefingDiagnostico";
 import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
 
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
       <Route path="/obrigado-compra" component={ObrigadoCompra} />
       <Route path="/analise-obrigado-compra" component={ObrigadoCompraDiagnostico} />
+      <Route path="/analise-obrigado-briefing" component={ObrigadoBriefingDiagnostico} />
       <Route path="/checkout-basico">{() => <Checkout packId="basico" />}</Route>
       <Route path="/checkout-intermediario">{() => <Checkout packId="intermediario" />}</Route>
       <Route path="/checkout-premium">{() => <Checkout packId="premium" />}</Route>
