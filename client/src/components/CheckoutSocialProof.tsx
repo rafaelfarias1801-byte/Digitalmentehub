@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAMES = [
@@ -26,45 +26,68 @@ function getTimePeriod(): "morning" | "afternoon" | "night" {
 }
 
 function getBadgeText(packId: string, period: "morning" | "afternoon" | "night") {
-  if (period === "morning") {
-    return "Agenda do dia abrindo agora. Poucas vagas disponíveis.";
-  }
-
-  const planTexts: Record<string, string> = {
-    basico: "Agenda de produção quase completa hoje.",
-    intermediario: "Agenda de produção com poucas aberturas hoje.",
-    premium: "Agenda estratégica com poucas janelas hoje.",
-    diamante: "Projetos completos com disponibilidade reduzida hoje.",
+  const texts: Record<string, Record<string, string>> = {
+    basico: {
+      morning: "Agenda do dia abrindo agora. Poucas vagas disponíveis.",
+      afternoon: "Agenda de produção quase completa hoje.",
+      night: "Últimas janelas de produção hoje.",
+    },
+    intermediario: {
+      morning: "Agenda do dia abrindo agora. Poucas aberturas disponíveis.",
+      afternoon: "Agenda de produção quase completa hoje.",
+      night: "Últimas janelas de produção hoje.",
+    },
+    premium: {
+      morning: "Agenda estratégica do dia abrindo agora. Poucas janelas disponíveis.",
+      afternoon: "Agenda estratégica quase completa hoje.",
+      night: "Últimas janelas estratégicas hoje.",
+    },
+    diamante: {
+      morning: "Projetos completos: agenda do dia abrindo agora. Disponibilidade reduzida.",
+      afternoon: "Projetos completos: agenda quase completa hoje.",
+      night: "Projetos completos: últimas janelas de produção hoje.",
+    },
   };
 
-  if (period === "night") {
-    return "Últimas vagas na agenda de hoje.";
-  }
-
-  return planTexts[packId] || planTexts.basico;
+  return texts[packId]?.[period] || texts.basico[period];
 }
 
-function getRandomName() {
+function pickName() {
   return NAMES[Math.floor(Math.random() * NAMES.length)];
 }
 
-function getPushText(packId: string) {
+function pickPushMessage(packId: string, period: "morning" | "afternoon" | "night") {
   const planName = displayNames[packId] || "Básico";
-  const period = getTimePeriod();
-  const name = getRandomName();
+  const name = pickName();
 
-  const variations = [
+  const neutral = [
     `${name} garantiu o Pack ${planName} agora há pouco.`,
     `${name} fechou o Pack ${planName} hoje.`,
     `${name} acabou de reservar o Pack ${planName}.`,
     `Mais um Pack ${planName} confirmado hoje.`,
+    `${name} escolheu o Pack ${planName} para este mês.`,
+    `${name} acabou de garantir o Pack ${planName}.`,
+    `Novo pedido do Pack ${planName} registrado há poucos minutos.`,
+    `${name} finalizou o Pack ${planName} e já entrou na agenda.`,
   ];
 
-  if (period === "night") {
-    variations.push(`Últimas janelas de produção hoje para o Pack ${planName}.`);
+  const urgent = [
+    `Agenda de hoje movimentada: ${name} pegou o Pack ${planName}.`,
+    `Poucas janelas hoje: ${name} garantiu o Pack ${planName}.`,
+    `${name} entrou na agenda do Pack ${planName} hoje.`,
+    `Últimas janelas de produção hoje para o Pack ${planName}.`,
+  ];
+
+  let pool: string[];
+  if (period === "morning") {
+    pool = neutral;
+  } else if (period === "afternoon") {
+    pool = [...neutral, ...urgent.slice(0, 3)];
+  } else {
+    pool = urgent;
   }
 
-  return variations[Math.floor(Math.random() * variations.length)];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function shouldShowDailyRefresh() {
@@ -96,62 +119,59 @@ function incrementPushCount() {
   localStorage.setItem("dh_pushShownCountToday", String(current + 1));
 }
 
+function checkCooldown() {
+  const last = parseInt(localStorage.getItem("dh_lastPushTimestamp") || "0", 10);
+  return Date.now() - last > 45000;
+}
+
+function setCooldown() {
+  localStorage.setItem("dh_lastPushTimestamp", String(Date.now()));
+}
+
 export default function CheckoutSocialProof({ packId }: { packId: string }) {
   const [showBadge, setShowBadge] = useState(false);
   const [badgeText, setBadgeText] = useState("");
   const [dailyRefresh, setDailyRefresh] = useState(false);
   const [pushText, setPushText] = useState("");
   const [showPush, setShowPush] = useState(false);
+  const pushesThisVisit = useRef(0);
 
   useEffect(() => {
     const period = getTimePeriod();
     setBadgeText(getBadgeText(packId, period));
 
-    const badgeTimer = setTimeout(() => setShowBadge(true), 5000);
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    const showRefresh = shouldShowDailyRefresh();
-    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
-    if (showRefresh) {
-      refreshTimer = setTimeout(() => {
+    timers.push(setTimeout(() => setShowBadge(true), 5000));
+
+    if (shouldShowDailyRefresh()) {
+      timers.push(setTimeout(() => {
         setDailyRefresh(true);
-        setTimeout(() => setDailyRefresh(false), 6000);
-      }, 3000);
+        timers.push(setTimeout(() => setDailyRefresh(false), 6500));
+      }, 3000));
     }
 
-    let pushTimer1: ReturnType<typeof setTimeout> | null = null;
-    let pushTimer2: ReturnType<typeof setTimeout> | null = null;
-    let pushesShownThisVisit = 0;
-
-    if (canShowPushToday()) {
-      const delay1 = 8000 + Math.random() * 4000;
-      pushTimer1 = setTimeout(() => {
-        if (pushesShownThisVisit >= 2) return;
-        setPushText(getPushText(packId));
-        setShowPush(true);
-        incrementPushCount();
-        pushesShownThisVisit++;
-        setTimeout(() => setShowPush(false), 6500);
-
-        if (canShowPushToday() && pushesShownThisVisit < 2) {
-          const delay2 = 20000 + Math.random() * 15000;
-          pushTimer2 = setTimeout(() => {
-            if (pushesShownThisVisit >= 2) return;
-            setPushText(getPushText(packId));
-            setShowPush(true);
-            incrementPushCount();
-            pushesShownThisVisit++;
-            setTimeout(() => setShowPush(false), 6500);
-          }, delay2);
-        }
-      }, delay1);
-    }
-
-    return () => {
-      clearTimeout(badgeTimer);
-      if (refreshTimer) clearTimeout(refreshTimer);
-      if (pushTimer1) clearTimeout(pushTimer1);
-      if (pushTimer2) clearTimeout(pushTimer2);
+    const tryShowPush = () => {
+      if (pushesThisVisit.current >= 2 || !canShowPushToday() || !checkCooldown()) return false;
+      const period = getTimePeriod();
+      setPushText(pickPushMessage(packId, period));
+      setShowPush(true);
+      incrementPushCount();
+      setCooldown();
+      pushesThisVisit.current++;
+      timers.push(setTimeout(() => setShowPush(false), 6500));
+      return true;
     };
+
+    const delay1 = 8000 + Math.random() * 4000;
+    timers.push(setTimeout(() => {
+      if (tryShowPush()) {
+        const delay2 = 20000 + Math.random() * 15000;
+        timers.push(setTimeout(() => tryShowPush(), delay2));
+      }
+    }, delay1));
+
+    return () => timers.forEach(clearTimeout);
   }, [packId]);
 
   return (
@@ -191,13 +211,14 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
       <AnimatePresence>
         {showPush && (
           <motion.div
-            initial={{ opacity: 0, y: 20, x: 0 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="fixed bottom-6 left-6 right-6 sm:left-6 sm:right-auto sm:max-w-xs z-50"
           >
-            <div className="bg-[#1a2a5e] border border-white/[0.08] rounded-xl px-5 py-3.5 shadow-2xl shadow-black/40">
+            <div className="bg-[#1a2a5e] border border-white/[0.08] rounded-xl px-5 py-3.5 shadow-2xl shadow-black/40 flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-green-400/70 flex-shrink-0" />
               <p className="text-white/70 text-xs leading-relaxed">{pushText}</p>
             </div>
           </motion.div>

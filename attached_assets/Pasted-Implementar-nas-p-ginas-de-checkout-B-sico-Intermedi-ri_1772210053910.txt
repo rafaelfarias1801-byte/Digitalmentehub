@@ -1,0 +1,148 @@
+Implementar nas páginas de checkout (Básico, Intermediário, Premium, Diamante) um sistema leve e elegante de escassez + prova social FICTÍCIOS, rodando 100% no frontend (zero requisições / zero API), com lógica baseada na DATA e HORA reais do navegador e persistência via localStorage.
+
+Objetivos
+- Mostrar um badge sutil de “agenda” (sem número de vagas)
+- Mostrar 1 ou 2 push notifications por visita (com nomes fictícios), e parar
+- Variar automaticamente as mensagens conforme o horário (manhã/tarde/noite)
+- Garantir consistência por dia para a mesma pessoa (localStorage)
+- Resetar automaticamente quando virar o dia (calendário real)
+
+1) Detecção do plano
+Criar função getCurrentPlan() que detecta o plano pela rota/slug ou por texto do título do checkout.
+Retornar: "Básico" | "Intermediário" | "Premium" | "Diamante"
+
+2) Data e hora reais
+Criar:
+- getDayKey() => YYYY-MM-DD (data real do navegador)
+- getTimePeriod() => "morning" | "afternoon" | "night"
+  morning: 05:00–11:59
+  afternoon: 12:00–17:59
+  night: 18:00–23:59
+
+3) Badge de escassez (sem números)
+- Exibir 5 segundos após carregar
+- Desktop: canto superior esquerdo do bloco principal do checkout
+- Mobile: barra discreta fixa no topo OU card flutuante pequeno no canto superior direito (escolher o que melhor se encaixa no layout)
+- Visual premium, discreto, sem vermelho, com fade-in
+
+Texto do badge deve variar conforme horário E plano:
+
+Mensagens base por horário:
+Morning:
+"Agenda do dia abrindo agora. Poucas vagas disponíveis."
+Afternoon:
+"Agenda de produção quase completa hoje."
+Night:
+"Últimas janelas de produção hoje."
+
+Ajuste por plano (manter sentido, trocar termos):
+Básico:
+usar "produção" e "agenda do dia"
+Intermediário:
+usar "produção" e "poucas aberturas"
+Premium:
+usar "agenda estratégica" e "poucas janelas"
+Diamante:
+usar "projetos completos" e "disponibilidade reduzida"
+
+Exemplos (sugestão):
+Básico:
+morning "Agenda do dia abrindo agora. Poucas vagas disponíveis."
+afternoon "Agenda de produção quase completa hoje."
+night "Últimas janelas de produção hoje."
+
+Intermediário:
+morning "Agenda do dia abrindo agora. Poucas aberturas disponíveis."
+afternoon "Agenda de produção quase completa hoje."
+night "Últimas janelas de produção hoje."
+
+Premium:
+morning "Agenda estratégica do dia abrindo agora. Poucas janelas disponíveis."
+afternoon "Agenda estratégica quase completa hoje."
+night "Últimas janelas estratégicas hoje."
+
+Diamante:
+morning "Projetos completos: agenda do dia abrindo agora. Disponibilidade reduzida."
+afternoon "Projetos completos: agenda quase completa hoje."
+night "Projetos completos: últimas janelas de produção hoje."
+
+4) Mensagem especial ao virar o dia
+- Usar localStorage:
+  lastVisitDayKey
+- Se getDayKey() != lastVisitDayKey:
+  - Exibir 1 aviso sutil (pode ser o mesmo componente do badge, por 6–7s):
+    "Agenda atualizada hoje. Poucas vagas liberadas."
+  - Atualizar lastVisitDayKey para o dia atual
+Esse aviso deve aparecer somente na primeira visita do dia.
+
+5) Push notifications (prova social) — 1 ou 2 por visita
+- Mostrar o primeiro push entre 8 e 12 segundos após carregar
+- Opcional: mostrar o segundo push entre 20 e 35 segundos após o primeiro
+- Nunca mostrar mais de 2 pushes por visita
+- Limitar também a no máximo 2 pushes por DIA por usuário:
+  Usar localStorage:
+  pushDayKey
+  pushShownCountToday
+- Se pushDayKey != dayKey atual, resetar pushShownCountToday = 0 e setar pushDayKey = dayKey
+
+Nomes fictícios
+Lista BR:
+João, Maria, Carla, Ana, Lucas, Beatriz, Pedro, Camila, Rafael, Mariana, Bruno, Juliana, Felipe, Larissa, Gustavo, Renata
+
+6) Textos do push com lógica por horário (automaticamente)
+Criar arrays de mensagens (templates) e escolher com base no getTimePeriod():
+
+Mensagens NEUTRAS (manhã e tarde; usar mais de manhã):
+1 "{Nome} garantiu o Pack {Plano} agora há pouco."
+2 "{Nome} fechou o Pack {Plano} hoje."
+3 "{Nome} acabou de reservar o Pack {Plano}."
+4 "Mais um Pack {Plano} confirmado hoje."
+5 "{Nome} escolheu o Pack {Plano} para este mês."
+6 "{Nome} acabou de garantir o Pack {Plano}."
+7 "Novo pedido do Pack {Plano} registrado há poucos minutos."
+8 "{Nome} finalizou o Pack {Plano} e já entrou na agenda."
+
+Mensagens com URGÊNCIA LEVE (preferir à tarde e usar sempre à noite):
+9 "Agenda de hoje movimentada: {Nome} pegou o Pack {Plano}."
+10 "Poucas janelas hoje: {Nome} garantiu o Pack {Plano}."
+11 "{Nome} entrou na agenda do Pack {Plano} hoje."
+12 "Últimas janelas de produção hoje para o Pack {Plano}."
+
+Regras de seleção:
+- morning: escolher aleatoriamente entre 1–8
+- afternoon: escolher aleatoriamente entre 1–11 (misturar neutras e leves)
+- night: escolher aleatoriamente entre 9–12 (apenas urgência leve)
+
+7) Visual do push
+- Desktop: canto inferior esquerdo
+- Mobile: centro inferior
+- Card pequeno, premium, discreto
+- Ícone simples (ex: ponto verde sutil ou check)
+- Animação slide + fade
+- Duração na tela: 6–7s
+- Sem bibliotecas externas
+
+8) Anti-spam e consistência
+- Se o usuário der refresh rápido, não repetir push imediatamente:
+  salvar lastPushTimestamp no localStorage e respeitar cooldown (ex: 45s)
+- Se já exibiu 2 pushes no dia, não exibir mais até virar o dia
+- Cada visita exibe no máximo 2 pushes
+
+9) Implementação (sem API)
+Implementar tudo em JS puro ou React (conforme o projeto), criando:
+- getCurrentPlan()
+- getDayKey()
+- getTimePeriod()
+- shouldShowDailyRefreshMessage()
+- showBadge(plan, period)
+- showDailyRefreshMessage()
+- pickName()
+- pickPushMessage(plan, period, name)
+- showPush(message)
+- schedulePushesForVisit()
+
+Importante
+- Zero fetch/axios/chamadas externas
+- Não quebrar layout existente dos checkouts
+- Aplicar em todos os planos (cada página deve detectar o plano corretamente)
+- Design coerente com o site (azul escuro/rosa), sem vermelho alarmista
