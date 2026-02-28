@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
-import { Check, Video, Search, Compass, CalendarCheck, FileText, Plus, Minus } from "lucide-react";
+import { Check, Video, Search, Compass, CalendarCheck, FileText, Plus, Minus, Target } from "lucide-react";
 
 const WA_LINK = `https://wa.me/5541987907321?text=${encodeURIComponent(
   "Olá! Tenho interesse na Consultoria Estratégica Intensiva. Pode me contar mais?"
@@ -16,6 +16,7 @@ const deliverables = [
   { icon: Compass, title: "Direcionamento claro e aplicável", desc: "O que fazer, onde focar e por quê.", highlight: false },
   { icon: CalendarCheck, title: "Plano de ação essencial com prioridades", desc: "Próximos passos organizados.", highlight: false },
   { icon: FileText, title: "Resumo estratégico em PDF após a consultoria", desc: "Documento para consultar sempre que precisar.", highlight: false },
+  { icon: Target, title: "Análise de oportunidades e riscos", desc: "Mapeamento do que está travando seu crescimento e onde estão as oportunidades reais no seu momento atual.", highlight: false },
 ];
 
 const faqs = [
@@ -187,7 +188,7 @@ export default function Consultoria() {
               O que você recebe
             </h2>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {deliverables.map((item, i) => (
               <motion.div
                 key={i}
@@ -247,10 +248,10 @@ export default function Consultoria() {
                 href={WA_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2.5 w-full bg-brand-pink text-white py-3.5 rounded-full text-[15px] font-bold transition-all duration-200 hover:bg-brand-pink/80 shadow-lg shadow-brand-pink/20"
+                className="inline-flex items-center justify-center gap-2 w-full bg-brand-pink text-white py-3.5 px-6 rounded-full text-[14px] font-bold transition-all duration-200 hover:bg-brand-pink/80 shadow-lg shadow-brand-pink/20"
                 data-testid="button-consultoria-checkout"
               >
-                <FaWhatsapp className="text-lg" />
+                <FaWhatsapp className="text-base flex-shrink-0" />
                 Quero minha consultoria estratégica
               </a>
               <p className="text-white/20 text-[11px] mt-3">Agendamento via WhatsApp</p>
