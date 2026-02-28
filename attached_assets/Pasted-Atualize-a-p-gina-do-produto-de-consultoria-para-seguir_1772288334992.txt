@@ -1,0 +1,93 @@
+Atualize a página do produto de consultoria para seguir o MESMO layout, espaçamentos e tamanhos de fonte do template da página Diagnóstico Estratégico de Instagram. Não aumente o hero, mantenha a mesma hierarquia visual (título, subtítulo e botão) do Diagnóstico. Manter o mesmo header, cores, botões, cards e estilo de seções.
+
+Objetivo: reestruturar a página inteira com copy mais estratégica, mais direta e com o nome do produto como Consultoria Estratégica Intensiva. Evitar o termo sessão. Evitar textos longos. Usar frases curtas e claras.
+
+Rota e SEO
+Título da página: Consultoria Estratégica Intensiva
+Meta title: Consultoria Estratégica Intensiva | Digitalmente
+Meta description: Consultoria pontual para empreendedores que precisam de direção no digital. 60 minutos de clareza, foco e plano de ação.
+
+Hero (manter o mesmo tamanho do Diagnóstico)
+Badge pequeno acima do título: PRODUTOS
+Título: Seu marketing está confuso porque falta direção.
+Subtítulo: Uma consultoria estratégica intensiva para empreendedores que querem clareza real antes de investir tempo ou dinheiro no digital.
+Botão principal: Quero minha consultoria estratégica
+Ação do botão: abrir WhatsApp (manter o mesmo padrão de link já usado no site para CTA de WhatsApp)
+
+Seção Dor
+Título: Você sente que está fazendo tudo, mas sem saber se está fazendo certo?
+Bullets curtos:
+Posta, mas não tem estrutura
+Investe, mas não tem clareza do que funciona
+Sente que está improvisando no digital
+Quer crescer, mas não sabe o próximo passo
+Frase destaque em card igual ao Diagnóstico: O problema não é esforço. É falta de direção.
+
+Seção O que é
+Título: O que é a Consultoria Estratégica Intensiva
+Texto curto: Em 60 minutos estruturados, analisamos seu negócio, seu momento e sua presença digital para definir foco, prioridades e um caminho estratégico.
+Linha curta abaixo: Direto ao ponto. Sem achismo. Sem enrolação.
+
+Seção O que trabalhamos (em lista com checks, igual estilo do Diagnóstico)
+Título: O que a gente destrava na consultoria
+Itens:
+Clareza de posicionamento e proposta de valor
+Definição do foco digital (onde estar e por quê)
+Direcionamento de marketing conforme seu momento
+Organização de prioridades e próximos passos
+Ajustes de comunicação para converter melhor
+
+Seção Entregáveis (cards ou lista com ícones, no mesmo padrão visual do Diagnóstico)
+Título: O que você recebe
+Cards:
+Reunião estratégica online (60 minutos)
+Diagnóstico do momento atual do negócio
+Direcionamento claro e aplicável
+Plano de ação essencial com prioridades
+Resumo estratégico em PDF após a consultoria
+
+Adicionar observação pequena abaixo (texto discreto): Não é acompanhamento. É uma consultoria pontual para definir direção e decisões.
+
+Seção Para quem é
+Título: Para quem é
+Lista com checks:
+Empreendedores no início ou em fase de estruturação
+Negócios que ainda não têm posicionamento digital definido
+Quem está no digital, mas sem estratégia
+Quem quer evitar erros, gastos desnecessários e decisões no escuro
+
+Seção Investimento (card central igual ao Diagnóstico, sem deixar gigante)
+Título pequeno acima: INVESTIMENTO
+Nome do produto no card: Consultoria Estratégica Intensiva
+Preço: R$ 699,00
+Texto pequeno: Reunião online de 60 minutos + resumo em PDF
+Botão: Quero minha consultoria estratégica
+Ação: WhatsApp (mesmo padrão do site)
+
+Seção frase final (curta, estilo manifesto)
+Texto pequeno acima: Não é sobre postar mais.
+Texto principal: É sobre saber exatamente o que fazer primeiro.
+
+FAQ (mesmo componente accordion do Diagnóstico)
+Título: Perguntas Frequentes
+Subtítulo pequeno: Tudo o que você precisa saber antes de agendar.
+Perguntas e respostas:
+O que é a Consultoria Estratégica Intensiva?
+É uma consultoria pontual, estruturada, para definir direção no digital com base no seu momento atual.
+Isso é mentoria ou acompanhamento?
+Não. É uma reunião única, com análise e direcionamento.
+Qual a duração?
+60 minutos.
+Vou sair com plano prático?
+Sim. Você sai com prioridades claras e próximos passos organizados.
+Para qual tipo de negócio serve?
+Para prestadores de serviço, negócios locais e marcas que precisam estruturar presença digital.
+E se eu quiser implementação depois?
+Se fizer sentido, podemos apresentar um plano de execução com a Digitalmente.
+
+Ajustes finais
+Manter consistência visual com Diagnóstico Estratégico de Instagram
+Não aumentar fontes do hero
+Evitar blocos de texto longos
+Garantir boa leitura no mobile
+Manter o CTA fixo do topo Falar no WhatsApp
