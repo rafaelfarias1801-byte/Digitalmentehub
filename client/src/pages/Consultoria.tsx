@@ -93,10 +93,10 @@ export default function Consultoria() {
               className="font-display text-[26px] md:text-[40px] text-white leading-[1.15] tracking-tight mt-3 mb-4"
               data-testid="text-consultoria-headline"
             >
-              Seu marketing está confuso porque falta direção.
+              Consultoria Estratégica Intensiva
             </h1>
             <p className="text-white/50 text-base md:text-lg max-w-xl mx-auto mb-7 leading-relaxed">
-              Uma consultoria estratégica intensiva para empreendedores que querem clareza real antes de investir tempo ou dinheiro no digital.
+              Uma consultoria estratégica única para organizar seu marketing e sair com direção clara do que fazer primeiro.
             </p>
             <a
               href={WA_LINK}

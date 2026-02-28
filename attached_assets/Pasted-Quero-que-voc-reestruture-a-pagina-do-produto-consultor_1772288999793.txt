@@ -1,0 +1,49 @@
+Quero que você reestruture a pagina do produto consultoria para corrigir o titulo e padronizar o hero
+
+Objetivo
+A pagina precisa ter titulo principal claro e seguir o mesmo layout e tamanhos de fonte do hero do produto Diagnostico Estrategico de Instagram
+Evitar texto gigante e evitar que o titulo fique ausente
+
+Rota e SEO
+Manter a rota atual do produto consultoria
+Definir title da pagina como Consultoria Estrategica Intensiva Digitalmente
+Definir meta description curta e objetiva com foco em clareza e direcao para empreendedores
+
+Hero
+Manter o fundo e estilo visual do site
+Manter o label pequeno PRODUTOS acima do titulo
+Adicionar obrigatoriamente um H1 grande porem equilibrado com o mesmo padrao de tamanho do Diagnostico
+H1 exato Consultoria Estrategica Intensiva
+
+Abaixo do H1 colocar um subtitulo com no maximo 2 linhas
+Texto sugerido
+Uma consultoria estrategica unica para organizar seu marketing e sair com direcao clara do que fazer primeiro
+
+CTA do hero
+Manter botao rosa
+Texto do botao Quero minha consultoria estrategica
+Acao do botao abrir WhatsApp para agendamento
+
+Seções
+Garantir que todas as secoes tenham titulo visivel e consistente
+Corrigir o bloco O que e a consultoria estrategica intensiva para que o titulo apareca completo e nao fique cortado
+Revisar espacamentos para nao ficar tudo muito distante ou vazio no desktop
+No mobile reduzir paddings e ajustar quebra do H1 para ficar legivel
+
+Seção O que voce recebe
+Manter os cards porem revisar textos para ficar mais direto e sem prometer mais de uma reuniao
+Substituir Reuniao estrategica online por Reuniao estrategica online 60 minutos
+Evitar usar palavra sessao
+
+Seção Preco
+Manter R$ 699,00
+Manter texto curto abaixo Reuniao online 60 minutos mais resumo em PDF
+Botao CTA no card Quero minha consultoria estrategica com WhatsApp
+
+FAQ
+Manter FAQ e garantir que os titulos aparecem e que o acordeon abre e fecha corretamente
+
+Entrega
+Aplicar essas alteracoes no componente da pagina do produto consultoria mantendo o padrao visual do Diagnostico Estrategico
+Nao alterar a identidade visual do site
+Nao criar novas rotas desnecessarias
