@@ -5,8 +5,7 @@ import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, PenTool, LayoutGrid, ShoppingBag, CalendarCheck, Video, Plus, Minus } from "lucide-react";
 
-const PREFERENCE_ID = "3035532652-b219d96e-ba16-4e54-b1e4-23ba3fcea307";
-const MP_INIT_POINT = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${PREFERENCE_ID}`;
+const CHECKOUT_URL = "https://payfast.greenn.com.br/94458yv";
 
 const deliverables = [
   { icon: Search, title: "Diagnóstico completo do perfil", desc: "Posicionamento, promessa e diferenciação.", highlight: false },
@@ -14,27 +13,27 @@ const deliverables = [
   { icon: LayoutGrid, title: "Estrutura de conteúdo", desc: "Pilares e linha editorial.", highlight: false },
   { icon: ShoppingBag, title: "Estratégia de vendas simplificada", desc: "Modelo prático para vender.", highlight: false },
   { icon: CalendarCheck, title: "Plano de ação 30 dias", desc: "Passo a passo organizado.", highlight: false },
-  { icon: Video, title: "Reunião individual de 20 minutos", desc: "Explicação detalhada + direcionamento.", highlight: true },
+  { icon: Video, title: "Vídeo Mestre de Implementação", desc: "Explicação detalhada da metodologia aplicada no seu perfil e direcionamento estratégico para execução.", highlight: true },
 ];
 
 const steps = [
   { num: "1", title: "Garanta seu diagnóstico", desc: "Pagamento seguro." },
   { num: "2", title: "Preencha o formulário", desc: "Perfil e objetivos." },
   { num: "3", title: "Receba o PDF", desc: "Em até 5 dias úteis." },
-  { num: "4", title: "Reunião individual", desc: "20 min de direcionamento." },
+  { num: "4", title: "Acesso ao Vídeo", desc: "Assista ao guia estratégico para aplicar seu novo posicionamento e escalar seus resultados." },
 ];
 
 const faqs = [
-  { q: "O que exatamente é o Diagnóstico Estratégico?", a: "É uma análise completa do seu perfil no Instagram que identifica gargalos, oportunidades e estrutura um plano claro de crescimento e vendas. Inclui relatório em PDF e reunião individual de 20 minutos." },
+  { q: "O que exatamente é o Diagnóstico Estratégico?", a: "É uma análise completa do seu perfil no Instagram que identifica gargalos, oportunidades e estrutura um plano claro de crescimento e vendas. Inclui relatório em PDF e vídeo estratégico exclusivo." },
   { q: "Serve para qualquer nicho?", a: "Sim. A análise é personalizada para o seu mercado, posicionamento e objetivos. Funciona para qualquer segmento." },
-  { q: "Como funciona a reunião?", a: "Após a entrega do PDF, agendamos uma videochamada de 20 minutos para explicar os pontos da análise e direcionar os próximos passos." },
+  { q: "Como recebo meu direcionamento?", a: "Para garantir agilidade, você receberá um vídeo estratégico exclusivo detalhando como aplicar cada ponto do seu plano de ação, permitindo que você consulte as estratégias sempre que precisar." },
   { q: "Em quanto tempo recebo o diagnóstico?", a: "Em até 5 dias úteis após o preenchimento completo do formulário estratégico." },
-  { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+  { q: "Posso parcelar?", a: "Sim. A plataforma de pagamento oferece parcelamento conforme as condições disponíveis no momento da compra." },
   { q: "O que acontece depois do pagamento?", a: "Você será direcionado para preencher um formulário estratégico com informações sobre seu perfil e objetivos. A partir dele, iniciamos a análise." },
   { q: "É diferente dos Packs de Conteúdo?", a: "Sim. Os Packs entregam conteúdo pronto para publicação. O Diagnóstico entrega estratégia, clareza e direção para o seu perfil crescer de forma estruturada." },
   { q: "Preciso ter muitos seguidores?", a: "Não. O diagnóstico funciona para perfis de qualquer tamanho. O foco é estratégia, não volume." },
   { q: "Isso substitui uma gestão de Instagram?", a: "Não. O Diagnóstico entrega clareza e direção estratégica. A gestão envolve execução contínua. São complementares: o diagnóstico mostra o caminho, a gestão executa." },
-  { q: "Esse diagnóstico pode evoluir para um trabalho estratégico maior?", a: "Sim. Muitos clientes que começam pelo diagnóstico evoluem para acompanhamento estratégico ou packs de conteúdo com mais segurança, porque já têm clareza do que precisam." },
+  { q: "Esse diagnóstico pode evoluir para um trabalho maior?", a: "Sim. Se você busca uma execução profissional feita por nós, o valor pago neste diagnóstico é totalmente abatido na sua primeira mensalidade de Gestão Mensal." },
 ];
 
 function FaqAccordion() {
@@ -108,21 +107,22 @@ export default function DiagnosticoEstrategico() {
               className="font-display text-[26px] md:text-[40px] text-white leading-[1.15] tracking-tight mb-4"
               data-testid="text-diag-headline"
             >
-              Diagnóstico Estratégico de Instagram
+              Diagnóstico Estratégico de Instagram + Plano de Ação
             </h1>
             <p className="text-white/50 text-base md:text-lg max-w-xl mx-auto mb-3 leading-relaxed">
-              Descubra o que está travando seu crescimento e receba um plano claro para vender com estratégia.
+              Descubra o que está travando seu crescimento e receba um plano claro para vender com estratégia. Vídeo de direcionamento exclusivo incluso.
             </p>
-            <p className="text-white/35 text-sm mb-7">
-              Reunião individual de 20 minutos inclusa.
-            </p>
-            <button
-              onClick={scrollToCheckout}
-              className="inline-flex items-center justify-center bg-brand-pink text-white px-10 md:px-12 py-3.5 md:py-4 rounded-full text-[15px] md:text-base font-bold transition-all duration-200 hover:bg-brand-pink/85 shadow-lg shadow-brand-pink/20 mb-6"
-              data-testid="button-diag-hero-cta"
-            >
-              Quero meu Diagnóstico
-            </button>
+            <div className="mb-6">
+              <a
+                href={CHECKOUT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-brand-pink text-white px-10 md:px-12 py-3.5 md:py-4 rounded-full text-[15px] md:text-base font-bold transition-all duration-200 hover:bg-brand-pink/85 shadow-lg shadow-brand-pink/20"
+                data-testid="button-diag-hero-cta"
+              >
+                Quero meu Diagnóstico
+              </a>
+            </div>
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-white/40 text-xs md:text-sm">
               <span className="flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-brand-blue/60" />
@@ -134,7 +134,7 @@ export default function DiagnosticoEstrategico() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-brand-blue/60" />
-                Reunião estratégica inclusa
+                Vídeo estratégico incluso
               </span>
             </div>
           </motion.div>
@@ -259,13 +259,16 @@ export default function DiagnosticoEstrategico() {
           <motion.div {...fadeUp}>
             <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-7 md:p-9 text-center">
               <p className="text-white/40 text-[10px] tracking-[0.15em] uppercase mb-2">Investimento</p>
-              <h3 className="text-white font-medium text-base mb-1">Diagnóstico Estratégico + Reunião</h3>
+              <h3 className="text-white font-medium text-base mb-1">Diagnóstico Estratégico + Plano de Ação</h3>
               <p className="text-brand-orange text-3xl md:text-4xl font-bold tracking-tight my-4" data-testid="text-diag-price">
-                R$ 397
+                R$ 97
               </p>
-              <p className="text-white/40 text-[13px] mb-6">Entrega em até 5 dias úteis</p>
+              <p className="text-white/40 text-[13px] mb-2">Entrega em até 5 dias úteis</p>
+              <p className="text-brand-pink/70 text-[12px] mb-6 leading-relaxed">
+                Abatemos 100% deste valor caso você migre para nossa Gestão Mensal em até 7 dias.
+              </p>
               <a
-                href={MP_INIT_POINT}
+                href={CHECKOUT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center w-full bg-brand-pink text-white py-3.5 rounded-full text-[15px] font-bold transition-all duration-200 hover:bg-brand-pink/80 shadow-lg shadow-brand-pink/20"
@@ -273,7 +276,6 @@ export default function DiagnosticoEstrategico() {
               >
                 Garantir meu Diagnóstico
               </a>
-              <p className="text-white/20 text-[11px] mt-3">Pagamento seguro via Mercado Pago</p>
             </div>
           </motion.div>
         </div>
@@ -307,13 +309,15 @@ export default function DiagnosticoEstrategico() {
       <section className="py-12 md:py-16">
         <div className="max-w-sm mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
-            <button
-              onClick={scrollToCheckout}
+            <a
+              href={CHECKOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center bg-brand-pink text-white px-10 md:px-12 py-3.5 md:py-4 rounded-full text-[15px] md:text-base font-bold transition-all duration-200 hover:bg-brand-pink/85 shadow-lg shadow-brand-pink/20"
               data-testid="button-diag-final-cta"
             >
               Garantir meu Diagnóstico agora
-            </button>
+            </a>
           </motion.div>
         </div>
       </section>
