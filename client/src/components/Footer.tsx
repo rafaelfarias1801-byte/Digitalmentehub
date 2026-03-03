@@ -95,7 +95,7 @@ export default function Footer() {
                 Pack's de conteúdos
               </Link>
               <Link href="/produtos/consultoria" className="block text-white/50 text-sm" data-testid="footer-consultoria">
-                Consultoria Estratégica Intensiva
+                Consultoria Estratégica de Posicionamento
               </Link>
               <Link href="/produtos/diagnostico-estrategico" className="block text-white/50 text-sm" data-testid="footer-analise">
                 Análise Estratégica de Instagram

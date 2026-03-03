@@ -7,7 +7,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { Check, Video, Search, Compass, CalendarCheck, FileText, Plus, Minus, Target } from "lucide-react";
 
 const WA_LINK = `https://wa.me/5541987907321?text=${encodeURIComponent(
-  "Olá! Tenho interesse na Consultoria Estratégica Intensiva. Pode me contar mais?"
+  "Olá! Tenho interesse na Consultoria Estratégica de Posicionamento. Pode me contar mais?"
 )}`;
 
 const deliverables = [
@@ -20,7 +20,7 @@ const deliverables = [
 ];
 
 const faqs = [
-  { q: "O que é a Consultoria Estratégica Intensiva?", a: "É uma consultoria pontual, estruturada, para definir direção no digital com base no seu momento atual." },
+  { q: "O que é a Consultoria Estratégica de Posicionamento?", a: "É uma consultoria pontual, estruturada, para definir direção no digital com base no seu momento atual." },
   { q: "Isso é mentoria ou acompanhamento?", a: "Não. É uma reunião única, com análise e direcionamento." },
   { q: "Qual a duração?", a: "60 minutos." },
   { q: "Vou sair com plano prático?", a: "Sim. Você sai com prioridades claras e próximos passos organizados." },
@@ -78,7 +78,7 @@ const fadeUp = {
 
 export default function Consultoria() {
   useEffect(() => {
-    document.title = "Consultoria Estratégica Intensiva | Digitalmente";
+    document.title = "Consultoria Estratégica de Posicionamento | Digitalmente";
   }, []);
 
   return (
@@ -94,7 +94,7 @@ export default function Consultoria() {
               className="font-display text-[26px] md:text-[40px] text-white leading-[1.15] tracking-tight mt-3 mb-4"
               data-testid="text-consultoria-headline"
             >
-              Consultoria Estratégica Intensiva
+              Consultoria Estratégica de Posicionamento
             </h1>
             <p className="text-white/50 text-base md:text-lg max-w-xl mx-auto mb-7 leading-relaxed">
               Uma consultoria estratégica única para organizar seu marketing e sair com direção clara do que fazer primeiro.
@@ -145,7 +145,7 @@ export default function Consultoria() {
         <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
             <h2 className="font-display text-[20px] md:text-[28px] text-white mb-4 leading-tight tracking-tight">
-              O que é a Consultoria Estratégica Intensiva
+              O que é a Consultoria Estratégica de Posicionamento
             </h2>
             <p className="text-white/55 text-[14px] md:text-[15px] leading-relaxed mb-3">
               Em 60 minutos estruturados, analisamos seu negócio, seu momento e sua presença digital para definir foco, prioridades e um caminho estratégico.
@@ -239,7 +239,7 @@ export default function Consultoria() {
           <motion.div {...fadeUp}>
             <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-7 md:p-9 text-center">
               <p className="text-white/40 text-[10px] tracking-[0.15em] uppercase mb-2">Investimento</p>
-              <h3 className="text-white font-medium text-base mb-1">Consultoria Estratégica Intensiva</h3>
+              <h3 className="text-white font-medium text-base mb-1">Consultoria Estratégica de Posicionamento</h3>
               <p className="text-brand-orange text-3xl md:text-4xl font-bold tracking-tight my-4" data-testid="text-consultoria-price">
                 R$ 699,00
               </p>

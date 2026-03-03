@@ -38,7 +38,7 @@ export const services = [
   },
   {
     id: "consultoria",
-    title: "Consultoria Estratégica Intensiva",
+    title: "Consultoria Estratégica de Posicionamento",
     description: "Estratégia aplicada para organizar, posicionar e impulsionar negócios.",
     seoContext: "Consultoria para organizar marketing, posicionamento e plano de ação.",
     icon: Smartphone,

@@ -14,7 +14,7 @@ export default function Packs() {
     },
     {
       id: "consultoria",
-      title: "Consultoria Estratégica Intensiva",
+      title: "Consultoria Estratégica de Posicionamento",
       description: "60 minutos de clareza, foco e plano de ação para empreendedores que querem direção no digital.",
       icon: Compass,
       image: "/products/consultoria.png",
