@@ -88,7 +88,7 @@ export default function DiagnosticoEstrategico() {
   const checkoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.title = "Diagnóstico Estratégico | Digitalmente Hub";
+    document.title = "Análise Estratégica de Instagram | Digitalmente Hub";
   }, []);
 
   const scrollToCheckout = () => {
@@ -107,7 +107,7 @@ export default function DiagnosticoEstrategico() {
               className="font-display text-[26px] md:text-[40px] text-white leading-[1.15] tracking-tight mb-4"
               data-testid="text-diag-headline"
             >
-              Diagnóstico Estratégico de Instagram + Plano de Ação
+              Análise Estratégica de Instagram + Plano de Ação
             </h1>
             <p className="text-white/50 text-base md:text-lg max-w-xl mx-auto mb-3 leading-relaxed">
               Descubra o que está travando seu crescimento e receba um plano claro para vender com estratégia. Vídeo de direcionamento exclusivo incluso.
@@ -173,7 +173,7 @@ export default function DiagnosticoEstrategico() {
         <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div {...fadeUp}>
             <h2 className="font-display text-[20px] md:text-[28px] text-white mb-4 leading-tight tracking-tight">
-              O que é o Diagnóstico Estratégico
+              O que é a Análise Estratégica
             </h2>
             <p className="text-white/55 text-[14px] md:text-[15px] leading-relaxed mb-3">
               Um Raio X completo do seu perfil para identificar gargalos, oportunidades e estruturar um plano claro de crescimento e vendas.
@@ -259,7 +259,7 @@ export default function DiagnosticoEstrategico() {
           <motion.div {...fadeUp}>
             <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-7 md:p-9 text-center">
               <p className="text-white/40 text-[10px] tracking-[0.15em] uppercase mb-2">Investimento</p>
-              <h3 className="text-white font-medium text-base mb-1">Diagnóstico Estratégico + Plano de Ação</h3>
+              <h3 className="text-white font-medium text-base mb-1">Análise Estratégica + Plano de Ação</h3>
               <p className="text-brand-orange text-3xl md:text-4xl font-bold tracking-tight my-4" data-testid="text-diag-price">
                 R$ 97
               </p>

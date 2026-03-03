@@ -98,7 +98,7 @@ export default function Footer() {
                 Consultoria Estratégica Intensiva
               </Link>
               <Link href="/produtos/diagnostico-estrategico" className="block text-white/50 text-sm" data-testid="footer-analise">
-                Diagnóstico Estratégico
+                Análise Estratégica de Instagram
               </Link>
             </div>
           </div>

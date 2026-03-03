@@ -22,8 +22,8 @@ export default function Packs() {
     },
     {
       id: "analise",
-      title: "Diagnóstico Estratégico",
-      description: "Raio X completo do seu perfil + reunião individual para traçar um plano real de crescimento.",
+      title: "Análise Estratégica de Instagram",
+      description: "Raio X completo do seu perfil + vídeo estratégico para traçar um plano real de crescimento.",
       icon: Search,
       image: "/products/analise-instagram.png",
       href: "/produtos/diagnostico-estrategico",

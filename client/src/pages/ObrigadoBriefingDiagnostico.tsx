@@ -7,7 +7,7 @@ import { Link } from "wouter";
 
 export default function ObrigadoBriefingDiagnostico() {
   useEffect(() => {
-    document.title = "Briefing Recebido | Diagnóstico Estratégico | Digitalmente Hub";
+    document.title = "Briefing Recebido | Análise Estratégica de Instagram | Digitalmente Hub";
   }, []);
 
   return (

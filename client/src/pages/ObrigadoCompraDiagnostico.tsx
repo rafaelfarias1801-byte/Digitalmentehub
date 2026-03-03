@@ -16,7 +16,7 @@ export default function ObrigadoCompraDiagnostico() {
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    document.title = "Pagamento Confirmado | Diagnóstico Estratégico | Digitalmente Hub";
+    document.title = "Pagamento Confirmado | Análise Estratégica de Instagram | Digitalmente Hub";
   }, []);
 
   useEffect(() => {
