@@ -1,92 +1,61 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Plus, Minus } from "lucide-react";
 import { Link } from "wouter";
-import { FaWhatsapp } from "react-icons/fa";
 import { packs } from "../data/packs";
 import CheckoutSocialProof from "@/components/CheckoutSocialProof";
 
-const preferenceIds: Record<string, string> = {
-  basico: "3035532652-2c14a7e7-188a-45bf-983a-4d9b7e34b3bd",
-  intermediario: "3035532652-7925d708-1102-4fe4-9e13-3220d9148e6b",
-  premium: "3035532652-ee68e755-9433-4ae6-bd27-8c3b8158040c",
-  diamante: "3035532652-fa82901e-8c1e-46dd-ab68-044cf8948c7a",
-};
-
 const pageTitles: Record<string, string> = {
-  basico: "Checkout Pack Básico | Digitalmente Hub",
-  intermediario: "Checkout Pack Intermediário | Digitalmente Hub",
-  premium: "Checkout Pack Premium | Digitalmente Hub",
-  diamante: "Checkout Pack Diamante | Digitalmente Hub",
+  start: "Checkout Pack Start | Digitalmente Hub",
+  pro: "Checkout Pack Pro | Digitalmente Hub",
+  elite: "Checkout Pack Elite | Digitalmente Hub",
 };
 
 const displayNames: Record<string, string> = {
-  basico: "Básico",
-  intermediario: "Intermediário",
-  premium: "Premium",
-  diamante: "Diamante",
+  start: "Start",
+  pro: "Pro",
+  elite: "Elite",
 };
 
 const packFaqs: Record<string, { q: string; a: string }[]> = {
-  basico: [
-    { q: "O que eu recebo exatamente no PACK BÁSICO?", a: "10 artes estáticas, 4 carrosséis (até 5 telas) e textos desenvolvidos para cada post." },
+  start: [
+    { q: "O que eu recebo?", a: "Você recebe um pacote de artes estratégicas com legendas prontas e calendário no Trello focado em Atrair, Aquecer e Vender. O conteúdo é organizado por semana e o prazo de entrega é de até 7 dias." },
     { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
-    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing." },
     { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
-    { q: "As artes são editáveis?", a: "Não. As peças são entregues prontas para publicação." },
-    { q: "Organização semanal está inclusa?", a: "Não. Organização estratégica está disponível a partir do Premium." },
-    { q: "Inclui identidade visual?", a: "Não. Trabalhamos com sua identidade atual." },
+    { q: "As artes são editáveis?", a: "As artes são entregues prontas para postar. O acesso aos templates editáveis no Canva é um benefício exclusivo do Pack Elite." },
+    { q: "Vocês criam minha identidade visual?", a: "Não. Os packs utilizam sua identidade já existente. A criação de Identidade Visual é um serviço à parte que exige orçamento específico." },
     { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, oferecemos planos mensais." },
     { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
-    { q: "Preciso já ter identidade visual?", a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho." },
-    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Posso parcelar?", a: "Sim. A Greenn oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
     { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua." },
   ],
-  intermediario: [
-    { q: "O que eu recebo exatamente no PACK INTERMEDIÁRIO?", a: "15 artes estáticas, 6 carrosséis (até 5 telas) e textos desenvolvidos para cada post." },
+  pro: [
+    { q: "O que eu recebo?", a: "Você recebe um pacote de artes estratégicas com legendas prontas e calendário no Trello focado em Atrair, Aquecer e Vender. O conteúdo é organizado por semana e o prazo de entrega é de até 7 dias." },
     { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
-    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing." },
     { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
-    { q: "As artes são editáveis?", a: "Não. As peças são entregues prontas para publicação." },
-    { q: "Organização semanal está inclusa?", a: "Não. Organização estratégica está disponível a partir do Premium." },
-    { q: "Inclui identidade visual?", a: "Não. Mantemos a identidade já existente." },
-    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos. Para gestão e postagem, oferecemos planos mensais." },
+    { q: "As artes são editáveis?", a: "As artes são entregues prontas para postar. O acesso aos templates editáveis no Canva é um benefício exclusivo do Pack Elite." },
+    { q: "Vocês criam minha identidade visual?", a: "Não. Os packs utilizam sua identidade já existente. A criação de Identidade Visual é um serviço à parte que exige orçamento específico." },
+    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos + calendário organizado. Para gestão e postagem, oferecemos planos mensais." },
     { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
-    { q: "Preciso já ter identidade visual?", a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho." },
-    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Posso parcelar?", a: "Sim. A Greenn oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
     { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele organiza sua comunicação e melhora sua presença com consistência visual e texto alinhado. Crescimento depende também de frequência, oferta e estratégia contínua." },
   ],
-  premium: [
-    { q: "O que eu recebo exatamente no PACK PREMIUM?", a: "20 artes estáticas, 8 carrosséis (até 5 telas), textos desenvolvidos para cada post e organização semanal dos conteúdos." },
+  elite: [
+    { q: "O que eu recebo?", a: "Você recebe um pacote de artes estratégicas com legendas prontas e calendário no Trello focado em Atrair, Aquecer e Vender. O conteúdo é organizado por semana e o prazo de entrega é de até 7 dias." },
     { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
-    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
+    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing." },
     { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
-    { q: "As artes são editáveis?", a: "Sim. O plano Premium inclui acesso às artes editáveis." },
-    { q: "Organização semanal está inclusa?", a: "Sim. Estruturamos a distribuição estratégica dos conteúdos ao longo da semana." },
-    { q: "Inclui identidade visual?", a: "Não. A criação de identidade visual está inclusa no Diamante." },
-    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação + textos prontos + organização semanal. Para gestão e postagem, oferecemos planos mensais." },
+    { q: "As artes são editáveis?", a: "Sim. O Pack Elite inclui acesso aos templates editáveis no Canva." },
+    { q: "Vocês criam minha identidade visual?", a: "Não. Os packs utilizam sua identidade já existente. A criação de Identidade Visual é um serviço à parte que exige orçamento específico." },
+    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação completa + organização + templates editáveis. Para gestão e postagem, oferecemos planos mensais." },
     { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
-    { q: "Preciso já ter identidade visual?", a: "Não obrigatoriamente. Mas se você já tiver paleta, fontes e referências, o resultado fica mais consistente. Se não tiver, o briefing ajuda a orientar um caminho." },
-    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
-    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele organiza sua comunicação, melhora sua presença com consistência visual e texto alinhado, e estrutura seus conteúdos semanalmente. Crescimento depende também de frequência, oferta e estratégia contínua." },
-  ],
-  diamante: [
-    { q: "O que eu recebo exatamente no PACK DIAMANTE?", a: "25 artes estáticas, 10 carrosséis (até 5 telas), textos desenvolvidos, organização semanal dos conteúdos, identidade visual para o perfil e link de bio personalizado." },
-    { q: "O que acontece depois do pagamento?", a: "Assim que o pagamento for confirmado, você será direcionado para um briefing rápido. A partir dele, iniciamos a criação e alinhamos o que for necessário." },
-    { q: "Em quanto tempo recebo o material?", a: "Entrega em até 7 dias úteis após o envio completo do briefing. Se você enviar tudo certinho, o processo flui mais rápido." },
-    { q: "Posso pedir ajustes?", a: "Sim. Você tem 1 rodada de ajustes por peça para refinar detalhes e garantir que fique alinhado com o que você precisa." },
-    { q: "As artes são editáveis?", a: "Sim. O plano Diamante inclui acesso às artes editáveis." },
-    { q: "Organização semanal está inclusa?", a: "Sim. Conteúdos organizados estrategicamente por semana." },
-    { q: "Inclui identidade visual?", a: "Sim. Desenvolvemos identidade visual alinhada ao seu posicionamento." },
-    { q: "Inclui link personalizado?", a: "Sim. Criamos link de bio personalizado para estruturar sua presença digital." },
-    { q: "Vocês fazem a postagem no meu perfil?", a: "Não neste pack. Aqui você recebe criação completa + organização + identidade visual. Para gestão e postagem, oferecemos planos mensais." },
-    { q: "Serve para qualquer nicho?", a: "Sim. O conteúdo é adaptado ao seu mercado e posicionamento. O briefing direciona a linguagem, visual e proposta de cada post." },
-    { q: "Preciso já ter identidade visual?", a: "Não. Neste pack, criamos a identidade visual para o seu perfil, alinhada ao seu posicionamento." },
-    { q: "Posso parcelar?", a: "Sim. O Mercado Pago oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
-    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele estrutura toda sua presença digital: comunicação, identidade visual, organização semanal e link de bio. Crescimento depende também de frequência, oferta e estratégia contínua." },
+    { q: "Posso parcelar?", a: "Sim. A Greenn oferece parcelamento conforme as condições disponíveis no momento do pagamento." },
+    { q: "Esse pack vai fazer meu perfil crescer?", a: "Ele estrutura toda sua presença digital: comunicação, organização semanal e templates editáveis. Crescimento depende também de frequência, oferta e estratégia contínua." },
   ],
 };
 
@@ -137,31 +106,6 @@ function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
   );
 }
 
-function MercadoPagoButton({ packId, refProp }: { packId: string; refProp?: React.RefObject<HTMLDivElement | null> }) {
-  const localRef = useRef<HTMLDivElement>(null);
-  const targetRef = refProp || localRef;
-
-  useEffect(() => {
-    if (!targetRef.current || !preferenceIds[packId]) return;
-
-    targetRef.current.innerHTML = "";
-
-    const script = document.createElement("script");
-    script.src = "https://www.mercadopago.com.br/integrations/v1/web-payment-checkout.js";
-    script.setAttribute("data-preference-id", preferenceIds[packId]);
-    script.setAttribute("data-source", "button");
-    targetRef.current.appendChild(script);
-
-    return () => {
-      if (targetRef.current) {
-        targetRef.current.innerHTML = "";
-      }
-    };
-  }, [packId]);
-
-  return <div ref={targetRef} className="inline-block" />;
-}
-
 export default function Checkout({ packId }: { packId: string }) {
   const pack = packs.find((p) => p.id === packId);
   const faqs = packFaqs[packId] || [];
@@ -187,7 +131,7 @@ export default function Checkout({ packId }: { packId: string }) {
                 Checkout do Pack {displayNames[packId]}
               </h1>
               <p className="text-white/45 text-[15px] max-w-md mx-auto">
-                Pagamento seguro via Mercado Pago. Após o pagamento, você será direcionado para preencher o briefing.
+                Após o pagamento, você será direcionado para preencher o briefing.
               </p>
             </div>
 
@@ -199,13 +143,9 @@ export default function Checkout({ packId }: { packId: string }) {
 
               <ul className="space-y-3 mb-6">
                 {pack.features.map((feat, fi) => (
-                  <li key={fi} className={`flex items-start gap-2.5 ${feat.muted ? "mt-1" : ""}`}>
-                    {feat.muted ? (
-                      <span className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
-                    )}
-                    <span className={`text-sm ${feat.muted ? "text-white/35 italic text-xs" : feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
+                  <li key={fi} className="flex items-start gap-2.5">
+                    <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
+                    <span className={`text-sm ${feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
                   </li>
                 ))}
               </ul>
@@ -215,14 +155,19 @@ export default function Checkout({ packId }: { packId: string }) {
               </div>
             </div>
 
-            <div className="text-center mb-3" data-testid={`container-mp-button-${packId}`}>
-              <MercadoPagoButton packId={packId} />
+            <div className="text-center mb-3">
+              <a
+                href={pack.checkoutUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-brand-pink text-white px-10 py-4 rounded-full text-[15px] font-bold transition-all duration-200 hover:bg-brand-pink/80 shadow-lg shadow-brand-pink/20"
+                data-testid={`button-checkout-${packId}`}
+              >
+                {pack.buttonText}
+              </a>
             </div>
 
             <div className="text-center mb-10">
-              <p className="text-white/30 text-xs leading-relaxed mb-1">
-                Pagamento processado com segurança pelo Mercado Pago.
-              </p>
               <p className="text-white/30 text-xs leading-relaxed">
                 Após a confirmação, você será direcionado para o briefing.
               </p>
@@ -243,8 +188,16 @@ export default function Checkout({ packId }: { packId: string }) {
               <p className="text-white/60 text-sm">Pronto para sair do improviso e estruturar sua presença digital?</p>
             </div>
 
-            <div className="text-center mb-8" data-testid={`container-mp-button-bottom-${packId}`}>
-              <MercadoPagoButton packId={packId} />
+            <div className="text-center mb-8">
+              <a
+                href={pack.checkoutUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center bg-brand-pink text-white px-10 py-4 rounded-full text-[15px] font-bold transition-all duration-200 hover:bg-brand-pink/80 shadow-lg shadow-brand-pink/20"
+                data-testid={`button-checkout-bottom-${packId}`}
+              >
+                {pack.buttonText}
+              </a>
             </div>
 
             <div className="text-center">

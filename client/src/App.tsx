@@ -38,10 +38,9 @@ function Router() {
       <Route path="/obrigado-compra" component={ObrigadoCompra} />
       <Route path="/analise-obrigado-compra" component={ObrigadoCompraDiagnostico} />
       <Route path="/analise-obrigado-briefing" component={ObrigadoBriefingDiagnostico} />
-      <Route path="/checkout-basico">{() => <Checkout packId="basico" />}</Route>
-      <Route path="/checkout-intermediario">{() => <Checkout packId="intermediario" />}</Route>
-      <Route path="/checkout-premium">{() => <Checkout packId="premium" />}</Route>
-      <Route path="/checkout-diamante">{() => <Checkout packId="diamante" />}</Route>
+      <Route path="/checkout-start">{() => <Checkout packId="start" />}</Route>
+      <Route path="/checkout-pro">{() => <Checkout packId="pro" />}</Route>
+      <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
       <Route component={NotFound} />
     </Switch>
     </>

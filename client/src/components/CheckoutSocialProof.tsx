@@ -7,10 +7,9 @@ const NAMES = [
 ];
 
 const displayNames: Record<string, string> = {
-  basico: "Básico",
-  intermediario: "Intermediário",
-  premium: "Premium",
-  diamante: "Diamante",
+  start: "Start",
+  pro: "Pro",
+  elite: "Elite",
 };
 
 function getDayKey() {
@@ -27,7 +26,7 @@ function getTimePeriod(): "morning" | "afternoon" | "night" {
 
 function getPlanBadgeMessage(packId: string, period: "morning" | "afternoon" | "night") {
   const messages: Record<string, Record<string, string[]>> = {
-    basico: {
+    start: {
       morning: [
         "Agenda de produção abrindo agora. Bom momento para garantir seu espaço.",
         "Primeiros pedidos do dia já entrando. Vagas limitadas para hoje.",
@@ -44,9 +43,9 @@ function getPlanBadgeMessage(packId: string, period: "morning" | "afternoon" | "
         "Produção quase encerrada hoje. Amanhã recomeça, mas sem garantia.",
       ],
     },
-    intermediario: {
+    pro: {
       morning: [
-        "Agenda do dia abrindo agora. Poucas aberturas para packs intermediários.",
+        "Agenda do dia abrindo agora. Poucas aberturas para packs pro.",
         "Bom momento para fechar: agenda de produção com vagas disponíveis.",
         "A fila de produção está curta agora. Aproveite o início do dia.",
       ],
@@ -56,48 +55,31 @@ function getPlanBadgeMessage(packId: string, period: "morning" | "afternoon" | "
         "Agenda de produção quase fechada. Últimas janelas disponíveis.",
       ],
       night: [
-        "Últimas janelas de produção hoje para packs intermediários.",
+        "Últimas janelas de produção hoje para packs pro.",
         "Agenda quase encerrada. Quem fecha agora entra direto na fila.",
         "Noite movimentada. Poucas vagas restantes na produção de hoje.",
       ],
     },
-    premium: {
+    elite: {
       morning: [
-        "Agenda estratégica do dia abrindo. Poucas janelas para projetos premium.",
+        "Agenda estratégica do dia abrindo. Poucas janelas para projetos elite.",
         "Início de dia com disponibilidade limitada para projetos estratégicos.",
         "Bom momento para garantir sua vaga na agenda estratégica de hoje.",
       ],
       afternoon: [
         "Agenda estratégica quase completa. Janelas reduzidas para hoje.",
         "Projetos estratégicos em alta demanda hoje. Poucas janelas abertas.",
-        "Tarde movimentada na agenda premium. Disponibilidade diminuindo.",
+        "Tarde movimentada na agenda elite. Disponibilidade diminuindo.",
       ],
       night: [
         "Últimas janelas estratégicas abertas para hoje.",
-        "Agenda premium do dia quase encerrada. Garanta antes da virada.",
+        "Agenda elite do dia quase encerrada. Garanta antes da virada.",
         "Disponibilidade mínima na agenda estratégica hoje à noite.",
-      ],
-    },
-    diamante: {
-      morning: [
-        "Projetos completos: agenda exclusiva abrindo agora. Disponibilidade reduzida.",
-        "Início do dia com poucas vagas para projetos completos de alto nível.",
-        "Agenda de projetos exclusivos abrindo. Poucas janelas para hoje.",
-      ],
-      afternoon: [
-        "Projetos completos: agenda quase fechada para hoje.",
-        "Alta procura por projetos exclusivos. Disponibilidade muito limitada.",
-        "Agenda de projetos completos em ritmo acelerado. Últimas aberturas.",
-      ],
-      night: [
-        "Projetos completos: últimas janelas de produção hoje.",
-        "Agenda exclusiva quase encerrada. Garanta seu projeto antes da virada.",
-        "Disponibilidade mínima para projetos completos hoje à noite.",
       ],
     },
   };
 
-  const pool = messages[packId]?.[period] || messages.basico[period];
+  const pool = messages[packId]?.[period] || messages.start[period];
   const lastMsg = localStorage.getItem("dh_lastBadgeMessage") || "";
   const filtered = pool.filter(m => m !== lastMsg);
   const chosen = filtered.length > 0
@@ -192,7 +174,7 @@ export default function CheckoutSocialProof({ packId }: { packId: string }) {
   }, []);
 
   const buildMessage = useCallback((pushNumber: number) => {
-    const planName = displayNames[packId] || "Básico";
+    const planName = displayNames[packId] || "Start";
     const period = getTimePeriod();
     const name = pickName();
     const neutral = getNeutralMessages(planName, name);

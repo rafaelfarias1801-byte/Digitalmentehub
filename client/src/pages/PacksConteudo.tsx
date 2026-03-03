@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion } from "framer-motion";
 import { Check, Star } from "lucide-react";
-import { Link } from "wouter";
 import { packs } from "../data/packs";
 
 export default function PacksConteudo() {
@@ -11,7 +10,7 @@ export default function PacksConteudo() {
     <div className="bg-brand-navy min-h-screen">
       <Navbar />
       <div className="pt-24 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -23,11 +22,11 @@ export default function PacksConteudo() {
               Pack's de Conteúdos
             </h2>
             <p className="text-white/50 max-w-xl mx-auto">
-              Pra manter presença com qualidade — mesmo fazendo internamente.
+              Conteúdo estratégico focado na mensagem central da sua marca e autoridade, organizado por linha editorial mensal (Feed, Reels e Stories).
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {packs.map((pack, i) => (
               <motion.div
                 key={pack.id}
@@ -56,21 +55,19 @@ export default function PacksConteudo() {
 
                 <ul className="space-y-3 flex-1">
                   {pack.features.map((feat, fi) => (
-                    <li key={fi} className={`flex items-start gap-2.5 ${feat.muted ? "mt-1" : ""}`}>
-                      {feat.muted ? (
-                        <span className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      ) : (
-                        <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
-                      )}
-                      <span className={`text-sm ${feat.muted ? "text-white/35 italic text-xs" : feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
+                    <li key={fi} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-brand-blue mt-0.5 flex-shrink-0" />
+                      <span className={`text-sm ${feat.bold ? "text-white font-semibold" : "text-white/60"}`}>{feat.text}</span>
                     </li>
                   ))}
                 </ul>
 
                 <p className="text-white/80 text-sm font-semibold mt-4 mb-5">{pack.anchorPhrase}</p>
 
-                <Link
-                  href={`/checkout-${pack.id}`}
+                <a
+                  href={pack.checkoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`inline-flex items-center justify-center gap-2 w-full py-3 rounded-md text-sm transition-all duration-200 ${
                     pack.highlight
                       ? "bg-brand-orange text-white"
@@ -78,8 +75,8 @@ export default function PacksConteudo() {
                   }`}
                   data-testid={`button-pack-${pack.id}`}
                 >
-                  Quero esse pack
-                </Link>
+                  {pack.buttonText}
+                </a>
               </motion.div>
             ))}
           </div>

@@ -1,0 +1,43 @@
+Atualize a página de Packs (https://digitalmentehub.com.br/produtos/packs) com as seguintes modificações estruturais e de conteúdo, mantendo o design azul escuro e rosa:
+
+1. Estrutura dos Cards:
+
+Remova a estrutura de 4 colunas e mude para 3 colunas (3 Packs).
+
+Pack 1: Nome: Pack Start | Valor: R$ 247 | Link: https://payfast.greenn.com.br/3wq4h7x.
+
+Pack 2: Nome: Pack Pro | Valor: R$ 497 | Link: https://payfast.greenn.com.br/rc5qx5r.
+
+Pack 3: Nome: Pack Elite | Valor: R$ 947 | Link: https://payfast.greenn.com.br/8pqnb3c.
+
+2. Atualização de Publicações e Botões:
+
+No Pack Start: '12 Publicações (Arte + Conteúdo + Legenda)'. Botão: 'Quero o Pack Start'.
+
+No Pack Pro: '20 Publicações (Arte + Conteúdo + Legenda + Hashtags Estratégicas)'. Botão: 'Quero o Pack Pro'.
+
+No Pack Elite: '30 Publicações (Arte + Conteúdo + Legenda + Hashtags Estratégicas + 5 Stories Bônus)'. Botão: 'Quero o Pack Elite'.
+
+Rodapé do Botão: Remova 'Pagamento processado com segurança pelo Mercado Pago' debaixo de todos os botões.
+
+3. Mudança de URLs Internas:
+
+Altere /checkout-basico para /checkout-start.
+
+Altere /checkout-intermediario para /checkout-pro.
+
+Altere /checkout-premium para /checkout-elite.
+
+4. Revisão do FAQ (Perguntas Frequentes):
+
+O que eu recebo?: 'Você recebe um pacote de artes estratégicas com legendas prontas e calendário no Trello focado em Atrair, Aquecer e Vender. O conteúdo é organizado por semana e o prazo de entrega é de até 7 dias.'
+
+As artes são editáveis?: 'As artes são entregues prontas para postar. O acesso aos templates editáveis no Canva é um benefício exclusivo do Pack Elite.'
+
+Vocês criam minha identidade visual?: 'Não. Os packs utilizam sua identidade já existente. A criação de Identidade Visual é um serviço à parte que exige orçamento específico.'
+
+Parcelamento: Altere onde menciona 'Mercado Pago' para 'Greenn'.
+
+5. Ajustes de Copy Geral:
+
+Reforce que o conteúdo é focado em mensagem central da marca e autoridade, organizado por linha editorial mensal (Feed, Reels e Stories)'."
