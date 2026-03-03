@@ -9,9 +9,9 @@ import { packs } from "../data/packs";
 import CheckoutSocialProof from "@/components/CheckoutSocialProof";
 
 const pageTitles: Record<string, string> = {
-  start: "Checkout Pack Start | Digitalmente Hub",
-  pro: "Checkout Pack Pro | Digitalmente Hub",
-  elite: "Checkout Pack Elite | Digitalmente Hub",
+  start: "Pack Start | Digitalmente Hub",
+  pro: "Pack Pro | Digitalmente Hub",
+  elite: "Pack Elite | Digitalmente Hub",
 };
 
 const displayNames: Record<string, string> = {
@@ -128,7 +128,7 @@ export default function Checkout({ packId }: { packId: string }) {
           >
             <div className="text-center mb-10">
               <h1 className="font-display text-[28px] md:text-[42px] text-white mb-3 leading-tight tracking-tight" data-testid={`text-checkout-title-${packId}`}>
-                Checkout do Pack {displayNames[packId]}
+                Pack {displayNames[packId]}
               </h1>
               <p className="text-white/45 text-[15px] max-w-md mx-auto">
                 Após o pagamento, você será direcionado para preencher o briefing.
