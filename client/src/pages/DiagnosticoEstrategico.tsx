@@ -5,7 +5,7 @@ import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, PenTool, LayoutGrid, ShoppingBag, CalendarCheck, Video, Plus, Minus } from "lucide-react";
 
-const CHECKOUT_URL = "https://payfast.greenn.com.br/94458yv";
+const CHECKOUT_URL = "https://payfast.greenn.com.br/redirect/268079";
 
 const deliverables = [
   { icon: Search, title: "Diagnóstico completo do perfil", desc: "Posicionamento, promessa e diferenciação.", highlight: false },

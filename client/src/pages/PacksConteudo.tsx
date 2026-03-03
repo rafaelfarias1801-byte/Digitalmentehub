@@ -52,7 +52,10 @@ export default function PacksConteudo() {
 
                 <h3 className="text-base text-white mb-1">{pack.name}</h3>
                 <p className="text-white/40 text-sm mb-3">{pack.subtitle}</p>
-                <p className="text-2xl md:text-3xl text-brand-orange mb-5">{pack.price}</p>
+                <div className="mb-5">
+                  <p className="text-2xl md:text-3xl text-brand-orange font-bold">{pack.installment}</p>
+                  <p className="text-white/40 text-sm mt-1">à vista {pack.price}</p>
+                </div>
 
                 <ul className="space-y-3 flex-1">
                   {pack.features.map((feat, fi) => (

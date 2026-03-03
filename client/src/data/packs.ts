@@ -3,7 +3,8 @@ export const packs = [
     id: "start",
     name: "PACK START",
     subtitle: "Para começar com presença e consistência",
-    price: "R$ 247",
+    price: "R$ 247,00",
+    installment: "12x de R$ 25,40",
     features: [
       { text: "12 Publicações (Arte + Conteúdo + Legenda)", bold: false },
       { text: "Conteúdo focado na mensagem central da marca", bold: false },
@@ -13,13 +14,14 @@ export const packs = [
     anchorPhrase: "O primeiro passo para sair do improviso.",
     highlight: false,
     buttonText: "Quero o Pack Start",
-    checkoutUrl: "https://payfast.greenn.com.br/3wq4h7x",
+    checkoutUrl: "https://payfast.greenn.com.br/redirect/268060",
   },
   {
     id: "pro",
     name: "PACK PRO",
     subtitle: "Volume e estratégia para crescer com autoridade",
-    price: "R$ 497",
+    price: "R$ 497,00",
+    installment: "12x de R$ 51,10",
     features: [
       { text: "20 Publicações (Arte + Conteúdo + Legenda + Hashtags Estratégicas)", bold: false },
       { text: "Conteúdo focado em autoridade e posicionamento", bold: false },
@@ -30,13 +32,14 @@ export const packs = [
     anchorPhrase: "Para quem leva o digital a sério.",
     highlight: true,
     buttonText: "Quero o Pack Pro",
-    checkoutUrl: "https://payfast.greenn.com.br/rc5qx5r",
+    checkoutUrl: "https://payfast.greenn.com.br/redirect/268062",
   },
   {
     id: "elite",
     name: "PACK ELITE",
     subtitle: "Presença máxima com conteúdo completo",
-    price: "R$ 947",
+    price: "R$ 947,00",
+    installment: "12x de R$ 97,37",
     features: [
       { text: "30 Publicações (Arte + Conteúdo + Legenda + Hashtags Estratégicas + 5 Stories Bônus)", bold: false },
       { text: "Conteúdo focado em Atrair, Aquecer e Vender", bold: false },
@@ -48,6 +51,6 @@ export const packs = [
     anchorPhrase: "Conteúdo, estrutura e presença alinhados.",
     highlight: false,
     buttonText: "Quero o Pack Elite",
-    checkoutUrl: "https://payfast.greenn.com.br/8pqnb3c",
+    checkoutUrl: "https://payfast.greenn.com.br/redirect/268064",
   },
 ];
