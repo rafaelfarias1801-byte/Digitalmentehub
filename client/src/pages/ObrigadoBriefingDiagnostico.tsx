@@ -26,20 +26,20 @@ export default function ObrigadoBriefingDiagnostico() {
             </h1>
 
             <div className="bg-white/[0.025] border border-white/[0.05] rounded-2xl p-8 md:p-10 text-left space-y-4">
-              <p className="text-white/65 text-[15px] leading-[1.8]" data-testid="text-obrigado-briefing-diag-p1">
+              <p className="text-white font-bold text-[15px] leading-[1.8]" data-testid="text-obrigado-briefing-diag-p1">
                 Suas informações foram enviadas corretamente.
               </p>
               <p className="text-white/65 text-[15px] leading-[1.8]" data-testid="text-obrigado-briefing-diag-p2">
-                Nossa equipe agora vai analisar seu perfil com base nas respostas enviadas e nas informações públicas do Instagram.
+                Nossa equipe agora vai analisar seu perfil com base nas respostas enviadas e nas informações públicas do seu Instagram.
               </p>
               <p className="text-white/65 text-[15px] leading-[1.8]" data-testid="text-obrigado-briefing-diag-p3">
-                Você receberá seu Diagnóstico Estratégico completo em até 5 dias úteis no e-mail informado.
+                • <span className="text-white font-bold">Entrega do Diagnóstico</span>: Você receberá seu Diagnóstico Estratégico completo em PDF em até 5 dias úteis no e-mail informado.
               </p>
               <p className="text-white/65 text-[15px] leading-[1.8]" data-testid="text-obrigado-briefing-diag-p4">
-                A reunião individual de 20 minutos será agendada pelo WhatsApp informado.
+                • <span className="text-white font-bold">Vídeo Mestre de Implementação</span>: Junto com seu PDF, você receberá o acesso ao nosso Vídeo Mestre, onde explico detalhadamente a metodologia aplicada ao seu perfil e o direcionamento para execução.
               </p>
               <p className="text-white/65 text-[15px] leading-[1.8]" data-testid="text-obrigado-briefing-diag-p5">
-                Se precisarmos de algo adicional, entraremos em contato.
+                Fique atento ao seu <span className="text-white font-bold">WhatsApp</span> e <span className="text-white font-bold">E-mail</span>. Se precisarmos de algo adicional, entraremos em contato.
               </p>
             </div>
 
