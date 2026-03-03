@@ -150,7 +150,7 @@ export default function Checkout({ packId }: { packId: string }) {
                 ))}
               </ul>
 
-              <div className="border-t border-white/[0.06] pt-5">
+              <div className="border-t border-white/[0.06] pt-5 text-center">
                 <p className="text-2xl md:text-3xl text-brand-orange font-bold" data-testid={`text-checkout-price-${packId}`}>{pack.installment}</p>
                 <p className="text-white/40 text-sm mt-1">à vista {pack.price}</p>
               </div>
