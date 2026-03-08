@@ -19,8 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 // ⚠️ SUBSTITUA pelo seu endpoint do Formspree
 // Crie uma conta em formspree.io, crie um novo form e cole o endpoint aqui
 // Exemplo: "https://formspree.io/f/xabcdefg"
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEU_ID_AQUI";
-
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mnjgnegg";
 const formSchema = z.object({
   name: z.string().min(2, "Nome é obrigatório"),
   email: z.string().email("E-mail inválido"),
