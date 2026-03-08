@@ -2,8 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertLeadSchema } from "@shared/schema";
-import type { InsertLead } from "@shared/schema";
+import { z } from "zod";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import { SiThreads } from "react-icons/si";
 import { Check, Loader2 } from "lucide-react";
@@ -17,17 +16,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const formSchema = insertLeadSchema.extend({
-  name: insertLeadSchema.shape.name.min(2, "Nome é obrigatório"),
-  phone: insertLeadSchema.shape.phone.min(8, "Telefone inválido"),
-  email: insertLeadSchema.shape.email.email("E-mail inválido"),
+// ⚠️ SUBSTITUA pelo seu endpoint do Formspree
+// Crie uma conta em formspree.io, crie um novo form e cole o endpoint aqui
+// Exemplo: "https://formspree.io/f/xabcdefg"
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEU_ID_AQUI";
+
+const formSchema = z.object({
+  name: z.string().min(2, "Nome é obrigatório"),
+  email: z.string().email("E-mail inválido"),
+  phone: z.string().min(8, "Telefone inválido"),
+  company: z.string().optional().default(""),
+  contactType: z.string().optional().default("servico"),
+  message: z.string().optional().default(""),
 });
+
+type FormData = z.infer<typeof formSchema>;
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const form = useForm<InsertLead>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -39,18 +48,19 @@ export default function Contact() {
     },
   });
 
-  const onSubmit = async (data: InsertLead) => {
+  const onSubmit = async (data: FormData) => {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/lead", {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Erro ao enviar");
       setSubmitted(true);
     } catch {
       setSubmitted(false);
+      alert("Erro ao enviar mensagem. Tente novamente ou entre em contato pelo WhatsApp.");
     } finally {
       setSubmitting(false);
     }
