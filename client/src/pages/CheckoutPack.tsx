@@ -66,6 +66,12 @@ export default function CheckoutPack() {
         .btn-outline:hover { background: rgba(199,1,127,0.08); }
         .btn-filled:hover { background: #a0015f !important; box-shadow: 0 8px 30px rgba(199,1,127,0.3); }
         .pain-card:hover { border-color: rgba(199,1,127,0.25) !important; }
+        .grid-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        .grid-packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 700px) {
+          .grid-compare { grid-template-columns: 1fr !important; gap: 20px !important; }
+          .grid-packs { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* HERO */}
@@ -121,7 +127,7 @@ export default function CheckoutPack() {
             <h2 className="baou" style={{ fontSize: "clamp(28px, 5vw, 48px)", lineHeight: 1.15, marginBottom: 20 }}>O que é post genérico.<br />O que é conteúdo estratégico.</h2>
             <p style={{ fontSize: 17, color: "#8888AA", lineHeight: 1.7, maxWidth: 620, margin: "0 auto", fontWeight: 300 }}>Olha de perto. O mesmo negócio com dois resultados completamente diferentes.</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
+          <div className="grid-compare">
             {/* GENÉRICO */}
             <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)" }}>
               <div style={{ padding: "18px 24px", display: "flex", alignItems: "center", gap: 10, fontFamily: "'BaouDisplay', sans-serif", fontSize: 15, background: "rgba(255,255,255,0.04)", color: "#8888AA" }}>
@@ -230,7 +236,7 @@ export default function CheckoutPack() {
         <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#c7017f", marginBottom: 16 }}>Escolha seu pack</p>
         <h2 className="baou" style={{ fontSize: "clamp(28px, 5vw, 48px)", lineHeight: 1.15, marginBottom: 20 }}>Qual tamanho<br />faz sentido pro seu negócio?</h2>
         <p style={{ fontSize: 17, color: "#8888AA", lineHeight: 1.7, maxWidth: 620, margin: "0 auto 56px", fontWeight: 300 }}>Você escolhe a quantidade. A gente entrega a estratégia.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+        <div className="grid-packs">
           {[
             { id: "start", name: "Pack Start", desc: "Para começar com presença e consistência", price: "R$ 247", inst: "12x de R$ 25,40", link: "https://payfast.greenn.com.br/redirect/268060", featured: false, features: ["12 publicações (Arte + Copy + Legenda)", "Conteúdo focado na mensagem central da marca", "Linha editorial mensal (Feed, Reels e Stories)", "Hashtags por publicação"] },
             { id: "pro", name: "Pack Pro", desc: "Volume e estratégia para crescer com autoridade", price: "R$ 497", inst: "12x de R$ 51,10", link: "https://payfast.greenn.com.br/redirect/268062", featured: true, features: ["20 publicações (Arte + Copy + Legenda + Hashtags)", "Conteúdo focado em autoridade e posicionamento", "Linha editorial mensal (Feed, Reels e Stories)", "Calendário no Trello com organização semanal"] },
