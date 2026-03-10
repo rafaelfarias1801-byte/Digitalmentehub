@@ -15,6 +15,7 @@ import ObrigadoCompraDiagnostico from "@/pages/ObrigadoCompraDiagnostico";
 import ObrigadoBriefingDiagnostico from "@/pages/ObrigadoBriefingDiagnostico";
 import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
+import CheckoutPack from "@/pages/CheckoutPack";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/checkout-start">{() => <Checkout packId="start" />}</Route>
       <Route path="/checkout-pro">{() => <Checkout packId="pro" />}</Route>
       <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
+      <Route path="/checkout-pack" component={CheckoutPack} />
       <Route component={NotFound} />
     </Switch>
     </>
