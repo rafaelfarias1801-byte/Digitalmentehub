@@ -66,9 +66,17 @@ export default function CheckoutPack() {
         .btn-outline:hover { background: rgba(199,1,127,0.08); }
         .btn-filled:hover { background: #a0015f !important; box-shadow: 0 8px 30px rgba(199,1,127,0.3); }
         .pain-card:hover { border-color: rgba(199,1,127,0.25) !important; }
+        .grid-pain { grid-template-columns: repeat(4, 1fr); }
+        .grid-deliverables { grid-template-columns: repeat(3, 1fr); }
         .grid-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
         .grid-packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 900px) {
+          .grid-pain { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-deliverables { grid-template-columns: repeat(2, 1fr) !important; }
+        }
         @media (max-width: 700px) {
+          .grid-pain { grid-template-columns: 1fr !important; }
+          .grid-deliverables { grid-template-columns: 1fr !important; }
           .grid-compare { grid-template-columns: 1fr !important; gap: 20px !important; }
           .grid-packs { grid-template-columns: 1fr !important; }
         }
@@ -101,7 +109,7 @@ export default function CheckoutPack() {
         <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#c7017f", marginBottom: 16 }}>O problema</p>
         <h2 className="baou" style={{ fontSize: "clamp(28px, 5vw, 48px)", lineHeight: 1.15, marginBottom: 20 }}>Postar sem estratégia<br />é trabalhar de graça pro algoritmo.</h2>
         <p style={{ fontSize: 17, color: "#8888AA", lineHeight: 1.7, maxWidth: 620, margin: "0 auto 50px", fontWeight: 300 }}>Dono de negócio não deveria gastar horas criando legenda, escolhendo foto e tentando descobrir o que postar. Você deveria estar vendendo.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, textAlign: "left" }}>
+        <div className="grid-pain" style={{ display: "grid", gap: 16, textAlign: "left" }}>
           {[
             { icon: "⏰", title: "Sem tempo pra criar conteúdo", desc: "Você tem um negócio pra tocar. Não dá pra virar criador de conteúdo por obrigação toda semana." },
             { icon: "🎲", title: "Postando no improviso", desc: "Posta quando lembra, sem objetivo claro. O perfil não cresce e você não sabe por quê." },
@@ -200,7 +208,7 @@ export default function CheckoutPack() {
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#c7017f", marginBottom: 16 }}>O que você recebe</p>
           <h2 className="baou" style={{ fontSize: "clamp(28px, 5vw, 48px)", lineHeight: 1.15, marginBottom: 20 }}>Tudo que o seu perfil<br />precisa pra funcionar.</h2>
           <p style={{ fontSize: 17, color: "#8888AA", lineHeight: 1.7, maxWidth: 620, margin: "0 auto 50px", fontWeight: 300 }}>Cada post entregue com tudo que precisa para publicar sem depender de ninguém.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, textAlign: "left" }}>
+          <div className="grid-deliverables" style={{ display: "grid", gap: 16, textAlign: "left" }}>
             {[
               { icon: "🎨", t: "Arte finalizada", d: "Design criado com sua identidade visual. Pronto pra publicar." },
               { icon: "✍️", t: "Copy estratégica", d: "Texto de cada post com objetivo claro: engajar, educar ou converter." },
