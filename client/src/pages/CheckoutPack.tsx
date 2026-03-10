@@ -75,10 +75,10 @@ export default function CheckoutPack() {
       `}</style>
 
       {/* HERO */}
-      <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "80px 24px 60px", position: "relative", overflow: "hidden" }}>
+      <section style={{ minHeight: "auto", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "60px 24px 60px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(199,1,127,0.18) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 80%, rgba(199,1,127,0.08) 0%, transparent 60%)" }} />
         <div style={{ position: "relative", maxWidth: 760 }}>
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 28, textAlign: "center" }}>
             <img src={`data:image/png;base64,${LOGO_B64}`} alt="Digitalmente HUB" style={{ height: 48, width: "auto" }} />
           </div>
           <span style={{ display: "inline-block", background: "rgba(199,1,127,0.12)", border: "1px solid rgba(199,1,127,0.3)", color: "#c7017f", fontSize: 12, fontWeight: 500, letterSpacing: 2, textTransform: "uppercase", padding: "6px 16px", borderRadius: 100, marginBottom: 28 }}>
