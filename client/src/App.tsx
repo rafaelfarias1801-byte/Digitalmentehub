@@ -15,6 +15,8 @@ import ObrigadoCompraDiagnostico from "@/pages/ObrigadoCompraDiagnostico";
 import ObrigadoBriefingDiagnostico from "@/pages/ObrigadoBriefingDiagnostico";
 import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
+import CheckoutPack from "@/pages/CheckoutPack";
+import WorkspaceApp from "./workspace/WorkspaceApp";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -27,22 +29,24 @@ function ScrollToTop() {
 function Router() {
   return (
     <>
-    <ScrollToTop />
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/produtos" component={Produtos} />
-      <Route path="/produtos/packs" component={PacksConteudo} />
-      <Route path="/produtos/consultoria" component={Consultoria} />
-      <Route path="/produtos/diagnostico-estrategico" component={DiagnosticoEstrategico} />
-      <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
-      <Route path="/obrigado-compra" component={ObrigadoCompra} />
-      <Route path="/analise-obrigado-compra" component={ObrigadoCompraDiagnostico} />
-      <Route path="/analise-obrigado-briefing" component={ObrigadoBriefingDiagnostico} />
-      <Route path="/checkout-start">{() => <Checkout packId="start" />}</Route>
-      <Route path="/checkout-pro">{() => <Checkout packId="pro" />}</Route>
-      <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
-      <Route component={NotFound} />
-    </Switch>
+      <ScrollToTop />
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/produtos" component={Produtos} />
+        <Route path="/produtos/packs" component={PacksConteudo} />
+        <Route path="/produtos/consultoria" component={Consultoria} />
+        <Route path="/produtos/diagnostico-estrategico" component={DiagnosticoEstrategico} />
+        <Route path="/obrigado-briefing" component={ObrigadoBriefing} />
+        <Route path="/obrigado-compra" component={ObrigadoCompra} />
+        <Route path="/analise-obrigado-compra" component={ObrigadoCompraDiagnostico} />
+        <Route path="/analise-obrigado-briefing" component={ObrigadoBriefingDiagnostico} />
+        <Route path="/checkout-start">{() => <Checkout packId="start" />}</Route>
+        <Route path="/checkout-pro">{() => <Checkout packId="pro" />}</Route>
+        <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
+        <Route path="/checkout-pack" component={CheckoutPack} />
+        <Route path="/workspace" component={WorkspaceApp} />
+        <Route component={NotFound} />
+      </Switch>
     </>
   );
 }
