@@ -19,66 +19,46 @@ export default function Checklist({ profile }: Props) {
   const [adding, setAdding]   = useState(false);
 
   const fetchTasks = useCallback(async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("tasks")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error) setTasks(data ?? []);
+    setTasks(data ?? []);
     setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchTasks();
-
-    const channel = supabase
-      .channel("tasks-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tasks" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setTasks((prev) => [payload.new as Task, ...prev]);
-          } else if (payload.eventType === "UPDATE") {
-            setTasks((prev) =>
-              prev.map((t) => (t.id === (payload.new as Task).id ? (payload.new as Task) : t))
-            );
-          } else if (payload.eventType === "DELETE") {
-            setTasks((prev) => prev.filter((t) => t.id !== (payload.old as Task).id));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
   }, [fetchTasks]);
 
   async function addTask() {
     if (!text.trim() || adding) return;
     setAdding(true);
-    const { error } = await supabase
+    const newText = text.trim();
+    setText("");
+
+    const { data, error } = await supabase
       .from("tasks")
-      .insert({ text: text.trim(), person, tag, done: false });
-    if (!error) setText("");
+      .insert({ text: newText, person, tag, done: false })
+      .select()
+      .single();
+
+    if (!error && data) {
+      setTasks((prev) => [data, ...prev]);
+    }
     setAdding(false);
   }
 
   async function toggleTask(task: Task) {
-    const { data, error } = await supabase
-      .from("tasks")
-      .update({ done: !task.done })
-      .eq("id", task.id)
-      .select()
-      .single();
-    if (!error && data) {
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? data : t)));
-    }
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t))
+    );
+    await supabase.from("tasks").update({ done: !task.done }).eq("id", task.id);
   }
 
   async function deleteTask(id: string) {
-    const { error } = await supabase.from("tasks").delete().eq("id", id);
-    if (!error) {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    }
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    await supabase.from("tasks").delete().eq("id", id);
   }
 
   const filtered = tasks.filter((t) => {
@@ -107,19 +87,17 @@ export default function Checklist({ profile }: Props) {
       <div className="ws-page-title">Checklist<span className="ws-dot">.</span></div>
       <div className="ws-page-sub">Tarefas organizadas por pessoa e categoria</div>
 
-      {/* Stats rápidos */}
       <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-        <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: "var(--ws-radius-sm)", padding: "12px 20px", display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontFamily: "DM Mono", fontSize: ".57rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--ws-text3)" }}>Pendentes</span>
-          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.6rem", color: "var(--ws-accent)", letterSpacing: "-1px" }}>{pending}</span>
+        <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: "var(--ws-radius-sm)", padding: "12px 20px" }}>
+          <div style={{ fontFamily: "DM Mono", fontSize: ".57rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--ws-text3)", marginBottom: 4 }}>Pendentes</div>
+          <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.6rem", color: "var(--ws-accent)", letterSpacing: "-1px" }}>{pending}</div>
         </div>
-        <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: "var(--ws-radius-sm)", padding: "12px 20px", display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontFamily: "DM Mono", fontSize: ".57rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--ws-text3)" }}>Concluídas</span>
-          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.6rem", color: "var(--ws-green)", letterSpacing: "-1px" }}>{done}</span>
+        <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: "var(--ws-radius-sm)", padding: "12px 20px" }}>
+          <div style={{ fontFamily: "DM Mono", fontSize: ".57rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--ws-text3)", marginBottom: 4 }}>Concluídas</div>
+          <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.6rem", color: "var(--ws-green)", letterSpacing: "-1px" }}>{done}</div>
         </div>
       </div>
 
-      {/* Input nova tarefa */}
       <div className="ws-input-row">
         <input
           className="ws-field flex1"
@@ -127,6 +105,7 @@ export default function Checklist({ profile }: Props) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addTask()}
           placeholder="Nova tarefa... (Enter para adicionar)"
+          disabled={adding}
         />
         <select className="ws-field" value={person} onChange={(e) => setPerson(e.target.value)}>
           <option value="ML">Melissa</option>
@@ -139,11 +118,10 @@ export default function Checklist({ profile }: Props) {
           <option value="parceiro">Parceiro</option>
         </select>
         <button className="ws-btn" onClick={addTask} disabled={adding}>
-          {adding ? "..." : "+ Tarefa"}
+          {adding ? "Salvando..." : "+ Tarefa"}
         </button>
       </div>
 
-      {/* Filtros */}
       <div className="ws-filters">
         {FILTERS.map((f) => (
           <button
@@ -156,7 +134,6 @@ export default function Checklist({ profile }: Props) {
         ))}
       </div>
 
-      {/* Lista */}
       {loading ? (
         <div style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".8rem" }}>Carregando...</div>
       ) : filtered.length === 0 ? (
@@ -165,33 +142,14 @@ export default function Checklist({ profile }: Props) {
         <div className="ws-tasks">
           {filtered.map((t) => (
             <div key={t.id} className={`ws-task ${t.done ? "done" : ""}`}>
-              {/* Botão de marcar */}
-              <div
-                className={`ws-check ${t.done ? "on" : ""}`}
-                onClick={() => toggleTask(t)}
-                style={{ cursor: "pointer", flexShrink: 0 }}
-              >
+              <div className={`ws-check ${t.done ? "on" : ""}`} onClick={() => toggleTask(t)}>
                 {t.done ? "✓" : ""}
               </div>
-
-              {/* Texto */}
               <div className="ws-task-text">{t.text}</div>
-
-              {/* Meta */}
               <div className="ws-task-meta">
                 <span className={`ws-tag ws-tag-${t.tag}`}>{t.tag}</span>
-                <div className="ws-person" title={t.person === "ML" ? "Melissa" : t.person === "RF" ? "Rafael" : t.person}>
-                  {t.person}
-                </div>
-                {/* Botão excluir */}
-                <span
-                  className="ws-del"
-                  onClick={() => deleteTask(t.id)}
-                  title="Excluir tarefa"
-                  style={{ cursor: "pointer", fontSize: "20px", lineHeight: 1, padding: "0 4px" }}
-                >
-                  ×
-                </span>
+                <div className="ws-person">{t.person}</div>
+                <span className="ws-del" onClick={() => deleteTask(t.id)}>×</span>
               </div>
             </div>
           ))}
