@@ -134,9 +134,16 @@ export default function Cases({ profile }: Props) {
     await supabase.from("cases").delete().eq("id",id);
   }
 
-  if(openCase) return (
-    <CaseWorkspace caseData={openCase} onBack={()=>setOpenCase(null)}
-      onEdit={()=>openEdit(openCase)} onDelete={()=>remove(openCase.id)} profile={profile}/>
+    if(openCase) return (
+    <>
+      <CaseWorkspace caseData={openCase} onBack={()=>setOpenCase(null)}
+        onEdit={()=>openEdit(openCase)} onDelete={()=>remove(openCase.id)} profile={profile}/>
+      {modal && <CaseModal form={form} setForm={setForm} editing={editing}
+        saving={saving} uploading={uploading} fileRef={fileRef}
+        uploadLogo={uploadLogo} onSave={save} onClose={()=>setModal(false)}/>}
+      <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}}
+        onChange={e=>e.target.files?.[0]&&uploadLogo(e.target.files[0])}/>
+    </>
   );
 
   return (
