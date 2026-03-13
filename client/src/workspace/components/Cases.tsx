@@ -512,11 +512,11 @@ function PostDetailModal({post,caseData,onClose,onUpdate,profile}:
           </div>
 
           {/* Botão WhatsApp */}
-          {selectedCase?.contact && (
+          {caseData?.contact && (
             <div style={{marginTop:12, marginBottom:16}}>
               <button
                 onClick={() => {
-                  const phone = selectedCase.contact?.replace(/[\s\-\(\)\+]/g, '');
+                  const phone = caseData.contact?.replace(/[\s\-\(\)\+]/g, '');
                   const statusMessages: Record<string, string> = {
                     pendente: `Olá! 👋\n\nTemos o conteúdo "${p.title}" aguardando sua aprovação.\n\nAcesse: https://www.digitalmentehub.com.br/workspace`,
                     aprovado: `Olá! 👋\n\nO conteúdo "${p.title}" foi aprovado! ✅`,
