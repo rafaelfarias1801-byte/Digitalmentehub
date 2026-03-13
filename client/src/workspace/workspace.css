@@ -1080,3 +1080,170 @@ select.ws-field {
   border-color: var(--ws-accent);
   box-shadow: 0 0 8px var(--ws-accent-glow);
 }
+
+/* ════════════════════════════════════════
+   DIG WORKSPACE — TYPOGRAPHY FIX OVERRIDES
+   força tipografia correta nos módulos que ainda escaparam
+════════════════════════════════════════ */
+
+/* CHECKLIST — números dos cards */
+.ws-checklist-stats .ws-stat-value,
+.ws-checklist .ws-stat-value,
+.ws-checklist-page .ws-stat-value,
+.ws-stat-value {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* AGENDA — data por extenso / títulos do painel lateral */
+.ws-agenda-side h1,
+.ws-agenda-side h2,
+.ws-agenda-side h3,
+.ws-agenda-side .date-full,
+.ws-agenda-side .selected-date,
+.ws-agenda-right h1,
+.ws-agenda-right h2,
+.ws-agenda-right h3,
+.ws-agenda-panel-title,
+.ws-agenda-selected-date {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--ws-text) !important;
+}
+
+/* caso a data por extenso esteja usando Syne por herança */
+.ws-agenda-side *,
+.ws-agenda-right * {
+  font-variant-ligatures: none;
+}
+
+/* FINANCEIRO DAS CASES — valores e labels */
+.ws-case-finance .ws-fin-value,
+.ws-case-finance .ws-fin-label,
+.ws-fin-card .ws-fin-value,
+.ws-fin-card .ws-fin-label,
+.ws-case-value,
+.ws-case-amount,
+.ws-payment-value,
+.ws-payment-amount {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  letter-spacing: -0.03em !important;
+}
+
+.ws-case-finance .ws-fin-value,
+.ws-fin-card .ws-fin-value,
+.ws-case-value,
+.ws-case-amount,
+.ws-payment-value,
+.ws-payment-amount {
+  font-weight: 700 !important;
+  font-size: 2rem !important;
+  line-height: 1.05 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-case-finance .ws-fin-label,
+.ws-fin-card .ws-fin-label {
+  font-family: 'DM Mono', monospace !important;
+  font-size: .66rem !important;
+  letter-spacing: 1.6px !important;
+  color: rgba(244,246,255,0.62) !important;
+}
+
+/* lista de pagamentos do financeiro da case */
+.ws-payment-row,
+.ws-payment-item {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+
+.ws-payment-row strong,
+.ws-payment-item strong,
+.ws-payment-row .title,
+.ws-payment-item .title {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.ws-payment-row .date,
+.ws-payment-item .date,
+.ws-payment-row .meta,
+.ws-payment-item .meta {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  color: var(--ws-text2) !important;
+}
+
+/* NOTAS DAS CASES — título da página, nome do cliente e títulos das listas */
+.ws-case-notes .ws-page-title,
+.ws-case-notes .ws-page-sub,
+.ws-case-notes .client-name,
+.ws-case-notes .board-title,
+.ws-case-notes .list-title,
+.ws-case-notes .column-title,
+.ws-case-notes .note-list-title,
+.ws-case-header .client-name,
+.ws-case-header h1,
+.ws-case-header h2,
+.ws-case-header h3 {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  letter-spacing: -0.03em !important;
+}
+
+.ws-case-notes .ws-page-title,
+.ws-case-header h1,
+.ws-case-header h2,
+.ws-case-header h3,
+.ws-case-notes .client-name,
+.ws-case-notes .board-title,
+.ws-case-notes .list-title,
+.ws-case-notes .column-title,
+.ws-case-notes .note-list-title {
+  font-weight: 700 !important;
+  color: var(--ws-text) !important;
+}
+
+.ws-case-notes .ws-page-sub,
+.ws-case-header .client-subtitle,
+.ws-case-notes .client-meta {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: .92rem !important;
+  color: var(--ws-text2) !important;
+}
+
+/* inputs, selects e labels que ainda possam puxar fonte feia */
+.ws-case-notes input,
+.ws-case-notes textarea,
+.ws-case-notes button,
+.ws-case-notes select,
+.ws-case-finance input,
+.ws-case-finance textarea,
+.ws-case-finance button,
+.ws-case-finance select,
+.ws-agenda input,
+.ws-agenda textarea,
+.ws-agenda button,
+.ws-agenda select,
+.ws-checklist input,
+.ws-checklist textarea,
+.ws-checklist button,
+.ws-checklist select {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+
+/* fallback mais bruto para títulos internos de cards/listas */
+.ws-card h1,
+.ws-card h2,
+.ws-card h3,
+.ws-card h4,
+.ws-card strong,
+.ws-note h1,
+.ws-note h2,
+.ws-note h3,
+.ws-note strong,
+.ws-case h1,
+.ws-case h2,
+.ws-case h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
