@@ -309,27 +309,16 @@ function RichEditor({value,onChange,placeholder}:
       node=node.parentNode;
     }
 
-    // Insert new list
-    const listTag=ordered?"OL":"UL";
-    const list=document.createElement(listTag);
-    list.style.paddingLeft="1.4em";
-    list.style.margin="4px 0";
-    const li=document.createElement("li");
-    // Move selected content into li, or create empty li
-    if(!range.collapsed){
-      li.appendChild(range.extractContents());
-    } else {
-      li.innerHTML="&#8203;"; // zero-width space so caret lands inside
+    // Use execCommand — works correctly when div is focused and selection is inside contenteditable
+    const cmd=ordered?"insertOrderedList":"insertUnorderedList";
+    document.execCommand(cmd,false,undefined);
+    // Fix list styling injected by browser
+    if(ref.current){
+      ref.current.querySelectorAll("ul,ol").forEach(el=>{
+        (el as HTMLElement).style.paddingLeft="1.4em";
+        (el as HTMLElement).style.margin="4px 0";
+      });
     }
-    list.appendChild(li);
-    range.deleteContents();
-    range.insertNode(list);
-    // Place caret at end of li
-    const newRange=document.createRange();
-    newRange.setStart(li,li.childNodes.length);
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
     onChange(ref.current?.innerHTML||"");
   }
 
