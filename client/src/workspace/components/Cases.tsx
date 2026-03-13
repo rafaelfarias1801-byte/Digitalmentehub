@@ -534,7 +534,7 @@ function PostDetailModal({post,caseData,onClose,onUpdate,profile}:
                 onMouseLeave={e=>e.currentTarget.style.borderColor="transparent"}>
                 {p.description
                   ? <div style={{fontSize:".84rem",color:"var(--ws-text)",lineHeight:1.7}}
-                      dangerouslySetInnerHTML={{__html:p.description}}/>
+                      dangerouslySetInnerHTML={{__html:p.description}} className="ws-richtext"/>
                   : <div style={{fontSize:".82rem",color:"var(--ws-text3)"}}>Clique para adicionar descrição...</div>
                 }
               </div>
@@ -1126,8 +1126,22 @@ function TabDocumentos({caseData,type}:{caseData:Case;type:"contrato"|"documento
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TAB: NOTAS (Trello-style)
+   TAB: NOTAS (Trello-style + drag & drop + named labels)
 ═══════════════════════════════════════════════════════════════ */
+
+/* Label definitions stored per-card as { color, name } */
+interface NoteLabel { color: string; name: string; }
+
+const DEFAULT_LABELS: NoteLabel[] = [
+  {color:"#e91e8c", name:""},
+  {color:"#ff6b35", name:""},
+  {color:"#ffd600", name:""},
+  {color:"#00e676", name:""},
+  {color:"#4dabf7", name:""},
+  {color:"#7b2fff", name:""},
+  {color:"#aaa",    name:""},
+];
+
 function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
   const [columns,setColumns]   = useState<NoteColumn[]>([]);
   const [cards,setCards]       = useState<NoteCard[]>([]);
@@ -1138,11 +1152,16 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
   const [newCardText,setNewCardText]=useState("");
   const [openCard,setOpenCard] = useState<NoteCard|null>(null);
 
+  // Drag state
+  const dragCard   = useRef<string|null>(null); // card id being dragged
+  const dragOverCol= useRef<string|null>(null); // column being hovered
+  const [dragOverColId, setDragOverColId]=useState<string|null>(null);
+
   useEffect(()=>{
     Promise.all([
       supabase.from("note_columns").select("*").eq("case_id",caseData.id).order("order"),
       supabase.from("note_cards").select("*").eq("case_id",caseData.id).order("order"),
-    ]).then(([c,k])=>{ setColumns(c.data??[]); setCards(k.data??[]); setLoading(false); });
+    ]).then(([col,k])=>{ setColumns(col.data??[]); setCards(k.data??[]); setLoading(false); });
   },[caseData.id]);
 
   async function addColumn(){
@@ -1155,7 +1174,7 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
   }
 
   async function removeColumn(id:string){
-    setColumns(p=>p.filter(c=>c.id!==id)); setCards(p=>p.filter(c=>c.column_id!==id));
+    setColumns(p=>p.filter(x=>x.id!==id)); setCards(p=>p.filter(x=>x.column_id!==id));
     await supabase.from("note_columns").delete().eq("id",id);
   }
 
@@ -1164,7 +1183,7 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
     const {data}=await supabase.from("note_cards").insert({
       case_id:caseData.id,column_id:colId,
       title:newCardText,description:"",checklist:[],comments:[],
-      order:cards.filter(c=>c.column_id===colId).length,
+      order:cards.filter(x=>x.column_id===colId).length,
     }).select().single();
     if(data) setCards(p=>[...p,data]);
     setNewCardText(""); setAddingCard(null);
@@ -1172,12 +1191,46 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
 
   async function updateCard(card:NoteCard){
     const {data}=await supabase.from("note_cards").update(card).eq("id",card.id).select().single();
-    if(data){ setCards(p=>p.map(c=>c.id===card.id?data:c)); setOpenCard(data); }
+    if(data){ setCards(p=>p.map(x=>x.id===card.id?data:x)); setOpenCard(data); }
   }
 
   async function removeCard(id:string){
-    setCards(p=>p.filter(c=>c.id!==id)); setOpenCard(null);
+    setCards(p=>p.filter(x=>x.id!==id)); setOpenCard(null);
     await supabase.from("note_cards").delete().eq("id",id);
+  }
+
+  // ── Drag handlers ──
+  function onDragStart(e:React.DragEvent, cardId:string){
+    dragCard.current=cardId;
+    e.dataTransfer.effectAllowed="move";
+    (e.currentTarget as HTMLElement).style.opacity="0.4";
+  }
+  function onDragEnd(e:React.DragEvent){
+    (e.currentTarget as HTMLElement).style.opacity="1";
+    dragCard.current=null;
+    setDragOverColId(null);
+  }
+  function onDragOverCol(e:React.DragEvent, colId:string){
+    e.preventDefault();
+    e.dataTransfer.dropEffect="move";
+    dragOverCol.current=colId;
+    setDragOverColId(colId);
+  }
+  function onDragLeaveCol(){
+    setDragOverColId(null);
+  }
+  async function onDropCol(e:React.DragEvent, colId:string){
+    e.preventDefault();
+    setDragOverColId(null);
+    const cardId=dragCard.current;
+    if(!cardId||cardId==="") return;
+    const card=cards.find(x=>x.id===cardId);
+    if(!card||card.column_id===colId) return;
+    // Move card to new column
+    const newOrder=cards.filter(x=>x.column_id===colId).length;
+    const updated={...card,column_id:colId,order:newOrder};
+    setCards(p=>p.map(x=>x.id===cardId?updated:x));
+    await supabase.from("note_cards").update({column_id:colId,order:newOrder}).eq("id",cardId);
   }
 
   if(loading) return <Loader/>;
@@ -1185,42 +1238,76 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
   return (
     <div style={{display:"flex",gap:16,overflowX:"auto",paddingBottom:16,alignItems:"flex-start"}}>
       {columns.map(col=>{
-        const colCards=cards.filter(c=>c.column_id===col.id);
+        const colCards=cards.filter(x=>x.column_id===col.id);
+        const isDragTarget=dragOverColId===col.id;
         return (
-          <div key={col.id} style={{background:"var(--ws-surface)",border:"1px solid var(--ws-border)",
-            borderRadius:12,padding:"12px 12px 8px",width:260,flexShrink:0}}>
+          <div key={col.id}
+            onDragOver={e=>onDragOverCol(e,col.id)}
+            onDragLeave={onDragLeaveCol}
+            onDrop={e=>onDropCol(e,col.id)}
+            style={{
+              background: isDragTarget?`${caseData.color}12`:"var(--ws-surface)",
+              border:`1px solid ${isDragTarget?caseData.color:"var(--ws-border)"}`,
+              borderRadius:12,padding:"12px 12px 8px",width:260,flexShrink:0,
+              transition:"border-color .15s,background .15s",
+            }}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <div style={{fontFamily:"Syne",fontWeight:800,fontSize:".88rem",color:"var(--ws-text)"}}>{col.title}</div>
               <button onClick={()=>removeColumn(col.id)} style={{background:"none",border:"none",
                 color:"var(--ws-text3)",cursor:"pointer",fontSize:".9rem",lineHeight:1}}>×</button>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{display:"flex",flexDirection:"column",gap:8,minHeight:8}}>
               {colCards.map(card=>{
-                const done=(card.checklist||[]).filter(c=>c.done).length;
+                const done=(card.checklist||[]).filter(x=>x.done).length;
                 const tot=(card.checklist||[]).length;
+                // Parse label: stored as JSON string {color,name} or plain color string
+                let labelColor=""; let labelName="";
+                if(card.label_color){
+                  try{ const lbl=JSON.parse(card.label_color); labelColor=lbl.color||""; labelName=lbl.name||""; }
+                  catch{ labelColor=card.label_color; }
+                }
                 return (
-                  <div key={card.id} onClick={()=>setOpenCard(card)} style={{
-                    background:"var(--ws-surface2)",border:"1px solid var(--ws-border)",
-                    borderRadius:8,padding:"10px 12px",cursor:"pointer",transition:"border-color .15s"}}
+                  <div key={card.id}
+                    draggable
+                    onDragStart={e=>onDragStart(e,card.id)}
+                    onDragEnd={onDragEnd}
+                    onClick={()=>setOpenCard(card)}
+                    style={{
+                      background:"var(--ws-surface2)",border:"1px solid var(--ws-border)",
+                      borderRadius:8,padding:"10px 12px",cursor:"grab",transition:"border-color .15s",
+                      userSelect:"none",
+                    }}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=caseData.color}
                     onMouseLeave={e=>e.currentTarget.style.borderColor="var(--ws-border)"}>
-                    {card.label_color&&<div style={{width:32,height:5,borderRadius:2,background:card.label_color,marginBottom:6}}/>}
+                    {/* Label pill */}
+                    {labelColor&&(
+                      <div style={{
+                        display:"inline-flex",alignItems:"center",
+                        background:labelColor,borderRadius:4,
+                        padding: labelName?"2px 8px":"3px 20px",
+                        marginBottom:6,fontSize:".62rem",fontWeight:700,
+                        color:"#fff",textShadow:"0 1px 2px #00000040",
+                        maxWidth:"100%",overflow:"hidden",
+                      }}>
+                        {labelName||""}
+                      </div>
+                    )}
                     <div style={{fontSize:".83rem",color:"var(--ws-text)",lineHeight:1.5}}>{card.title}</div>
                     <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
                       {card.due_date&&(
                         <span style={{fontSize:".65rem",fontFamily:"DM Mono",padding:"2px 6px",borderRadius:4,
-                          background:"var(--ws-border)",color:"var(--ws-text3)"}}>
+                          background:"var(--ws-border)",color:"var(--ws-text2)"}}>
                           📅 {new Date(card.due_date+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short"})}</span>
                       )}
                       {tot>0&&(
                         <span style={{fontSize:".65rem",fontFamily:"DM Mono",padding:"2px 6px",borderRadius:4,
                           background:done===tot?"#00e67622":"var(--ws-border)",
-                          color:done===tot?"#00e676":"var(--ws-text3)"}}>
+                          color:done===tot?"#00e676":"var(--ws-text2)"}}>
                           ✓ {done}/{tot}</span>
                       )}
                       {(card.comments||[]).length>0&&(
                         <span style={{fontSize:".65rem",fontFamily:"DM Mono",padding:"2px 6px",
-                          borderRadius:4,background:"var(--ws-border)",color:"var(--ws-text3)"}}>
+                          borderRadius:4,background:"var(--ws-border)",color:"var(--ws-text2)"}}>
                           💬 {(card.comments||[]).length}</span>
                       )}
                     </div>
@@ -1257,6 +1344,8 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
           </div>
         );
       })}
+
+      {/* Add column */}
       <div style={{width:240,flexShrink:0}}>
         {addingCol?(
           <div style={{background:"var(--ws-surface)",border:"1px solid var(--ws-border)",borderRadius:12,padding:12}}>
@@ -1290,6 +1379,90 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
   );
 }
 
+/* ─── Label Picker with names (Trello-style) ──────────────── */
+function LabelPicker({value,onChange,accentColor}:
+  {value:string;onChange:(v:string)=>void;accentColor:string}){
+  const [labels,setLabels]=useState<NoteLabel[]>(()=>{
+    // Try to load saved labels from localStorage
+    try{ const s=localStorage.getItem("dig_labels"); if(s) return JSON.parse(s); }catch{}
+    return DEFAULT_LABELS.map(l=>({...l}));
+  });
+  const [editIdx,setEditIdx]=useState<number|null>(null);
+  const [editName,setEditName]=useState("");
+
+  // Parse current value
+  let selColor="";
+  if(value){ try{ selColor=JSON.parse(value).color; }catch{ selColor=value; } }
+
+  function saveLabel(idx:number,name:string){
+    const next=labels.map((l,i)=>i===idx?{...l,name}:l);
+    setLabels(next);
+    try{ localStorage.setItem("dig_labels",JSON.stringify(next)); }catch{}
+    setEditIdx(null);
+    // If this label is selected, update value with new name
+    if(selColor===next[idx].color){
+      onChange(JSON.stringify({color:next[idx].color,name}));
+    }
+  }
+
+  function selectLabel(lbl:NoteLabel){
+    const encoded=JSON.stringify({color:lbl.color,name:lbl.name});
+    if(selColor===lbl.color) onChange(""); // toggle off
+    else onChange(encoded);
+  }
+
+  return (
+    <div>
+      <div style={{...labelStyle,marginBottom:8}}>Etiqueta</div>
+      <div style={{display:"flex",flexDirection:"column",gap:4}}>
+        {labels.map((lbl,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+            {editIdx===i?(
+              <>
+                <div style={{width:36,height:28,borderRadius:4,background:lbl.color,flexShrink:0,
+                  border:selColor===lbl.color?"3px solid white":"3px solid transparent",
+                  boxShadow:selColor===lbl.color?`0 0 0 2px ${lbl.color}`:"none",
+                  cursor:"pointer"}} onClick={()=>selectLabel(lbl)}/>
+                <input autoFocus value={editName} onChange={e=>setEditName(e.target.value)}
+                  onKeyDown={e=>{ if(e.key==="Enter") saveLabel(i,editName); if(e.key==="Escape") setEditIdx(null); }}
+                  placeholder="Nome da etiqueta"
+                  style={{flex:1,background:"var(--ws-surface)",border:`1px solid ${accentColor}`,
+                    borderRadius:5,color:"var(--ws-text)",padding:"4px 8px",fontSize:".78rem",
+                    fontFamily:"inherit",outline:"none"}}/>
+                <button onClick={()=>saveLabel(i,editName)} style={{background:accentColor,border:"none",
+                  borderRadius:5,color:"#fff",padding:"4px 8px",cursor:"pointer",fontSize:".72rem",fontFamily:"inherit"}}>
+                  ✓</button>
+              </>
+            ):(
+              <>
+                <div onClick={()=>selectLabel(lbl)} style={{
+                  flex:1,height:28,borderRadius:4,background:lbl.color,cursor:"pointer",
+                  border:selColor===lbl.color?"3px solid white":"3px solid transparent",
+                  boxShadow:selColor===lbl.color?`0 0 0 2px ${lbl.color}`:"none",
+                  transition:"all .15s",display:"flex",alignItems:"center",
+                  paddingLeft:lbl.name?8:0,justifyContent:lbl.name?"flex-start":"center",
+                }}>
+                  {lbl.name&&<span style={{fontSize:".72rem",fontWeight:700,color:"#fff",
+                    textShadow:"0 1px 2px #00000050"}}>{lbl.name}</span>}
+                </div>
+                <button onClick={()=>{setEditIdx(i);setEditName(lbl.name);}} style={{
+                  background:"none",border:"1px solid var(--ws-border2)",borderRadius:4,
+                  color:"var(--ws-text3)",cursor:"pointer",width:24,height:24,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:".7rem",
+                  flexShrink:0}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="var(--ws-text)";e.currentTarget.style.borderColor="var(--ws-text2)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color="var(--ws-text3)";e.currentTarget.style.borderColor="var(--ws-border2)";}}>
+                  ✎
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Note Card Detail Modal ──────────────────────────────── */
 function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
   {card:NoteCard;caseData:Case;onClose:()=>void;onUpdate:(c:NoteCard)=>void;
@@ -1314,6 +1487,13 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
       author:profile.name||"Você",text:newComment,created_at:new Date().toISOString()}]});
     setNewComment(""); }
 
+  // Parse label
+  let labelColor=""; let labelName="";
+  if(c.label_color){
+    try{ const lbl=JSON.parse(c.label_color); labelColor=lbl.color||""; labelName=lbl.name||""; }
+    catch{ labelColor=c.label_color; }
+  }
+
   const done=(c.checklist||[]).filter(x=>x.done).length;
   const tot=(c.checklist||[]).length;
 
@@ -1322,12 +1502,25 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
       <div style={{background:"var(--ws-surface)",borderRadius:16,
         width:"min(780px,95vw)",maxHeight:"90vh",overflowY:"auto",
         border:"1px solid var(--ws-border2)",boxShadow:"0 30px 80px #00000070",
-        display:"grid",gridTemplateColumns:"1fr 240px"}}>
+        display:"grid",gridTemplateColumns:"1fr 260px"}}>
         {/* Left */}
         <div style={{padding:"28px 24px",borderRight:"1px solid var(--ws-border)"}}>
+          {/* Label pill */}
+          {labelColor&&(
+            <div style={{
+              display:"inline-flex",alignItems:"center",
+              background:labelColor,borderRadius:4,
+              padding:labelName?"3px 10px":"4px 24px",
+              marginBottom:12,fontSize:".7rem",fontWeight:700,
+              color:"#fff",textShadow:"0 1px 2px #00000040",
+            }}>
+              {labelName||""}
+            </div>
+          )}
+
+          {/* Title */}
           <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:20}}>
             <div style={{flex:1}}>
-              {c.label_color&&<div style={{width:40,height:6,borderRadius:3,background:c.label_color,marginBottom:8}}/>}
               {editTitle?(
                 <div style={{display:"flex",gap:8}}>
                   <input className="ws-input" value={titleVal} autoFocus
@@ -1345,7 +1538,8 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
                   border:"1px solid transparent",transition:"border-color .15s"}}
                   onMouseEnter={e=>e.currentTarget.style.borderColor="var(--ws-border2)"}
                   onMouseLeave={e=>e.currentTarget.style.borderColor="transparent"}>
-                  {c.title}</div>
+                  {c.title}
+                </div>
               )}
             </div>
             <button onClick={onClose} style={closeBtnStyle}>×</button>
@@ -1373,7 +1567,7 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
                 onMouseEnter={e=>e.currentTarget.style.borderColor="var(--ws-border2)"}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="transparent"}>
                 {c.description
-                  ? <div style={{fontSize:".84rem",color:"var(--ws-text)",lineHeight:1.7}}
+                  ? <div className="ws-richtext" style={{fontSize:".84rem",color:"var(--ws-text)",lineHeight:1.7}}
                       dangerouslySetInnerHTML={{__html:c.description}}/>
                   : <div style={{fontSize:".82rem",color:"var(--ws-text3)"}}>Clique para adicionar uma descrição...</div>
                 }
@@ -1447,15 +1641,11 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
         <div style={{padding:"28px 18px"}}>
           <div style={labelStyle}>Ações</div>
           <div style={{marginBottom:20}}>
-            <div style={labelStyle}>Etiqueta</div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-              {LABEL_COLORS.map(lc=>(
-                <div key={lc} onClick={()=>save({label_color:c.label_color===lc?"":lc})} style={{
-                  width:24,height:24,borderRadius:4,background:lc,cursor:"pointer",
-                  border:c.label_color===lc?"3px solid white":"3px solid transparent",
-                  boxShadow:c.label_color===lc?`0 0 0 2px ${lc}`:"none",transition:"all .15s"}}/>
-              ))}
-            </div>
+            <LabelPicker
+              value={c.label_color||""}
+              onChange={v=>save({label_color:v})}
+              accentColor={caseData.color}
+            />
           </div>
           <div style={{marginBottom:20}}>
             <div style={labelStyle}>Data</div>
@@ -1548,6 +1738,14 @@ const CasesGlobalStyle = () => (
     .ws-s-venc  { color: #ff6060 !important; border-color: #ff6060 !important; }
     .ws-cs-ativo{ color: #00e676 !important; border-color: #00e676 !important; }
     .ws-case-status { background: transparent !important; }
+    /* Rich text rendered output */
+    .ws-richtext ul { list-style-type: disc; padding-left: 1.5em; margin: 4px 0; }
+    .ws-richtext ol { list-style-type: decimal; padding-left: 1.5em; margin: 4px 0; }
+    .ws-richtext li { margin: 2px 0; }
+    .ws-richtext b, .ws-richtext strong { font-weight: 700; }
+    .ws-richtext i, .ws-richtext em { font-style: italic; }
+    .ws-richtext u { text-decoration: underline; }
+    .ws-richtext s { text-decoration: line-through; }
   `}</style>
 );
 /* ─── Micro-components & Shared styles ───────────────────── */
@@ -1573,7 +1771,7 @@ const modalTitleStyle: React.CSSProperties={
 };
 const labelStyle: React.CSSProperties={
   fontFamily:"DM Mono",fontSize:".58rem",letterSpacing:"1.5px",
-  textTransform:"uppercase" as const,color:"var(--ws-text3)",marginBottom:6,display:"block",
+  textTransform:"uppercase" as const,color:"var(--ws-text2)",marginBottom:6,display:"block",
 };
 const navBtnStyle: React.CSSProperties={
   background:"var(--ws-surface2)",border:"1px solid var(--ws-border2)",
