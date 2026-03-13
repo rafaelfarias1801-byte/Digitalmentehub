@@ -269,24 +269,123 @@ function RichEditor({value,onChange,placeholder}:
   {value:string;onChange:(v:string)=>void;placeholder?:string}){
   const ref=useRef<HTMLDivElement>(null);
   const initialized=useRef(false);
-  useEffect(()=>{ if(ref.current&&!initialized.current){ ref.current.innerHTML=value||""; initialized.current=true; } },[]);
-  function exec(cmd:string){ document.execCommand(cmd,false,undefined); ref.current?.focus(); onChange(ref.current?.innerHTML||""); }
+
+  useEffect(()=>{
+    if(ref.current&&!initialized.current){
+      ref.current.innerHTML=value||"";
+      initialized.current=true;
+    }
+  },[]);
+
+  function exec(cmd:string){
+    ref.current?.focus();
+    document.execCommand(cmd,false,undefined);
+    onChange(ref.current?.innerHTML||"");
+  }
+
+  function insertList(ordered:boolean){
+    ref.current?.focus();
+    const sel=window.getSelection();
+    if(!sel||!sel.rangeCount) return;
+    const range=sel.getRangeAt(0);
+
+    // Check if already inside a list of the same type — if so, unwrap
+    let node:Node|null=range.commonAncestorContainer;
+    while(node&&node!==ref.current){
+      const tag=(node as Element).tagName;
+      if(tag==="UL"||tag==="OL"){
+        // unwrap: replace list with plain text lines
+        const items=Array.from((node as HTMLElement).querySelectorAll("li"));
+        const frag=document.createDocumentFragment();
+        items.forEach((li,i)=>{
+          const div=document.createElement("div");
+          div.innerHTML=li.innerHTML;
+          frag.appendChild(div);
+        });
+        (node as HTMLElement).replaceWith(frag);
+        onChange(ref.current?.innerHTML||"");
+        return;
+      }
+      node=node.parentNode;
+    }
+
+    // Insert new list
+    const listTag=ordered?"OL":"UL";
+    const list=document.createElement(listTag);
+    list.style.paddingLeft="1.4em";
+    list.style.margin="4px 0";
+    const li=document.createElement("li");
+    // Move selected content into li, or create empty li
+    if(!range.collapsed){
+      li.appendChild(range.extractContents());
+    } else {
+      li.innerHTML="&#8203;"; // zero-width space so caret lands inside
+    }
+    list.appendChild(li);
+    range.deleteContents();
+    range.insertNode(list);
+    // Place caret at end of li
+    const newRange=document.createRange();
+    newRange.setStart(li,li.childNodes.length);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    onChange(ref.current?.innerHTML||"");
+  }
+
+  // Allow pressing Enter inside li to add new li, Tab to indent
+  function handleKeyDown(e:React.KeyboardEvent){
+    const sel=window.getSelection();
+    if(!sel||!sel.rangeCount) return;
+    let node:Node|null=sel.getRangeAt(0).commonAncestorContainer;
+    // find li ancestor
+    let li:HTMLElement|null=null;
+    let tmp=node;
+    while(tmp&&tmp!==ref.current){ if((tmp as Element).tagName==="LI"){li=tmp as HTMLElement;break;} tmp=tmp.parentNode; }
+
+    if(li&&e.key==="Enter"&&!e.shiftKey){
+      e.preventDefault();
+      // If li is empty, break out of list
+      if(li.textContent?.trim()===""){
+        const list=li.parentElement!;
+        const p=document.createElement("div");
+        p.innerHTML="<br/>";
+        list.parentNode!.insertBefore(p,list.nextSibling);
+        li.remove();
+        if(list.querySelectorAll("li").length===0) list.remove();
+        const r=document.createRange();
+        r.setStart(p,0); r.collapse(true);
+        sel.removeAllRanges(); sel.addRange(r);
+      } else {
+        const newLi=document.createElement("li");
+        newLi.innerHTML="&#8203;";
+        li.after(newLi);
+        const r=document.createRange();
+        r.setStart(newLi,newLi.childNodes.length); r.collapse(true);
+        sel.removeAllRanges(); sel.addRange(r);
+      }
+      onChange(ref.current?.innerHTML||"");
+    }
+  }
+
+  const toolbarBtns: {label:React.ReactNode; action:()=>void}[] = [
+    {label:<b style={{fontFamily:"sans-serif"}}>B</b>,   action:()=>exec("bold")},
+    {label:<i style={{fontFamily:"sans-serif"}}>I</i>,   action:()=>exec("italic")},
+    {label:<u style={{fontFamily:"sans-serif"}}>U</u>,   action:()=>exec("underline")},
+    {label:<s style={{fontFamily:"sans-serif"}}>S</s>,   action:()=>exec("strikeThrough")},
+    {label:<span>•</span>,                                action:()=>insertList(false)},
+    {label:<span style={{fontSize:".75rem"}}>1.</span>,  action:()=>insertList(true)},
+  ];
+
   return (
     <div>
-      <div style={{display:"flex",gap:4,marginBottom:0,padding:"4px 6px",
+      <div style={{display:"flex",gap:4,padding:"4px 6px",
         background:"var(--ws-surface2)",borderRadius:"6px 6px 0 0",
         border:"1px solid var(--ws-border2)",borderBottom:"none"}}>
-        {([
-          {cmd:"bold",label:<b style={{fontFamily:"sans-serif"}}>B</b>},
-          {cmd:"italic",label:<i style={{fontFamily:"sans-serif"}}>I</i>},
-          {cmd:"underline",label:<u style={{fontFamily:"sans-serif"}}>U</u>},
-          {cmd:"strikeThrough",label:<s style={{fontFamily:"sans-serif"}}>S</s>},
-          {cmd:"insertUnorderedList",label:<span>•</span>},
-          {cmd:"insertOrderedList",label:<span>1.</span>},
-        ] as {cmd:string;label:React.ReactNode}[]).map(({cmd,label},i)=>(
-          <button key={i} onMouseDown={e=>{e.preventDefault();exec(cmd);}} style={{
+        {toolbarBtns.map(({label,action},i)=>(
+          <button key={i} onMouseDown={e=>{e.preventDefault();action();}} style={{
             background:"none",border:"none",color:"var(--ws-text2)",cursor:"pointer",
-            padding:"3px 7px",borderRadius:4,fontSize:".82rem",fontFamily:"inherit"}}
+            padding:"3px 8px",borderRadius:4,fontSize:".85rem",fontFamily:"inherit",lineHeight:1.4}}
             onMouseEnter={e=>e.currentTarget.style.background="var(--ws-border)"}
             onMouseLeave={e=>e.currentTarget.style.background="none"}>
             {label}
@@ -295,12 +394,17 @@ function RichEditor({value,onChange,placeholder}:
       </div>
       <div ref={ref} contentEditable suppressContentEditableWarning
         onInput={()=>onChange(ref.current?.innerHTML||"")}
+        onKeyDown={handleKeyDown}
         data-placeholder={placeholder||"Escreva aqui..."}
         style={{minHeight:100,padding:"10px 12px",
           background:"var(--ws-surface2)",border:"1px solid var(--ws-border2)",
           borderRadius:"0 0 6px 6px",color:"var(--ws-text)",
           fontSize:".84rem",lineHeight:1.7,outline:"none"}}/>
-      <style>{`[contenteditable]:empty:before{content:attr(data-placeholder);color:var(--ws-text3);}`}</style>
+      <style>{`
+        [contenteditable]:empty:before{content:attr(data-placeholder);color:var(--ws-text3);}
+        [contenteditable] ul,[contenteditable] ol{padding-left:1.4em;margin:4px 0;}
+        [contenteditable] li{margin:2px 0;}
+      `}</style>
     </div>
   );
 }
