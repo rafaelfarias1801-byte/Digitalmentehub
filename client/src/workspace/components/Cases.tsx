@@ -858,11 +858,20 @@ function TabConteudo({caseData,profile}:{caseData:Case;profile:Profile}){
   const [saving,setSaving]  = useState(false);
   const [uploading,setUploading]=useState(false);
   const fileRef=useRef<HTMLInputElement>(null);
+  const [activeMonth, setActiveMonth] = useState<string>("");
 
   useEffect(()=>{
     supabase.from("posts").select("*").eq("case_id",caseData.id).order("scheduled_date")
       .then(({data})=>{ setPosts(data??[]); setLoading(false); });
   },[caseData.id]);
+
+  useEffect(() => {
+    if (posts.length > 0 && !activeMonth) {
+      const now = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const keys = [...new Set(posts.map(p => p.scheduled_date ? p.scheduled_date.slice(0, 7) : "sem-data"))].sort();
+      setActiveMonth(keys.includes(now) ? now : keys[0] || "sem-data");
+    }
+  }, [posts]);
 
   async function uploadMedia(file:File){
     setUploading(true);
@@ -891,48 +900,134 @@ function TabConteudo({caseData,profile}:{caseData:Case;profile:Profile}){
 
   function updatePost(p:Post){ setPosts(prev=>prev.map(x=>x.id===p.id?p:x)); setSelected(p); }
 
+  // Agrupar posts por mês
+  const postsByMonth: Record<string, Post[]> = {};
+  posts.forEach(p => {
+    const key = p.scheduled_date ? p.scheduled_date.slice(0, 7) : "sem-data";
+    if (!postsByMonth[key]) postsByMonth[key] = [];
+    postsByMonth[key].push(p);
+  });
+
+  const sortedMonths = Object.keys(postsByMonth).sort((a, b) => {
+    if (a === "sem-data") return 1;
+    if (b === "sem-data") return -1;
+    return a.localeCompare(b);
+  });
+
+  const currentMonth = sortedMonths.includes(activeMonth) ? activeMonth : sortedMonths[0] || "sem-data";
+  const currentPosts = postsByMonth[currentMonth] || [];
+
+  function getMonthLabel(key: string) {
+    if (key === "sem-data") return "Sem data";
+    const [y, m] = key.split("-");
+    return `${MONTHS_FULL[parseInt(m) - 1]} ${y}`;
+  }
+
   return (
     <div>
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
         <button className="ws-btn" onClick={()=>setModal(true)}>+ Novo post</button>
       </div>
-      {loading?<Loader/>:posts.length===0?<Empty label="Nenhum post cadastrado ainda."/>:(
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {posts.map(p=>{
-            const ap=APPROVAL_STYLES[p.approval_status];
-            return (
-              <div key={p.id} onClick={()=>setSelected(p)} style={{
-                background:"var(--ws-surface)",border:"1px solid var(--ws-border)",
-                borderLeft:`3px solid ${ap.color}`,borderRadius:10,
-                padding:"14px 18px",display:"flex",alignItems:"center",gap:16,cursor:"pointer"}}>
-                <div style={{width:52,height:52,borderRadius:8,overflow:"hidden",
-                  background:"var(--ws-surface2)",flexShrink:0,
-                  display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {p.media_url
-                    ? <img src={p.media_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                    : <span style={{fontSize:"1.4rem"}}>
-                        {p.media_type==="reels"?"🎬":p.media_type==="carousel"?"🎠":"🖼"}</span>
-                  }
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:700,fontSize:".88rem",color:"var(--ws-text)"}}>{p.slug||p.title||"Post"}</div>
-                  {p.title&&p.slug&&<div style={{fontSize:".75rem",color:"var(--ws-text3)",marginTop:2}}>{p.title}</div>}
-                  <div style={{fontSize:".72rem",color:"var(--ws-text2)",marginTop:3,fontFamily:"DM Mono"}}>
-                    {p.scheduled_date
-                      ? new Date(p.scheduled_date+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})
-                      : "Sem data"}
-                    {" · "}{p.media_type==="feed"?"Feed":p.media_type==="stories"?"Stories":
-                            p.media_type==="reels"?"Reels":"Carrossel"}
+
+      {loading ? <Loader/> : posts.length === 0 ? <Empty label="Nenhum post cadastrado ainda."/> : (
+        <>
+          {/* Abas de meses */}
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
+            {sortedMonths.map(key => (
+              <button key={key} onClick={() => setActiveMonth(key)} style={{
+                padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",
+                fontFamily:"inherit",fontSize:".78rem",fontWeight:600,
+                background: currentMonth === key ? `${caseData.color}22` : "var(--ws-surface)",
+                color: currentMonth === key ? caseData.color : "var(--ws-text3)",
+                outline: currentMonth === key ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
+                transition:"all .15s",
+              }}>
+                {getMonthLabel(key)}
+                <span style={{
+                  marginLeft:6,fontSize:".65rem",
+                  background: currentMonth === key ? caseData.color : "var(--ws-border)",
+                  color: currentMonth === key ? "#fff" : "var(--ws-text3)",
+                  borderRadius:10,padding:"1px 6px",
+                }}>
+                  {(postsByMonth[key] || []).length}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Botão WhatsApp do mês */}
+          {caseData?.phone && currentMonth !== "sem-data" && currentPosts.length > 0 && (
+            <div style={{display:"flex",justifyContent:"flex-end",marginBottom:14}}>
+              <button
+                onClick={() => {
+                  const phone = caseData.phone?.replace(/[\s\-\(\)\+]/g, '');
+                  const msg = encodeURIComponent(
+                    `Olá${caseData.name ? ` ${caseData.name}` : ''}! 👋\n\n` +
+                    `Seu conteúdo do mês de *${getMonthLabel(currentMonth)}* está pronto! ` +
+                    `São ${currentPosts.length} publicações aguardando sua aprovação.\n\n` +
+                    `Acesse com seu login e senha:\n` +
+                    `https://www.digitalmentehub.com.br/workspace\n\n` +
+                    `Aguardamos seu feedback! ✅`
+                  );
+                  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+                }}
+                style={{
+                  display:'flex',alignItems:'center',gap:8,
+                  padding:'8px 16px',backgroundColor:'#25D366',
+                  color:'#fff',border:'none',borderRadius:8,
+                  cursor:'pointer',fontSize:'.78rem',fontWeight:600,
+                  transition:'all .15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1da851'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#25D366'}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.111.547 4.099 1.504 5.832L0 24l6.335-1.652A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-1.875 0-3.632-.508-5.145-1.388l-.368-.22-3.821.997 1.018-3.715-.24-.382A9.71 9.71 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z"/>
+                </svg>
+                📩 Enviar conteúdo de {getMonthLabel(currentMonth)} para aprovação
+              </button>
+            </div>
+          )}
+
+          {/* Lista de posts do mês selecionado */}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {currentPosts.map(p => {
+              const ap = APPROVAL_STYLES[p.approval_status];
+              return (
+                <div key={p.id} onClick={() => setSelected(p)} style={{
+                  background:"var(--ws-surface)",border:"1px solid var(--ws-border)",
+                  borderLeft:`3px solid ${ap.color}`,borderRadius:10,
+                  padding:"14px 18px",display:"flex",alignItems:"center",gap:16,cursor:"pointer"}}>
+                  <div style={{width:52,height:52,borderRadius:8,overflow:"hidden",
+                    background:"var(--ws-surface2)",flexShrink:0,
+                    display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {p.media_url
+                      ? <img src={p.media_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                      : <span style={{fontSize:"1.4rem"}}>
+                          {p.media_type==="reels"?"🎬":p.media_type==="carousel"?"🎠":"🖼"}</span>
+                    }
                   </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:".88rem",color:"var(--ws-text)"}}>{p.slug||p.title||"Post"}</div>
+                    {p.title&&p.slug&&<div style={{fontSize:".75rem",color:"var(--ws-text3)",marginTop:2}}>{p.title}</div>}
+                    <div style={{fontSize:".72rem",color:"var(--ws-text2)",marginTop:3,fontFamily:"DM Mono"}}>
+                      {p.scheduled_date
+                        ? new Date(p.scheduled_date+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})
+                        : "Sem data"}
+                      {" · "}{p.media_type==="feed"?"Feed":p.media_type==="stories"?"Stories":
+                              p.media_type==="reels"?"Reels":"Carrossel"}
+                    </div>
+                  </div>
+                  <div style={{background:ap.bg,color:ap.color,borderRadius:20,
+                    padding:"3px 10px",fontSize:".72rem",fontWeight:600}}>{ap.label}</div>
+                  <button onClick={e=>{e.stopPropagation();removePost(p.id);}} style={{
+                    background:"none",border:"none",color:"var(--ws-text3)",cursor:"pointer",fontSize:"1rem"}}>×</button>
                 </div>
-                <div style={{background:ap.bg,color:ap.color,borderRadius:20,
-                  padding:"3px 10px",fontSize:".72rem",fontWeight:600}}>{ap.label}</div>
-                <button onClick={e=>{e.stopPropagation();removePost(p.id);}} style={{
-                  background:"none",border:"none",color:"var(--ws-text3)",cursor:"pointer",fontSize:"1rem"}}>×</button>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {modal&&(
