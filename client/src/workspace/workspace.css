@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
+
 /* client/src/workspace/workspace.css */
 /* ════════════════════════════════════════
    DIG WORKSPACE — Estilos completos
@@ -10,9 +12,6 @@
 .ws-login {
   font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
 }
-
-/* Importar fontes */
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
   --ws-bg:          #0b0c1a;
