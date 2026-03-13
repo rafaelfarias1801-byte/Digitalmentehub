@@ -8,13 +8,13 @@ interface Case {
   id: string; name: string; description: string;
   status: "ativo" | "pausado" | "encerrado";
   color: string; logo_url?: string; segment?: string;
-  contact?: string; since?: string; notes?: string;
+  contact?: string; phone?: string; since?: string; notes?: string;
 }
 
 interface Post {
   id: string; case_id: string;
-  slug: string;        // "Estático 02" — shown in calendar
-  title: string;       // internal theme/title
+  slug: string;
+  title: string;
   caption: string; hashtags: string; media_url?: string;
   media_type: "feed" | "stories" | "reels" | "carousel";
   scheduled_date: string;
@@ -57,7 +57,7 @@ const COLORS = ["#e91e8c","#7b2fff","#4dabf7","#00e676","#ffd600","#ff6b35","#00
 const LABEL_COLORS = ["#e91e8c","#ff6b35","#ffd600","#00e676","#4dabf7","#7b2fff","#aaa"];
 const EMPTY_CASE: Omit<Case,"id"> = {
   name:"",description:"",status:"ativo",color:"#e91e8c",
-  logo_url:"",segment:"",contact:"",since:"",notes:"",
+  logo_url:"",segment:"",contact:"",phone:"",since:"",notes:"",
 };
 const STATUS_STYLES: Record<string,string> = {
   ativo:"ws-cs-ativo", pausado:"ws-cs-and", encerrado:"ws-s-venc",
@@ -105,7 +105,7 @@ export default function Cases({ profile }: Props) {
     setEditing(c);
     setForm({name:c.name,description:c.description,status:c.status,color:c.color,
       logo_url:c.logo_url??"",segment:c.segment??"",contact:c.contact??"",
-      since:c.since??"",notes:c.notes??""});
+      phone:c.phone??"",since:c.since??"",notes:c.notes??""});
     setModal(true);
   }
   async function uploadLogo(file:File){
@@ -199,7 +199,6 @@ function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
   function onToggleSidebar(){ setSidebarOpen(v=>!v); }
   return (
     <div style={{display:"flex",height:"100%",minHeight:"100vh",position:"relative"}}>
-      {/* Collapsed sidebar — just shows toggle button */}
       {!sidebarOpen&&(
         <div style={{width:36,flexShrink:0,borderRight:"1px solid var(--ws-border)",
           background:"var(--ws-surface)",display:"flex",flexDirection:"column",
@@ -213,7 +212,6 @@ function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
             onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--ws-border2)";e.currentTarget.style.color="var(--ws-text3)";}}>
             ▶
           </button>
-          {/* Rotated tab label */}
           <div style={{writingMode:"vertical-rl",transform:"rotate(180deg)",
             fontSize:".6rem",fontFamily:"DM Mono",letterSpacing:"1.5px",
             color:"var(--ws-text3)",marginTop:8,userSelect:"none"}}>
@@ -305,9 +303,6 @@ function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
 
 /* ═══════════════════════════════════════════════════════════════
    RICH TEXT MINI-EDITOR
-   Uses a hidden iframe-srcdoc approach to reliably get execCommand
-   list support, but keeping it simple: we use a real contenteditable
-   with a workaround — focus the div FIRST via a ref, THEN execCommand.
 ═══════════════════════════════════════════════════════════════ */
 function RichEditor({value,onChange,placeholder}:
   {value:string;onChange:(v:string)=>void;placeholder?:string}){
@@ -321,11 +316,9 @@ function RichEditor({value,onChange,placeholder}:
     }
   },[]);
 
-  // Synchronously focus then run execCommand so browser doesn't lose selection
   function runCmd(cmd:string){
     const el=ref.current;
     if(!el) return;
-    // Save selection
     const sel=window.getSelection();
     const savedRange=sel&&sel.rangeCount>0?sel.getRangeAt(0).cloneRange():null;
     el.focus();
@@ -338,9 +331,6 @@ function RichEditor({value,onChange,placeholder}:
   }
 
   function handleKeyDown(e:React.KeyboardEvent<HTMLDivElement>){
-    // Enter inside li: let browser handle naturally (execCommand lists work fine with Enter)
-    // Shift+Enter = line break inside li — also fine
-    // We only intercept Enter on an EMPTY li to break out
     if(e.key!=="Enter"||e.shiftKey) return;
     const sel=window.getSelection();
     if(!sel||!sel.rangeCount) return;
@@ -352,7 +342,6 @@ function RichEditor({value,onChange,placeholder}:
           const list=(n as HTMLElement).parentElement!;
           (n as HTMLElement).remove();
           if(!list.querySelector("li")) list.remove();
-          // Insert a plain div after
           const div=document.createElement("div");
           div.innerHTML="<br/>";
           const par=list.parentNode||ref.current!;
@@ -474,7 +463,6 @@ function PostDetailModal({post,caseData,onClose,onUpdate,profile}:
             <button onClick={onClose} style={closeBtnStyle}>×</button>
           </div>
 
-          {/* Media — aspect ratio correto */}
           {p.media_url&&(
             <div style={{marginBottom:20,borderRadius:10,overflow:"hidden",
               background:"#000",display:"flex",justifyContent:"center",alignItems:"flex-start"}}>
@@ -512,11 +500,11 @@ function PostDetailModal({post,caseData,onClose,onUpdate,profile}:
           </div>
 
           {/* Botão WhatsApp */}
-          {caseData?.contact && (
+          {caseData?.phone && (
             <div style={{marginTop:12, marginBottom:16}}>
               <button
                 onClick={() => {
-                  const phone = caseData.contact?.replace(/[\s\-\(\)\+]/g, '');
+                  const phone = caseData.phone?.replace(/[\s\-\(\)\+]/g, '');
                   const statusMessages: Record<string, string> = {
                     pendente: `Olá! 👋\n\nTemos o conteúdo "${p.title}" aguardando sua aprovação.\n\nAcesse: https://www.digitalmentehub.com.br/workspace`,
                     aprovado: `Olá! 👋\n\nO conteúdo "${p.title}" foi aprovado! ✅`,
@@ -1169,7 +1157,6 @@ function TabDocumentos({caseData,type}:{caseData:Case;type:"contrato"|"documento
    TAB: NOTAS (Trello-style + drag & drop + named labels)
 ═══════════════════════════════════════════════════════════════ */
 
-/* Label definitions stored per-card as { color, name } */
 interface NoteLabel { color: string; name: string; }
 
 const DEFAULT_LABELS: NoteLabel[] = [
@@ -1192,9 +1179,8 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
   const [newCardText,setNewCardText]=useState("");
   const [openCard,setOpenCard] = useState<NoteCard|null>(null);
 
-  // Drag state
-  const dragCard   = useRef<string|null>(null); // card id being dragged
-  const dragOverCol= useRef<string|null>(null); // column being hovered
+  const dragCard   = useRef<string|null>(null);
+  const dragOverCol= useRef<string|null>(null);
   const [dragOverColId, setDragOverColId]=useState<string|null>(null);
 
   useEffect(()=>{
@@ -1239,7 +1225,6 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
     await supabase.from("note_cards").delete().eq("id",id);
   }
 
-  // ── Drag handlers ──
   function onDragStart(e:React.DragEvent, cardId:string){
     dragCard.current=cardId;
     e.dataTransfer.effectAllowed="move";
@@ -1266,7 +1251,6 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
     if(!cardId||cardId==="") return;
     const card=cards.find(x=>x.id===cardId);
     if(!card||card.column_id===colId) return;
-    // Move card to new column
     const newOrder=cards.filter(x=>x.column_id===colId).length;
     const updated={...card,column_id:colId,order:newOrder};
     setCards(p=>p.map(x=>x.id===cardId?updated:x));
@@ -1300,7 +1284,6 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
               {colCards.map(card=>{
                 const done=(card.checklist||[]).filter(x=>x.done).length;
                 const tot=(card.checklist||[]).length;
-                // Parse label: stored as JSON string {color,name} or plain color string
                 let labelColor=""; let labelName="";
                 if(card.label_color){
                   try{ const lbl=JSON.parse(card.label_color); labelColor=lbl.color||""; labelName=lbl.name||""; }
@@ -1319,7 +1302,6 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
                     }}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=caseData.color}
                     onMouseLeave={e=>e.currentTarget.style.borderColor="var(--ws-border)"}>
-                    {/* Label pill */}
                     {labelColor&&(
                       <div style={{
                         display:"inline-flex",alignItems:"center",
@@ -1385,7 +1367,6 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
         );
       })}
 
-      {/* Add column */}
       <div style={{width:240,flexShrink:0}}>
         {addingCol?(
           <div style={{background:"var(--ws-surface)",border:"1px solid var(--ws-border)",borderRadius:12,padding:12}}>
@@ -1423,14 +1404,12 @@ function TabNotas({caseData,profile}:{caseData:Case;profile:Profile}){
 function LabelPicker({value,onChange,accentColor}:
   {value:string;onChange:(v:string)=>void;accentColor:string}){
   const [labels,setLabels]=useState<NoteLabel[]>(()=>{
-    // Try to load saved labels from localStorage
     try{ const s=localStorage.getItem("dig_labels"); if(s) return JSON.parse(s); }catch{}
     return DEFAULT_LABELS.map(l=>({...l}));
   });
   const [editIdx,setEditIdx]=useState<number|null>(null);
   const [editName,setEditName]=useState("");
 
-  // Parse current value
   let selColor="";
   if(value){ try{ selColor=JSON.parse(value).color; }catch{ selColor=value; } }
 
@@ -1439,7 +1418,6 @@ function LabelPicker({value,onChange,accentColor}:
     setLabels(next);
     try{ localStorage.setItem("dig_labels",JSON.stringify(next)); }catch{}
     setEditIdx(null);
-    // If this label is selected, update value with new name
     if(selColor===next[idx].color){
       onChange(JSON.stringify({color:next[idx].color,name}));
     }
@@ -1447,7 +1425,7 @@ function LabelPicker({value,onChange,accentColor}:
 
   function selectLabel(lbl:NoteLabel){
     const encoded=JSON.stringify({color:lbl.color,name:lbl.name});
-    if(selColor===lbl.color) onChange(""); // toggle off
+    if(selColor===lbl.color) onChange("");
     else onChange(encoded);
   }
 
@@ -1527,7 +1505,6 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
       author:profile.name||"Você",text:newComment,created_at:new Date().toISOString()}]});
     setNewComment(""); }
 
-  // Parse label
   let labelColor=""; let labelName="";
   if(c.label_color){
     try{ const lbl=JSON.parse(c.label_color); labelColor=lbl.color||""; labelName=lbl.name||""; }
@@ -1543,9 +1520,7 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
         width:"min(780px,95vw)",maxHeight:"90vh",overflowY:"auto",
         border:"1px solid var(--ws-border2)",boxShadow:"0 30px 80px #00000070",
         display:"grid",gridTemplateColumns:"1fr 260px"}}>
-        {/* Left */}
         <div style={{padding:"28px 24px",borderRight:"1px solid var(--ws-border)"}}>
-          {/* Label pill */}
           {labelColor&&(
             <div style={{
               display:"inline-flex",alignItems:"center",
@@ -1558,7 +1533,6 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
             </div>
           )}
 
-          {/* Title */}
           <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:20}}>
             <div style={{flex:1}}>
               {editTitle?(
@@ -1585,7 +1559,6 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
             <button onClick={onClose} style={closeBtnStyle}>×</button>
           </div>
 
-          {/* Description */}
           <div style={{marginBottom:20}}>
             <div style={labelStyle}>Descrição</div>
             {editDesc?(
@@ -1615,7 +1588,6 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
             )}
           </div>
 
-          {/* Checklist */}
           <div style={{marginBottom:20}}>
             <div style={labelStyle}>Checklist {tot>0&&`(${done}/${tot})`}</div>
             {tot>0&&<div style={{height:4,background:"var(--ws-border)",borderRadius:2,marginBottom:10,overflow:"hidden"}}>
@@ -1640,7 +1612,6 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
             </div>
           </div>
 
-          {/* Comments */}
           <div>
             <div style={labelStyle}>Comentários e atividade</div>
             {(c.comments||[]).map(cm=>(
@@ -1677,7 +1648,6 @@ function NoteCardModal({card,caseData,onClose,onUpdate,onDelete,profile}:
           </div>
         </div>
 
-        {/* Right sidebar */}
         <div style={{padding:"28px 18px"}}>
           <div style={labelStyle}>Ações</div>
           <div style={{marginBottom:20}}>
@@ -1749,6 +1719,9 @@ function CaseModal({form,setForm,editing,saving,uploading,fileRef,uploadLogo,onS
             <input className="ws-input" value={form.since} placeholder="Ex: Jan 2024"
               onChange={e=>setForm((f:any)=>({...f,since:e.target.value}))}/></div>
         </div>
+        <label className="ws-label">WhatsApp do cliente</label>
+        <input className="ws-input" value={form.phone||""} placeholder="Ex: 5511999999999"
+          onChange={e=>setForm((f:any)=>({...f,phone:e.target.value}))} style={{marginBottom:12}}/>
         <label className="ws-label">Cor do case</label>
         <div style={{display:"flex",gap:8,marginBottom:12}}>
           {COLORS.map(c=>(<div key={c} onClick={()=>setForm((f:any)=>({...f,color:c}))} style={{
@@ -1770,7 +1743,6 @@ function CaseModal({form,setForm,editing,saving,uploading,fileRef,uploadLogo,onS
   );
 }
 
-
 /* ─── Global color fixes injected by Cases ──────────────────── */
 const CasesGlobalStyle = () => (
   <style>{`
@@ -1778,7 +1750,6 @@ const CasesGlobalStyle = () => (
     .ws-s-venc  { color: #ff6060 !important; border-color: #ff6060 !important; }
     .ws-cs-ativo{ color: #00e676 !important; border-color: #00e676 !important; }
     .ws-case-status { background: transparent !important; }
-    /* Rich text rendered output */
     .ws-richtext ul { list-style-type: disc; padding-left: 1.5em; margin: 4px 0; }
     .ws-richtext ol { list-style-type: decimal; padding-left: 1.5em; margin: 4px 0; }
     .ws-richtext li { margin: 2px 0; }
@@ -1788,6 +1759,7 @@ const CasesGlobalStyle = () => (
     .ws-richtext s { text-decoration: line-through; }
   `}</style>
 );
+
 /* ─── Micro-components & Shared styles ───────────────────── */
 const Loader=()=>(
   <div style={{color:"var(--ws-text3)",fontFamily:"DM Mono",fontSize:".8rem"}}>Carregando...</div>
