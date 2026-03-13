@@ -63,7 +63,7 @@ const STATUS_STYLES: Record<string,string> = {
   ativo:"ws-cs-ativo", pausado:"ws-cs-and", encerrado:"ws-s-venc",
 };
 const APPROVAL_STYLES: Record<string,{bg:string;color:string;label:string}> = {
-  pendente:  {bg:"#2a2a3a",    color:"#aaa",     label:"Pendente"},
+  pendente:  {bg:"#2a2a3a",    color:"#e0e0e0",  label:"Pendente"},
   aprovado:  {bg:"#00e67622",  color:"#00e676",  label:"Aprovado"},
   reprovado: {bg:"#ff443322",  color:"#ff4433",  label:"Reprovado"},
   alteracao: {bg:"#ffd60022",  color:"#ffd600",  label:"Alteração solicitada"},
@@ -141,6 +141,7 @@ export default function Cases({ profile }: Props) {
 
   return (
     <div className="ws-page">
+      <CasesGlobalStyle/>
       <div className="ws-page-title">Cases<span className="ws-dot">.</span></div>
       <div className="ws-page-sub">Clientes ativos e histórico de projetos</div>
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
@@ -194,15 +195,51 @@ export default function Cases({ profile }: Props) {
 function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
   {caseData:Case;onBack:()=>void;onEdit:()=>void;onDelete:()=>void;profile:Profile}){
   const [activeTab,setActiveTab]=useState("calendario");
+  const [sidebarOpen,setSidebarOpen]=useState(true);
+  function onToggleSidebar(){ setSidebarOpen(v=>!v); }
   return (
-    <div style={{display:"flex",height:"100%",minHeight:"100vh"}}>
-      <div style={{width:200,flexShrink:0,borderRight:"1px solid var(--ws-border)",
-        background:"var(--ws-surface)",display:"flex",flexDirection:"column",paddingTop:8}}>
-        <button onClick={onBack} style={{display:"flex",alignItems:"center",gap:6,
-          background:"none",border:"none",color:"var(--ws-text3)",cursor:"pointer",
-          fontSize:".78rem",padding:"8px 16px",fontFamily:"DM Mono",letterSpacing:"1px",transition:"color .15s"}}
-          onMouseEnter={e=>e.currentTarget.style.color="var(--ws-text)"}
-          onMouseLeave={e=>e.currentTarget.style.color="var(--ws-text3)"}>← CASES</button>
+    <div style={{display:"flex",height:"100%",minHeight:"100vh",position:"relative"}}>
+      {/* Collapsed sidebar — just shows toggle button */}
+      {!sidebarOpen&&(
+        <div style={{width:36,flexShrink:0,borderRight:"1px solid var(--ws-border)",
+          background:"var(--ws-surface)",display:"flex",flexDirection:"column",
+          alignItems:"center",paddingTop:10,gap:8}}>
+          <button onClick={()=>setSidebarOpen(true)} title="Expandir" style={{
+            background:"none",border:"1px solid var(--ws-border2)",borderRadius:5,
+            color:"var(--ws-text3)",cursor:"pointer",width:24,height:24,
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:".75rem",
+            transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--ws-text2)";e.currentTarget.style.color="var(--ws-text)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--ws-border2)";e.currentTarget.style.color="var(--ws-text3)";}}>
+            ▶
+          </button>
+          {/* Rotated tab label */}
+          <div style={{writingMode:"vertical-rl",transform:"rotate(180deg)",
+            fontSize:".6rem",fontFamily:"DM Mono",letterSpacing:"1.5px",
+            color:"var(--ws-text3)",marginTop:8,userSelect:"none"}}>
+            {caseData.name.slice(0,10).toUpperCase()}
+          </div>
+        </div>
+      )}
+      <div style={{width:sidebarOpen?200:0,flexShrink:0,borderRight:sidebarOpen?"1px solid var(--ws-border)":"none",
+        background:"var(--ws-surface)",display:sidebarOpen?"flex":"none",flexDirection:"column",paddingTop:8,
+        overflow:"hidden",transition:"width .2s"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 10px 6px 16px"}}>
+          <button onClick={onBack} style={{display:"flex",alignItems:"center",gap:5,
+            background:"none",border:"none",color:"var(--ws-text3)",cursor:"pointer",
+            fontSize:".72rem",fontFamily:"DM Mono",letterSpacing:"1px",transition:"color .15s",padding:0}}
+            onMouseEnter={e=>e.currentTarget.style.color="var(--ws-text)"}
+            onMouseLeave={e=>e.currentTarget.style.color="var(--ws-text3)"}>← CASES</button>
+          <button onClick={onToggleSidebar} title={sidebarOpen?"Recolher":"Expandir"} style={{
+            background:"none",border:"1px solid var(--ws-border2)",borderRadius:5,
+            color:"var(--ws-text3)",cursor:"pointer",width:24,height:24,
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:".75rem",flexShrink:0,
+            transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--ws-text2)";e.currentTarget.style.color="var(--ws-text)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--ws-border2)";e.currentTarget.style.color="var(--ws-text3)";}}>
+            {sidebarOpen?"◀":"▶"}
+          </button>
+        </div>
         <div style={{padding:"12px 16px 16px",borderBottom:"1px solid var(--ws-border)"}}>
           <div style={{width:40,height:40,borderRadius:8,overflow:"hidden",
             background:caseData.logo_url?undefined:`linear-gradient(135deg,${caseData.color}44,${caseData.color}22)`,
@@ -216,7 +253,10 @@ function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
           <div style={{fontFamily:"Syne",fontWeight:800,fontSize:".9rem",color:"var(--ws-text)",lineHeight:1.2}}>
             {caseData.name}</div>
           <span className={`ws-case-status ${STATUS_STYLES[caseData.status]}`}
-            style={{marginTop:4,display:"inline-block"}}>{caseData.status}</span>
+            style={{marginTop:4,display:"inline-block",
+              color: caseData.status==="ativo"?"#00e676":caseData.status==="pausado"?"#ffd600":"#aaa",
+              borderColor: caseData.status==="ativo"?"#00e676":caseData.status==="pausado"?"#ffd600":"#aaa",
+            }}>{caseData.status}</span>
         </div>
         <div style={{flex:1,padding:"8px 0"}}>
           {SUB_TABS.map(tab=>(
@@ -241,6 +281,7 @@ function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
         </div>
       </div>
       <div style={{flex:1,overflow:"auto",background:"var(--ws-bg)"}}>
+        <CasesGlobalStyle/>
         <div style={{padding:"28px 32px"}}>
           <div style={{marginBottom:24}}>
             <div style={{fontFamily:"Syne",fontWeight:800,fontSize:"1.4rem",color:"var(--ws-text)"}}>
@@ -264,6 +305,9 @@ function CaseWorkspace({caseData,onBack,onEdit,onDelete,profile}:
 
 /* ═══════════════════════════════════════════════════════════════
    RICH TEXT MINI-EDITOR
+   Uses a hidden iframe-srcdoc approach to reliably get execCommand
+   list support, but keeping it simple: we use a real contenteditable
+   with a workaround — focus the div FIRST via a ref, THEN execCommand.
 ═══════════════════════════════════════════════════════════════ */
 function RichEditor({value,onChange,placeholder}:
   {value:string;onChange:(v:string)=>void;placeholder?:string}){
@@ -277,105 +321,73 @@ function RichEditor({value,onChange,placeholder}:
     }
   },[]);
 
-  function exec(cmd:string){
-    ref.current?.focus();
+  // Synchronously focus then run execCommand so browser doesn't lose selection
+  function runCmd(cmd:string){
+    const el=ref.current;
+    if(!el) return;
+    // Save selection
+    const sel=window.getSelection();
+    const savedRange=sel&&sel.rangeCount>0?sel.getRangeAt(0).cloneRange():null;
+    el.focus();
+    if(savedRange&&sel){
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }
     document.execCommand(cmd,false,undefined);
-    onChange(ref.current?.innerHTML||"");
+    onChange(el.innerHTML||"");
   }
 
-  function insertList(ordered:boolean){
-    ref.current?.focus();
+  function handleKeyDown(e:React.KeyboardEvent<HTMLDivElement>){
+    // Enter inside li: let browser handle naturally (execCommand lists work fine with Enter)
+    // Shift+Enter = line break inside li — also fine
+    // We only intercept Enter on an EMPTY li to break out
+    if(e.key!=="Enter"||e.shiftKey) return;
     const sel=window.getSelection();
     if(!sel||!sel.rangeCount) return;
-    const range=sel.getRangeAt(0);
-
-    // Check if already inside a list of the same type — if so, unwrap
-    let node:Node|null=range.commonAncestorContainer;
-    while(node&&node!==ref.current){
-      const tag=(node as Element).tagName;
-      if(tag==="UL"||tag==="OL"){
-        // unwrap: replace list with plain text lines
-        const items=Array.from((node as HTMLElement).querySelectorAll("li"));
-        const frag=document.createDocumentFragment();
-        items.forEach((li,i)=>{
+    let n:Node|null=sel.getRangeAt(0).startContainer;
+    while(n&&n!==ref.current){
+      if((n as Element).tagName==="LI"){
+        if((n as HTMLElement).textContent?.trim()===""){
+          e.preventDefault();
+          const list=(n as HTMLElement).parentElement!;
+          (n as HTMLElement).remove();
+          if(!list.querySelector("li")) list.remove();
+          // Insert a plain div after
           const div=document.createElement("div");
-          div.innerHTML=li.innerHTML;
-          frag.appendChild(div);
-        });
-        (node as HTMLElement).replaceWith(frag);
-        onChange(ref.current?.innerHTML||"");
+          div.innerHTML="<br/>";
+          const par=list.parentNode||ref.current!;
+          par.insertBefore(div,list.nextSibling);
+          const r=document.createRange();
+          r.setStart(div,0); r.collapse(true);
+          sel.removeAllRanges(); sel.addRange(r);
+          onChange(ref.current?.innerHTML||"");
+        }
         return;
       }
-      node=node.parentNode;
-    }
-
-    // Use execCommand — works correctly when div is focused and selection is inside contenteditable
-    const cmd=ordered?"insertOrderedList":"insertUnorderedList";
-    document.execCommand(cmd,false,undefined);
-    // Fix list styling injected by browser
-    if(ref.current){
-      ref.current.querySelectorAll("ul,ol").forEach(el=>{
-        (el as HTMLElement).style.paddingLeft="1.4em";
-        (el as HTMLElement).style.margin="4px 0";
-      });
-    }
-    onChange(ref.current?.innerHTML||"");
-  }
-
-  // Allow pressing Enter inside li to add new li, Tab to indent
-  function handleKeyDown(e:React.KeyboardEvent){
-    const sel=window.getSelection();
-    if(!sel||!sel.rangeCount) return;
-    let node:Node|null=sel.getRangeAt(0).commonAncestorContainer;
-    // find li ancestor
-    let li:HTMLElement|null=null;
-    let tmp=node;
-    while(tmp&&tmp!==ref.current){ if((tmp as Element).tagName==="LI"){li=tmp as HTMLElement;break;} tmp=tmp.parentNode; }
-
-    if(li&&e.key==="Enter"&&!e.shiftKey){
-      e.preventDefault();
-      // If li is empty, break out of list
-      if(li.textContent?.trim()===""){
-        const list=li.parentElement!;
-        const p=document.createElement("div");
-        p.innerHTML="<br/>";
-        list.parentNode!.insertBefore(p,list.nextSibling);
-        li.remove();
-        if(list.querySelectorAll("li").length===0) list.remove();
-        const r=document.createRange();
-        r.setStart(p,0); r.collapse(true);
-        sel.removeAllRanges(); sel.addRange(r);
-      } else {
-        const newLi=document.createElement("li");
-        newLi.innerHTML="&#8203;";
-        li.after(newLi);
-        const r=document.createRange();
-        r.setStart(newLi,newLi.childNodes.length); r.collapse(true);
-        sel.removeAllRanges(); sel.addRange(r);
-      }
-      onChange(ref.current?.innerHTML||"");
+      n=n.parentNode;
     }
   }
 
-  const toolbarBtns: {label:React.ReactNode; action:()=>void}[] = [
-    {label:<b style={{fontFamily:"sans-serif"}}>B</b>,   action:()=>exec("bold")},
-    {label:<i style={{fontFamily:"sans-serif"}}>I</i>,   action:()=>exec("italic")},
-    {label:<u style={{fontFamily:"sans-serif"}}>U</u>,   action:()=>exec("underline")},
-    {label:<s style={{fontFamily:"sans-serif"}}>S</s>,   action:()=>exec("strikeThrough")},
-    {label:<span>•</span>,                                action:()=>insertList(false)},
-    {label:<span style={{fontSize:".75rem"}}>1.</span>,  action:()=>insertList(true)},
+  const tools:[string,React.ReactNode][]=[
+    ["bold",        <b  key="b" style={{fontFamily:"sans-serif",fontSize:".9rem"}}>B</b>],
+    ["italic",      <i  key="i" style={{fontFamily:"sans-serif",fontSize:".9rem"}}>I</i>],
+    ["underline",   <u  key="u" style={{fontFamily:"sans-serif",fontSize:".9rem"}}>U</u>],
+    ["strikeThrough",<s key="s" style={{fontFamily:"sans-serif",fontSize:".9rem"}}>S</s>],
+    ["insertUnorderedList", <span key="ul" style={{fontSize:".9rem",fontWeight:700}}>•</span>],
+    ["insertOrderedList",   <span key="ol" style={{fontSize:".8rem",fontWeight:700}}>1.</span>],
   ];
 
   return (
     <div>
-      <div style={{display:"flex",gap:4,padding:"4px 6px",
+      <div style={{display:"flex",gap:2,padding:"4px 6px",
         background:"var(--ws-surface2)",borderRadius:"6px 6px 0 0",
         border:"1px solid var(--ws-border2)",borderBottom:"none"}}>
-        {toolbarBtns.map(({label,action},i)=>(
-          <button key={i} onMouseDown={e=>{e.preventDefault();action();}} style={{
-            background:"none",border:"none",color:"var(--ws-text2)",cursor:"pointer",
-            padding:"3px 8px",borderRadius:4,fontSize:".85rem",fontFamily:"inherit",lineHeight:1.4}}
-            onMouseEnter={e=>e.currentTarget.style.background="var(--ws-border)"}
+        {tools.map(([cmd,label],i)=>(
+          <button key={i}
+            onMouseDown={e=>{e.preventDefault(); runCmd(cmd);}}
+            style={{background:"none",border:"none",color:"var(--ws-text)",cursor:"pointer",
+              padding:"3px 9px",borderRadius:4,lineHeight:1.4,minWidth:28,textAlign:"center"}}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.08)"}
             onMouseLeave={e=>e.currentTarget.style.background="none"}>
             {label}
           </button>
@@ -391,8 +403,9 @@ function RichEditor({value,onChange,placeholder}:
           fontSize:".84rem",lineHeight:1.7,outline:"none"}}/>
       <style>{`
         [contenteditable]:empty:before{content:attr(data-placeholder);color:var(--ws-text3);}
-        [contenteditable] ul,[contenteditable] ol{padding-left:1.4em;margin:4px 0;}
-        [contenteditable] li{margin:2px 0;}
+        [contenteditable] ul{list-style-type:disc;padding-left:1.5em;margin:4px 0;}
+        [contenteditable] ol{list-style-type:decimal;padding-left:1.5em;margin:4px 0;}
+        [contenteditable] li{margin:1px 0;}
       `}</style>
     </div>
   );
@@ -826,7 +839,7 @@ function TabConteudo({caseData,profile}:{caseData:Case;profile:Profile}){
                 <div style={{flex:1}}>
                   <div style={{fontWeight:700,fontSize:".88rem",color:"var(--ws-text)"}}>{p.slug||p.title||"Post"}</div>
                   {p.title&&p.slug&&<div style={{fontSize:".75rem",color:"var(--ws-text3)",marginTop:2}}>{p.title}</div>}
-                  <div style={{fontSize:".72rem",color:"var(--ws-text3)",marginTop:3,fontFamily:"DM Mono"}}>
+                  <div style={{fontSize:".72rem",color:"var(--ws-text2)",marginTop:3,fontFamily:"DM Mono"}}>
                     {p.scheduled_date
                       ? new Date(p.scheduled_date+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})
                       : "Sem data"}
@@ -1527,6 +1540,16 @@ function CaseModal({form,setForm,editing,saving,uploading,fileRef,uploadLogo,onS
   );
 }
 
+
+/* ─── Global color fixes injected by Cases ──────────────────── */
+const CasesGlobalStyle = () => (
+  <style>{`
+    .ws-cs-and  { color: #ffd600 !important; border-color: #ffd600 !important; }
+    .ws-s-venc  { color: #ff6060 !important; border-color: #ff6060 !important; }
+    .ws-cs-ativo{ color: #00e676 !important; border-color: #00e676 !important; }
+    .ws-case-status { background: transparent !important; }
+  `}</style>
+);
 /* ─── Micro-components & Shared styles ───────────────────── */
 const Loader=()=>(
   <div style={{color:"var(--ws-text3)",fontFamily:"DM Mono",fontSize:".8rem"}}>Carregando...</div>
