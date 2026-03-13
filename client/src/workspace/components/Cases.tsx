@@ -734,6 +734,56 @@ function TabCalendario({caseData,profile}:{caseData:Case;profile:Profile}){
           color:"var(--ws-text)",minWidth:170,textAlign:"center"}}>{MONTHS_FULL[month]} {year}</span>
         <button onClick={()=>{ if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1); }} style={navBtnStyle}>›</button>
       </div>
+{/* Botão enviar conteúdo do mês */}
+{caseData?.phone && posts.filter(p => {
+  if (!p.scheduled_date) return false;
+  const d = new Date(p.scheduled_date + "T12:00:00");
+  return d.getFullYear() === year && d.getMonth() === month;
+}).length > 0 && (
+  <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
+    <button
+      onClick={() => {
+        const phone = caseData.phone?.replace(/[\s\-\(\)\+]/g, '');
+        const monthPosts = posts.filter(p => {
+          if (!p.scheduled_date) return false;
+          const d = new Date(p.scheduled_date + "T12:00:00");
+          return d.getFullYear() === year && d.getMonth() === month;
+        });
+        const msg = encodeURIComponent(
+          `Olá${caseData.name ? ` ${caseData.name}` : ''}! 👋\n\n` +
+          `Seu conteúdo do mês de *${MONTHS_FULL[month]} ${year}* está pronto! ` +
+          `São ${monthPosts.length} publicações aguardando sua aprovação.\n\n` +
+          `Acesse com seu login e senha:\n` +
+          `https://www.digitalmentehub.com.br/workspace\n\n` +
+          `Aguardamos seu feedback! ✅`
+        );
+        window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+      }}
+      style={{
+        display:'flex',
+        alignItems:'center',
+        gap:8,
+        padding:'8px 16px',
+        backgroundColor:'#25D366',
+        color:'#fff',
+        border:'none',
+        borderRadius:8,
+        cursor:'pointer',
+        fontSize:'.78rem',
+        fontWeight:600,
+        transition:'all .15s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1da851'}
+      onMouseLeave={e => e.currentTarget.style.backgroundColor = '#25D366'}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.111.547 4.099 1.504 5.832L0 24l6.335-1.652A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-1.875 0-3.632-.508-5.145-1.388l-.368-.22-3.821.997 1.018-3.715-.24-.382A9.71 9.71 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z"/>
+      </svg>
+      📩 Enviar conteúdo de {MONTHS_FULL[month]} para aprovação
+    </button>
+  </div>
+)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:24}}>
         {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d=>(
           <div key={d} style={{textAlign:"center",fontFamily:"DM Mono",fontSize:".6rem",
