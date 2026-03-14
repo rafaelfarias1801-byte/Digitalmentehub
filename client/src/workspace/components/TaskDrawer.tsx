@@ -1,4 +1,5 @@
 // client/src/workspace/components/TaskDrawer.tsx
+import type React from "react";
 import type {
   ChecklistTask,
   RelatedTo,
@@ -16,9 +17,11 @@ interface Props {
   open: boolean;
   task: ChecklistTask | null;
   saving: boolean;
+  isNew: boolean;
   onClose: () => void;
   onDelete: (taskId: string) => void;
-  onChange: (taskId: string, patch: Partial<ChecklistTask>) => void;
+  onSave: () => void;
+  onChange: (patch: Partial<ChecklistTask>) => void;
   statusOptions: Option<TaskStatus>[];
   priorityOptions: Option<TaskPriority>[];
   relatedOptions: Option<RelatedTo>[];
@@ -47,8 +50,10 @@ export default function TaskDrawer({
   open,
   task,
   saving,
+  isNew,
   onClose,
   onDelete,
+  onSave,
   onChange,
   statusOptions,
   priorityOptions,
@@ -104,7 +109,7 @@ export default function TaskDrawer({
               color: "var(--ws-text3)",
             }}
           >
-            Tarefa
+            {isNew ? "Nova tarefa" : "Tarefa"}
           </div>
 
           <button
@@ -118,7 +123,7 @@ export default function TaskDrawer({
 
         <input
           value={task.title}
-          onChange={(e) => onChange(task.id, { title: e.target.value })}
+          onChange={(e) => onChange({ title: e.target.value })}
           placeholder="Título da tarefa"
           style={{
             width: "100%",
@@ -148,7 +153,7 @@ export default function TaskDrawer({
             <select
               className="ws-field"
               value={task.assignee ?? ""}
-              onChange={(e) => onChange(task.id, { assignee: e.target.value })}
+              onChange={(e) => onChange({ assignee: e.target.value })}
               style={{ width: "100%" }}
             >
               {assigneeOptions.map((item) => (
@@ -162,7 +167,7 @@ export default function TaskDrawer({
             <select
               className="ws-field"
               value={task.status}
-              onChange={(e) => onChange(task.id, { status: e.target.value as TaskStatus })}
+              onChange={(e) => onChange({ status: e.target.value as TaskStatus })}
               style={{ width: "100%" }}
             >
               {statusOptions.map((item) => (
@@ -176,7 +181,7 @@ export default function TaskDrawer({
             <select
               className="ws-field"
               value={task.priority}
-              onChange={(e) => onChange(task.id, { priority: e.target.value as TaskPriority })}
+              onChange={(e) => onChange({ priority: e.target.value as TaskPriority })}
               style={{ width: "100%" }}
             >
               {priorityOptions.map((item) => (
@@ -191,7 +196,7 @@ export default function TaskDrawer({
               type="date"
               className="ws-field"
               value={task.due_date ?? ""}
-              onChange={(e) => onChange(task.id, { due_date: e.target.value || null })}
+              onChange={(e) => onChange({ due_date: e.target.value || null })}
               style={{ width: "100%" }}
             />
           </div>
@@ -201,7 +206,7 @@ export default function TaskDrawer({
             <select
               className="ws-field"
               value={task.related_to}
-              onChange={(e) => onChange(task.id, { related_to: e.target.value as RelatedTo })}
+              onChange={(e) => onChange({ related_to: e.target.value as RelatedTo })}
               style={{ width: "100%" }}
             >
               {relatedOptions.map((item) => (
@@ -215,7 +220,7 @@ export default function TaskDrawer({
             <input
               className="ws-field"
               value={task.related_name ?? ""}
-              onChange={(e) => onChange(task.id, { related_name: e.target.value })}
+              onChange={(e) => onChange({ related_name: e.target.value })}
               placeholder="Ex.: Carlos Cavalheiro"
               style={{ width: "100%" }}
             />
@@ -226,7 +231,7 @@ export default function TaskDrawer({
             <select
               className="ws-field"
               value={task.task_type}
-              onChange={(e) => onChange(task.id, { task_type: e.target.value as TaskType })}
+              onChange={(e) => onChange({ task_type: e.target.value as TaskType })}
               style={{ width: "100%" }}
             >
               {typeOptions.map((item) => (
@@ -240,7 +245,7 @@ export default function TaskDrawer({
             <input
               className="ws-field"
               value={task.estimated_time ?? ""}
-              onChange={(e) => onChange(task.id, { estimated_time: e.target.value })}
+              onChange={(e) => onChange({ estimated_time: e.target.value })}
               placeholder="Ex.: 2h, 30min, 1 dia"
               style={{ width: "100%" }}
             />
@@ -258,7 +263,7 @@ export default function TaskDrawer({
           <FieldLabel>Descrição</FieldLabel>
           <textarea
             value={task.description ?? ""}
-            onChange={(e) => onChange(task.id, { description: e.target.value })}
+            onChange={(e) => onChange({ description: e.target.value })}
             placeholder="Descreva o contexto, observações ou próximos passos..."
             style={{
               width: "100%",
@@ -289,25 +294,33 @@ export default function TaskDrawer({
           }}
         >
           <div style={{ color: "var(--ws-text3)", fontSize: ".78rem" }}>
-            {saving ? "Salvando alterações..." : "Tudo salvo"}
+            {saving ? "Salvando..." : isNew ? "Preencha e crie a tarefa" : "Edite e salve quando quiser"}
           </div>
 
-          <button
-            onClick={() => onDelete(task.id)}
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(255,92,122,0.35)",
-              color: "var(--ws-red)",
-              borderRadius: 10,
-              padding: "10px 14px",
-              cursor: "pointer",
-              fontFamily: "DM Sans, system-ui, sans-serif",
-              fontWeight: 600,
-              fontSize: ".85rem",
-            }}
-          >
-            Excluir tarefa
-          </button>
+          <div style={{ display: "flex", gap: 10 }}>
+            {!isNew && (
+              <button
+                onClick={() => onDelete(task.id)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,92,122,0.35)",
+                  color: "var(--ws-red)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  cursor: "pointer",
+                  fontFamily: "DM Sans, system-ui, sans-serif",
+                  fontWeight: 600,
+                  fontSize: ".85rem",
+                }}
+              >
+                Excluir
+              </button>
+            )}
+
+            <button className="ws-btn" onClick={onSave} disabled={saving}>
+              {saving ? "Salvando..." : isNew ? "Criar tarefa" : "Salvar alterações"}
+            </button>
+          </div>
         </div>
       </aside>
     </>
