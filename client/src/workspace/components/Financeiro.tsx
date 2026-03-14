@@ -49,16 +49,34 @@ const fmt = (v: number) =>
 function isPastDue(date: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const due = new Date(date + "T00:00:00");
   return due < today;
+}
+
+function getMonthKey(dateStr: string) {
+  const date = new Date(dateStr + "T12:00:00");
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getMonthLabel(monthKey: string) {
+  const [year, month] = monthKey.split("-");
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  return date.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function getCurrentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export default function Financeiro({ profile }: Props) {
   const [entries, setEntries] = useState<FinEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [modal, setModal] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [calcModal, setCalcModal] = useState(false);
 
   const [editing, setEditing] = useState<FinEntry | null>(null);
@@ -68,6 +86,7 @@ export default function Financeiro({ profile }: Props) {
   const [statusFilter, setStatusFilter] = useState<"all" | "pago" | "pendente" | "vencido">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | FinEntry["type"]>("all");
   const [search, setSearch] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthKey());
 
   const [calcDisplay, setCalcDisplay] = useState("0");
 
@@ -93,8 +112,9 @@ export default function Financeiro({ profile }: Props) {
     setForm({
       ...EMPTY,
       created_at: new Date().toISOString(),
+      due_date: `${selectedMonth}-01`,
     });
-    setModal(true);
+    setDrawerOpen(true);
   }
 
   function openEdit(entry: FinEntry) {
@@ -110,7 +130,13 @@ export default function Financeiro({ profile }: Props) {
       notes: entry.notes ?? "",
       created_at: entry.created_at ?? null,
     });
-    setModal(true);
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+    setEditing(null);
+    setForm(EMPTY);
   }
 
   async function save() {
@@ -135,6 +161,7 @@ export default function Financeiro({ profile }: Props) {
 
       if (!error && data) {
         setEntries((prev) => prev.map((e) => (e.id === editing.id ? data : e)));
+        closeDrawer();
       } else if (error) {
         alert(`Erro ao salvar entrada: ${error.message}`);
       }
@@ -147,18 +174,21 @@ export default function Financeiro({ profile }: Props) {
 
       if (!error && data) {
         setEntries((prev) => [...prev, data]);
+        closeDrawer();
       } else if (error) {
         alert(`Erro ao criar entrada: ${error.message}`);
       }
     }
 
     setSaving(false);
-    setModal(false);
   }
 
   async function remove(id: string) {
     setEntries((prev) => prev.filter((e) => e.id !== id));
     await supabase.from("financial").delete().eq("id", id);
+    if (editing?.id === id) {
+      closeDrawer();
+    }
   }
 
   async function updateStatus(entry: FinEntry, nextStatus: FinEntry["status"]) {
@@ -176,10 +206,25 @@ export default function Financeiro({ profile }: Props) {
     }
   }
 
+  const availableMonths = useMemo(() => {
+    const keys = Array.from(new Set(entries.map((e) => getMonthKey(e.due_date))));
+    const sorted = keys.sort((a, b) => b.localeCompare(a));
+
+    if (!sorted.includes(getCurrentMonthKey())) {
+      sorted.unshift(getCurrentMonthKey());
+    }
+
+    return sorted;
+  }, [entries]);
+
+  const monthFilteredEntries = useMemo(() => {
+    return entries.filter((e) => getMonthKey(e.due_date) === selectedMonth);
+  }, [entries, selectedMonth]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
 
-    return entries.filter((e) => {
+    return monthFilteredEntries.filter((e) => {
       const matchesStatus = statusFilter === "all" || e.status === statusFilter;
       const matchesType = typeFilter === "all" || e.type === typeFilter;
       const matchesSearch =
@@ -190,7 +235,7 @@ export default function Financeiro({ profile }: Props) {
 
       return matchesStatus && matchesType && matchesSearch;
     });
-  }, [entries, search, statusFilter, typeFilter]);
+  }, [monthFilteredEntries, search, statusFilter, typeFilter]);
 
   const metrics = useMemo(() => {
     const receitasPagas = entries
@@ -223,11 +268,23 @@ export default function Financeiro({ profile }: Props) {
     };
   }, [entries]);
 
-  const statusClass: Record<string, string> = {
-    pago: "ws-s-pago",
-    pendente: "ws-s-pend",
-    vencido: "ws-s-venc",
-  };
+  const monthlySummary = useMemo(() => {
+    const receitasMes = monthFilteredEntries
+      .filter((e) => e.positive)
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+
+    const despesasMes = monthFilteredEntries
+      .filter((e) => !e.positive)
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+
+    const resultadoMes = receitasMes - despesasMes;
+
+    return {
+      receitasMes,
+      despesasMes,
+      resultadoMes,
+    };
+  }, [monthFilteredEntries]);
 
   const typeColor: Record<FinEntry["type"], string> = {
     recebimento: "var(--ws-yellow)",
@@ -302,7 +359,117 @@ export default function Financeiro({ profile }: Props) {
         </div>
       </div>
 
-      {/* Cards principais */}
+      {/* período */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(220px, 280px) 1fr",
+          gap: 14,
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontFamily: "DM Mono, monospace",
+              fontSize: ".58rem",
+              letterSpacing: "1.4px",
+              textTransform: "uppercase",
+              color: "var(--ws-text3)",
+              marginBottom: 8,
+            }}
+          >
+            Período
+          </div>
+          <select
+            className="ws-field"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            style={{ width: "100%" }}
+          >
+            {availableMonths.map((monthKey) => (
+              <option key={monthKey} value={monthKey}>
+                {getMonthLabel(monthKey)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div
+          style={{
+            background: "rgba(255,255,255,0.018)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: 14,
+            padding: "14px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 18,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: "DM Mono, monospace",
+                fontSize: ".58rem",
+                letterSpacing: "1.4px",
+                textTransform: "uppercase",
+                color: "var(--ws-text3)",
+              }}
+            >
+              Receitas do mês
+            </div>
+            <div style={{ marginTop: 6, color: "var(--ws-yellow)", fontSize: "1rem", fontWeight: 700 }}>
+              {fmt(monthlySummary.receitasMes)}
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontFamily: "DM Mono, monospace",
+                fontSize: ".58rem",
+                letterSpacing: "1.4px",
+                textTransform: "uppercase",
+                color: "var(--ws-text3)",
+              }}
+            >
+              Despesas do mês
+            </div>
+            <div style={{ marginTop: 6, color: "var(--ws-red)", fontSize: "1rem", fontWeight: 700 }}>
+              {fmt(monthlySummary.despesasMes)}
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontFamily: "DM Mono, monospace",
+                fontSize: ".58rem",
+                letterSpacing: "1.4px",
+                textTransform: "uppercase",
+                color: "var(--ws-text3)",
+              }}
+            >
+              Resultado do mês
+            </div>
+            <div
+              style={{
+                marginTop: 6,
+                color: monthlySummary.resultadoMes >= 0 ? "var(--ws-green)" : "var(--ws-red)",
+                fontSize: "1rem",
+                fontWeight: 700,
+              }}
+            >
+              {fmt(monthlySummary.resultadoMes)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* cards principais */}
       <div
         style={{
           display: "grid",
@@ -339,14 +506,16 @@ export default function Financeiro({ profile }: Props) {
 
         <div className="ws-fin-card" style={{ borderColor: "rgba(233,30,140,0.22)" }}>
           <div className="ws-fin-label" style={{ color: "var(--ws-accent)" }}>Vencidos</div>
-          <div className="ws-fin-value" style={{ color: "var(--ws-accent)" }}>{fmt(metrics.vencidos)}</div>
+          <div className="ws-fin-value" style={{ color: "var(--ws-accent)" }}>
+            {fmt(metrics.vencidos)}
+          </div>
           <div style={{ marginTop: 10, color: "var(--ws-text3)", fontSize: ".76rem" }}>
             tudo que já venceu e segue em aberto
           </div>
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* filtros */}
       <div
         style={{
           display: "grid",
@@ -398,7 +567,7 @@ export default function Financeiro({ profile }: Props) {
         </div>
       </div>
 
-      {/* Tabela */}
+      {/* tabela */}
       <div
         className="ws-card"
         style={{
@@ -545,42 +714,78 @@ export default function Financeiro({ profile }: Props) {
         )}
       </div>
 
-      {/* Modal financeiro */}
-      {modal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "#00000080",
-            zIndex: 100,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={(e) => e.target === e.currentTarget && setModal(false)}
-        >
+      {/* drawer financeiro */}
+      {drawerOpen && (
+        <>
           <div
+            onClick={closeDrawer}
             style={{
-              background: "var(--ws-surface)",
-              border: "1px solid var(--ws-border2)",
-              borderRadius: 20,
-              padding: "36px 40px",
-              width: 560,
-              maxWidth: "94vw",
-              boxShadow: "0 30px 80px #00000060",
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.22)",
+              zIndex: 100,
+            }}
+          />
+
+          <aside
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              width: 460,
+              maxWidth: "96vw",
+              height: "100vh",
+              background: "linear-gradient(180deg, rgba(16,21,39,0.98), rgba(12,16,30,0.99))",
+              borderLeft: "1px solid rgba(255,255,255,0.06)",
+              zIndex: 101,
+              overflowY: "auto",
+              padding: 24,
+              boxShadow: "-20px 0 60px rgba(0,0,0,0.24)",
             }}
           >
             <div
               style={{
-                fontFamily: "DM Sans, system-ui, sans-serif",
-                fontWeight: 700,
-                fontSize: "1.3rem",
-                letterSpacing: "-0.03em",
-                color: "var(--ws-text)",
-                marginBottom: 24,
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 12,
+                marginBottom: 18,
               }}
             >
-              {editing ? "Editar entrada" : "Nova entrada"}
+              <div
+                style={{
+                  fontFamily: "DM Mono, monospace",
+                  fontSize: ".62rem",
+                  letterSpacing: "1.4px",
+                  textTransform: "uppercase",
+                  color: "var(--ws-text3)",
+                  marginTop: 8,
+                }}
+              >
+                {editing ? "Editar entrada" : "Nova entrada"}
+              </div>
+
+              <button
+                className="ws-btn-ghost"
+                onClick={closeDrawer}
+                style={{ padding: "8px 12px", fontSize: ".75rem", flexShrink: 0 }}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div
+              style={{
+                fontFamily: "DM Sans, system-ui, sans-serif",
+                fontWeight: 700,
+                fontSize: "1.5rem",
+                lineHeight: 1.08,
+                letterSpacing: "-0.04em",
+                color: "var(--ws-text)",
+                marginBottom: 22,
+              }}
+            >
+              {editing ? "Editar movimentação financeira" : "Cadastrar nova movimentação"}
             </div>
 
             <label className="ws-label">Descrição</label>
@@ -684,10 +889,10 @@ export default function Financeiro({ profile }: Props) {
               placeholder="Detalhes, contexto, lembrete ou referência..."
               style={{
                 width: "100%",
-                minHeight: 110,
-                background: "var(--ws-surface2)",
-                border: "1px solid var(--ws-border2)",
-                borderRadius: 12,
+                minHeight: 130,
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 14,
                 padding: "14px 15px",
                 color: "var(--ws-text)",
                 fontFamily: "DM Sans, system-ui, sans-serif",
@@ -700,19 +905,50 @@ export default function Financeiro({ profile }: Props) {
               }}
             />
 
-            <div style={{ display: "flex", gap: 10 }}>
-              <button className="ws-btn" onClick={save} disabled={saving} style={{ flex: 1 }}>
-                {saving ? "Salvando..." : editing ? "Salvar alterações" : "Adicionar"}
-              </button>
-              <button className="ws-btn-ghost" onClick={() => setModal(false)}>
-                Cancelar
-              </button>
+            <div
+              style={{
+                paddingTop: 14,
+                borderTop: "1px solid rgba(255,255,255,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+              }}
+            >
+              <div style={{ color: "var(--ws-text3)", fontSize: ".78rem" }}>
+                {saving ? "Salvando..." : editing ? "Edite e salve quando quiser" : "Preencha e crie a entrada"}
+              </div>
+
+              <div style={{ display: "flex", gap: 10 }}>
+                {editing && (
+                  <button
+                    onClick={() => remove(editing.id)}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(255,92,122,0.35)",
+                      color: "var(--ws-red)",
+                      borderRadius: 10,
+                      padding: "10px 14px",
+                      cursor: "pointer",
+                      fontFamily: "DM Sans, system-ui, sans-serif",
+                      fontWeight: 600,
+                      fontSize: ".85rem",
+                    }}
+                  >
+                    Excluir
+                  </button>
+                )}
+
+                <button className="ws-btn" onClick={save} disabled={saving}>
+                  {saving ? "Salvando..." : editing ? "Salvar alterações" : "Adicionar"}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          </aside>
+        </>
       )}
 
-      {/* Modal calculadora */}
+      {/* calculadora */}
       {calcModal && (
         <div
           style={{
@@ -735,6 +971,9 @@ export default function Financeiro({ profile }: Props) {
               width: 360,
               boxShadow: "0 30px 80px #00000060",
             }}
+            onKeyDown={(e) => {
+              e.preventDefault();
+            }}
           >
             <div
               style={{
@@ -748,8 +987,12 @@ export default function Financeiro({ profile }: Props) {
               Calculadora
             </div>
 
-            <div
+            <input
+              value={calcDisplay}
+              readOnly
+              tabIndex={-1}
               style={{
+                width: "100%",
                 background: "var(--ws-surface2)",
                 border: "1px solid var(--ws-border2)",
                 borderRadius: 14,
@@ -760,15 +1003,11 @@ export default function Financeiro({ profile }: Props) {
                 color: "var(--ws-text)",
                 textAlign: "right",
                 marginBottom: 14,
-                minHeight: 68,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                overflow: "hidden",
+                boxSizing: "border-box",
+                outline: "none",
+                pointerEvents: "none",
               }}
-            >
-              {calcDisplay}
-            </div>
+            />
 
             <div
               style={{
@@ -786,6 +1025,7 @@ export default function Financeiro({ profile }: Props) {
               ].map((key) => (
                 <button
                   key={key}
+                  type="button"
                   onClick={() => (key === "=" ? calcResult() : calcInput(key))}
                   className={key === "=" ? "ws-btn" : "ws-btn-ghost"}
                   style={{
@@ -799,13 +1039,13 @@ export default function Financeiro({ profile }: Props) {
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
-              <button className="ws-btn-ghost" onClick={calcClear} style={{ flex: 1 }}>
+              <button className="ws-btn-ghost" type="button" onClick={calcClear} style={{ flex: 1 }}>
                 Limpar
               </button>
-              <button className="ws-btn-ghost" onClick={calcBackspace} style={{ flex: 1 }}>
+              <button className="ws-btn-ghost" type="button" onClick={calcBackspace} style={{ flex: 1 }}>
                 Apagar
               </button>
-              <button className="ws-btn" onClick={useCalcResultInForm} style={{ flex: 1 }}>
+              <button className="ws-btn" type="button" onClick={useCalcResultInForm} style={{ flex: 1 }}>
                 Usar valor
               </button>
             </div>
