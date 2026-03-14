@@ -70,7 +70,7 @@ export default function TaskDrawer({
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0,0,0,0.28)",
+          background: "rgba(0,0,0,0.22)",
           zIndex: 60,
         }}
       />
@@ -80,11 +80,11 @@ export default function TaskDrawer({
           position: "fixed",
           top: 0,
           right: 0,
-          width: 420,
-          maxWidth: "92vw",
+          width: 470,
+          maxWidth: "96vw",
           height: "100vh",
-          background: "var(--ws-surface)",
-          borderLeft: "1px solid var(--ws-border)",
+          background: "linear-gradient(180deg, rgba(16,21,39,0.98), rgba(12,16,30,0.99))",
+          borderLeft: "1px solid rgba(255,255,255,0.06)",
           zIndex: 61,
           overflowY: "auto",
           padding: 24,
@@ -94,9 +94,9 @@ export default function TaskDrawer({
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
-            gap: 10,
+            gap: 12,
             marginBottom: 18,
           }}
         >
@@ -107,6 +107,7 @@ export default function TaskDrawer({
               letterSpacing: "1.4px",
               textTransform: "uppercase",
               color: "var(--ws-text3)",
+              marginTop: 8,
             }}
           >
             {isNew ? "Nova tarefa" : "Tarefa"}
@@ -115,28 +116,33 @@ export default function TaskDrawer({
           <button
             className="ws-btn-ghost"
             onClick={onClose}
-            style={{ padding: "8px 12px", fontSize: ".75rem" }}
+            style={{ padding: "8px 12px", fontSize: ".75rem", flexShrink: 0 }}
           >
             Fechar
           </button>
         </div>
 
-        <input
+        <textarea
           value={task.title}
           onChange={(e) => onChange({ title: e.target.value })}
           placeholder="Título da tarefa"
+          rows={3}
           style={{
             width: "100%",
             background: "transparent",
             border: "none",
             outline: "none",
+            resize: "none",
+            overflow: "hidden",
             fontFamily: "DM Sans, system-ui, sans-serif",
             fontWeight: 700,
-            fontSize: "2rem",
-            lineHeight: 1.05,
+            fontSize: "1.9rem",
+            lineHeight: 1.12,
             letterSpacing: "-0.04em",
             color: "var(--ws-text)",
             marginBottom: 22,
+            boxSizing: "border-box",
+            wordBreak: "break-word",
           }}
         />
 
@@ -150,105 +156,52 @@ export default function TaskDrawer({
         >
           <div>
             <FieldLabel>Responsável</FieldLabel>
-            <select
-              className="ws-field"
-              value={task.assignee ?? ""}
-              onChange={(e) => onChange({ assignee: e.target.value })}
-              style={{ width: "100%" }}
-            >
-              {assigneeOptions.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
-              ))}
+            <select className="ws-field" value={task.assignee ?? ""} onChange={(e) => onChange({ assignee: e.target.value })} style={{ width: "100%" }}>
+              {assigneeOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
 
           <div>
             <FieldLabel>Status</FieldLabel>
-            <select
-              className="ws-field"
-              value={task.status}
-              onChange={(e) => onChange({ status: e.target.value as TaskStatus })}
-              style={{ width: "100%" }}
-            >
-              {statusOptions.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
-              ))}
+            <select className="ws-field" value={task.status} onChange={(e) => onChange({ status: e.target.value as TaskStatus })} style={{ width: "100%" }}>
+              {statusOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
 
           <div>
             <FieldLabel>Prioridade</FieldLabel>
-            <select
-              className="ws-field"
-              value={task.priority}
-              onChange={(e) => onChange({ priority: e.target.value as TaskPriority })}
-              style={{ width: "100%" }}
-            >
-              {priorityOptions.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
-              ))}
+            <select className="ws-field" value={task.priority} onChange={(e) => onChange({ priority: e.target.value as TaskPriority })} style={{ width: "100%" }}>
+              {priorityOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
 
           <div>
             <FieldLabel>Data de vencimento</FieldLabel>
-            <input
-              type="date"
-              className="ws-field"
-              value={task.due_date ?? ""}
-              onChange={(e) => onChange({ due_date: e.target.value || null })}
-              style={{ width: "100%" }}
-            />
+            <input type="date" className="ws-field" value={task.due_date ?? ""} onChange={(e) => onChange({ due_date: e.target.value || null })} style={{ width: "100%" }} />
           </div>
 
           <div>
             <FieldLabel>Cliente / Lead / Outros</FieldLabel>
-            <select
-              className="ws-field"
-              value={task.related_to}
-              onChange={(e) => onChange({ related_to: e.target.value as RelatedTo })}
-              style={{ width: "100%" }}
-            >
-              {relatedOptions.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
-              ))}
+            <select className="ws-field" value={task.related_to} onChange={(e) => onChange({ related_to: e.target.value as RelatedTo })} style={{ width: "100%" }}>
+              {relatedOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
 
           <div>
             <FieldLabel>Nome relacionado</FieldLabel>
-            <input
-              className="ws-field"
-              value={task.related_name ?? ""}
-              onChange={(e) => onChange({ related_name: e.target.value })}
-              placeholder="Ex.: Carlos Cavalheiro"
-              style={{ width: "100%" }}
-            />
+            <input className="ws-field" value={task.related_name ?? ""} onChange={(e) => onChange({ related_name: e.target.value })} placeholder="Ex.: Carlos Cavalheiro" style={{ width: "100%" }} />
           </div>
 
           <div>
             <FieldLabel>Tipo da tarefa</FieldLabel>
-            <select
-              className="ws-field"
-              value={task.task_type}
-              onChange={(e) => onChange({ task_type: e.target.value as TaskType })}
-              style={{ width: "100%" }}
-            >
-              {typeOptions.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
-              ))}
+            <select className="ws-field" value={task.task_type} onChange={(e) => onChange({ task_type: e.target.value as TaskType })} style={{ width: "100%" }}>
+              {typeOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </div>
 
           <div>
             <FieldLabel>Tempo estimado</FieldLabel>
-            <input
-              className="ws-field"
-              value={task.estimated_time ?? ""}
-              onChange={(e) => onChange({ estimated_time: e.target.value })}
-              placeholder="Ex.: 2h, 30min, 1 dia"
-              style={{ width: "100%" }}
-            />
+            <input className="ws-field" value={task.estimated_time ?? ""} onChange={(e) => onChange({ estimated_time: e.target.value })} placeholder="Ex.: 2h, 30min, 1 dia" style={{ width: "100%" }} />
           </div>
         </div>
 
@@ -268,9 +221,9 @@ export default function TaskDrawer({
             style={{
               width: "100%",
               minHeight: 180,
-              background: "var(--ws-surface2)",
-              border: "1px solid var(--ws-border2)",
-              borderRadius: 12,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 14,
               padding: "14px 15px",
               color: "var(--ws-text)",
               fontFamily: "DM Sans, system-ui, sans-serif",
@@ -286,7 +239,7 @@ export default function TaskDrawer({
         <div
           style={{
             paddingTop: 14,
-            borderTop: "1px solid var(--ws-border)",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",

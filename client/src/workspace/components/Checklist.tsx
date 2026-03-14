@@ -237,11 +237,12 @@ export default function Checklist({ profile }: Props) {
   }
 
   async function saveDraft() {
-    if (!draftTask) return;
-    if (!draftTask.title.trim()) return;
+  if (!draftTask) return;
+  if (!draftTask.title.trim()) return;
 
-    setSaving(true);
+  setSaving(true);
 
+  try {
     if (isNewTask) {
       const payload = {
         title: draftTask.title,
@@ -265,10 +266,16 @@ export default function Checklist({ profile }: Props) {
         .select("*")
         .single();
 
-      if (!error && data) {
+      if (error) {
+        console.error("Erro ao criar tarefa:", error);
+        alert(`Erro ao criar tarefa: ${error.message}`);
+        setSaving(false);
+        return;
+      }
+
+      if (data) {
         const normalized = normalizeTask(data);
         setTasks((prev) => [normalized, ...prev]);
-        setSelectedTaskId(normalized.id);
       }
     } else if (selectedTaskId) {
       const payload = {
@@ -293,7 +300,14 @@ export default function Checklist({ profile }: Props) {
         .select("*")
         .single();
 
-      if (!error && data) {
+      if (error) {
+        console.error("Erro ao salvar tarefa:", error);
+        alert(`Erro ao salvar tarefa: ${error.message}`);
+        setSaving(false);
+        return;
+      }
+
+      if (data) {
         const normalized = normalizeTask(data);
         setTasks((prev) =>
           prev.map((task) => (task.id === normalized.id ? normalized : task))
@@ -303,7 +317,12 @@ export default function Checklist({ profile }: Props) {
 
     setSaving(false);
     closeDrawer();
+  } catch (err) {
+    console.error("Erro inesperado ao salvar tarefa:", err);
+    alert("Erro inesperado ao salvar tarefa.");
+    setSaving(false);
   }
+}
 
   async function deleteTask(taskId: string) {
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
