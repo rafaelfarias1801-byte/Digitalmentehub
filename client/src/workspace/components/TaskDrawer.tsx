@@ -1,0 +1,315 @@
+// client/src/workspace/components/TaskDrawer.tsx
+import type {
+  ChecklistTask,
+  RelatedTo,
+  TaskPriority,
+  TaskStatus,
+  TaskType,
+} from "./Checklist";
+
+interface Option<T extends string> {
+  value: T;
+  label: string;
+}
+
+interface Props {
+  open: boolean;
+  task: ChecklistTask | null;
+  saving: boolean;
+  onClose: () => void;
+  onDelete: (taskId: string) => void;
+  onChange: (taskId: string, patch: Partial<ChecklistTask>) => void;
+  statusOptions: Option<TaskStatus>[];
+  priorityOptions: Option<TaskPriority>[];
+  relatedOptions: Option<RelatedTo>[];
+  typeOptions: Option<TaskType>[];
+  assigneeOptions: Option<string>[];
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        fontFamily: "DM Mono, monospace",
+        fontSize: ".58rem",
+        letterSpacing: "1.4px",
+        textTransform: "uppercase",
+        color: "var(--ws-text3)",
+        marginBottom: 7,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export default function TaskDrawer({
+  open,
+  task,
+  saving,
+  onClose,
+  onDelete,
+  onChange,
+  statusOptions,
+  priorityOptions,
+  relatedOptions,
+  typeOptions,
+  assigneeOptions,
+}: Props) {
+  if (!open || !task) return null;
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.28)",
+          zIndex: 60,
+        }}
+      />
+
+      <aside
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          width: 420,
+          maxWidth: "92vw",
+          height: "100vh",
+          background: "var(--ws-surface)",
+          borderLeft: "1px solid var(--ws-border)",
+          zIndex: 61,
+          overflowY: "auto",
+          padding: 24,
+          boxShadow: "-20px 0 60px rgba(0,0,0,0.24)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "DM Mono, monospace",
+              fontSize: ".62rem",
+              letterSpacing: "1.4px",
+              textTransform: "uppercase",
+              color: "var(--ws-text3)",
+            }}
+          >
+            Tarefa
+          </div>
+
+          <button
+            className="ws-btn-ghost"
+            onClick={onClose}
+            style={{ padding: "8px 12px", fontSize: ".75rem" }}
+          >
+            Fechar
+          </button>
+        </div>
+
+        <input
+          value={task.title}
+          onChange={(e) => onChange(task.id, { title: e.target.value })}
+          placeholder="Título da tarefa"
+          style={{
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            fontFamily: "DM Sans, system-ui, sans-serif",
+            fontWeight: 700,
+            fontSize: "2rem",
+            lineHeight: 1.05,
+            letterSpacing: "-0.04em",
+            color: "var(--ws-text)",
+            marginBottom: 22,
+          }}
+        />
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 14,
+            marginBottom: 18,
+          }}
+        >
+          <div>
+            <FieldLabel>Responsável</FieldLabel>
+            <select
+              className="ws-field"
+              value={task.assignee ?? ""}
+              onChange={(e) => onChange(task.id, { assignee: e.target.value })}
+              style={{ width: "100%" }}
+            >
+              {assigneeOptions.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel>Status</FieldLabel>
+            <select
+              className="ws-field"
+              value={task.status}
+              onChange={(e) => onChange(task.id, { status: e.target.value as TaskStatus })}
+              style={{ width: "100%" }}
+            >
+              {statusOptions.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel>Prioridade</FieldLabel>
+            <select
+              className="ws-field"
+              value={task.priority}
+              onChange={(e) => onChange(task.id, { priority: e.target.value as TaskPriority })}
+              style={{ width: "100%" }}
+            >
+              {priorityOptions.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel>Data de vencimento</FieldLabel>
+            <input
+              type="date"
+              className="ws-field"
+              value={task.due_date ?? ""}
+              onChange={(e) => onChange(task.id, { due_date: e.target.value || null })}
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div>
+            <FieldLabel>Cliente / Lead / Outros</FieldLabel>
+            <select
+              className="ws-field"
+              value={task.related_to}
+              onChange={(e) => onChange(task.id, { related_to: e.target.value as RelatedTo })}
+              style={{ width: "100%" }}
+            >
+              {relatedOptions.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel>Nome relacionado</FieldLabel>
+            <input
+              className="ws-field"
+              value={task.related_name ?? ""}
+              onChange={(e) => onChange(task.id, { related_name: e.target.value })}
+              placeholder="Ex.: Carlos Cavalheiro"
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div>
+            <FieldLabel>Tipo da tarefa</FieldLabel>
+            <select
+              className="ws-field"
+              value={task.task_type}
+              onChange={(e) => onChange(task.id, { task_type: e.target.value as TaskType })}
+              style={{ width: "100%" }}
+            >
+              {typeOptions.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel>Tempo estimado</FieldLabel>
+            <input
+              className="ws-field"
+              value={task.estimated_time ?? ""}
+              onChange={(e) => onChange(task.id, { estimated_time: e.target.value })}
+              placeholder="Ex.: 2h, 30min, 1 dia"
+              style={{ width: "100%" }}
+            />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <FieldLabel>Data de criação</FieldLabel>
+          <div style={{ color: "var(--ws-text2)", fontSize: ".88rem" }}>
+            {task.created_at ? new Date(task.created_at).toLocaleDateString("pt-BR") : "—"}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <FieldLabel>Descrição</FieldLabel>
+          <textarea
+            value={task.description ?? ""}
+            onChange={(e) => onChange(task.id, { description: e.target.value })}
+            placeholder="Descreva o contexto, observações ou próximos passos..."
+            style={{
+              width: "100%",
+              minHeight: 180,
+              background: "var(--ws-surface2)",
+              border: "1px solid var(--ws-border2)",
+              borderRadius: 12,
+              padding: "14px 15px",
+              color: "var(--ws-text)",
+              fontFamily: "DM Sans, system-ui, sans-serif",
+              fontSize: ".92rem",
+              lineHeight: 1.6,
+              outline: "none",
+              resize: "vertical",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            paddingTop: 14,
+            borderTop: "1px solid var(--ws-border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
+          <div style={{ color: "var(--ws-text3)", fontSize: ".78rem" }}>
+            {saving ? "Salvando alterações..." : "Tudo salvo"}
+          </div>
+
+          <button
+            onClick={() => onDelete(task.id)}
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(255,92,122,0.35)",
+              color: "var(--ws-red)",
+              borderRadius: 10,
+              padding: "10px 14px",
+              cursor: "pointer",
+              fontFamily: "DM Sans, system-ui, sans-serif",
+              fontWeight: 600,
+              fontSize: ".85rem",
+            }}
+          >
+            Excluir tarefa
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
