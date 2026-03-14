@@ -173,12 +173,29 @@ export default function Agenda({ profile }: Props) {
           <div className="ws-card" style={{ marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <div>
-                <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)" }}>
-                  {selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
-                </div>
-                <div style={{ fontFamily: "DM Mono", fontSize: ".6rem", color: "var(--ws-text3)", letterSpacing: "1px", marginTop: 2 }}>
-                  {selectedEvents.length} evento{selectedEvents.length !== 1 ? "s" : ""}
-                </div>
+                <div
+  style={{
+    fontFamily: "DM Sans, system-ui, sans-serif",
+    fontWeight: 700,
+    fontSize: "1.05rem",
+    lineHeight: 1.15,
+    letterSpacing: "-0.03em",
+    color: "var(--ws-text)",
+  }}
+>
+  {selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+</div>
+               <div
+  style={{
+    fontFamily: "DM Sans, system-ui, sans-serif",
+    fontSize: ".78rem",
+    color: "var(--ws-text2)",
+    letterSpacing: "-0.01em",
+    marginTop: 4,
+  }}
+>
+  {selectedEvents.length} evento{selectedEvents.length !== 1 ? "s" : ""}
+</div>
               </div>
               <button className="ws-btn" style={{ padding: "8px 14px", fontSize: ".75rem" }} onClick={() => openAdd(selected)}>
                 + Evento
@@ -269,7 +286,16 @@ export default function Agenda({ profile }: Props) {
             borderRadius: 20, padding: "36px 40px", width: 440,
             boxShadow: "0 30px 80px #00000060",
           }}>
-            <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.3rem", color: "var(--ws-text)", marginBottom: 24 }}>
+            <div
+  style={{
+    fontFamily: "DM Sans, system-ui, sans-serif",
+    fontWeight: 700,
+    fontSize: "1.2rem",
+    letterSpacing: "-0.03em",
+    color: "var(--ws-text)",
+    marginBottom: 24,
+  }}
+>
               {editing ? "Editar evento" : `Novo evento — ${new Date(selected + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}`}
             </div>
 
