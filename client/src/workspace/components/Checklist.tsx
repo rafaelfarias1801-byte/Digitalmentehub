@@ -245,20 +245,27 @@ export default function Checklist({ profile }: Props) {
   try {
     if (isNewTask) {
       const payload = {
-        title: draftTask.title,
-        status: draftTask.status,
-        priority: draftTask.priority,
-        created_at: new Date().toISOString(),
-        due_date: draftTask.due_date,
-        assignee: draftTask.assignee,
-        related_to: draftTask.related_to,
-        related_name: draftTask.related_name || null,
-        task_type: draftTask.task_type,
-        estimated_time: draftTask.estimated_time || null,
-        description: draftTask.description || null,
-        completed: draftTask.status === "concluido",
-        updated_at: new Date().toISOString(),
-      };
+  title: draftTask.title,
+  text: draftTask.title, // compatibilidade com tabela antiga
+  status: draftTask.status,
+  priority: draftTask.priority,
+  created_at: new Date().toISOString(),
+  due_date: draftTask.due_date,
+  assignee: draftTask.assignee,
+  related_to: draftTask.related_to,
+  related_name: draftTask.related_name || null,
+  task_type: draftTask.task_type,
+  estimated_time: draftTask.estimated_time || null,
+  description: draftTask.description || null,
+  completed: draftTask.status === "concluido",
+  done: draftTask.status === "concluido", // compatibilidade com estrutura antiga
+  person: draftTask.assignee, // compatibilidade com estrutura antiga
+  tag:
+    draftTask.related_to === "cliente" || draftTask.related_to === "parceiro"
+      ? draftTask.related_to
+      : "dig",
+  updated_at: new Date().toISOString(),
+};
 
       const { data, error } = await supabase
         .from("tasks")
@@ -279,19 +286,26 @@ export default function Checklist({ profile }: Props) {
       }
     } else if (selectedTaskId) {
       const payload = {
-        title: draftTask.title,
-        status: draftTask.status,
-        priority: draftTask.priority,
-        due_date: draftTask.due_date,
-        assignee: draftTask.assignee,
-        related_to: draftTask.related_to,
-        related_name: draftTask.related_name || null,
-        task_type: draftTask.task_type,
-        estimated_time: draftTask.estimated_time || null,
-        description: draftTask.description || null,
-        completed: draftTask.status === "concluido",
-        updated_at: new Date().toISOString(),
-      };
+  title: draftTask.title,
+  text: draftTask.title, // compatibilidade com tabela antiga
+  status: draftTask.status,
+  priority: draftTask.priority,
+  due_date: draftTask.due_date,
+  assignee: draftTask.assignee,
+  related_to: draftTask.related_to,
+  related_name: draftTask.related_name || null,
+  task_type: draftTask.task_type,
+  estimated_time: draftTask.estimated_time || null,
+  description: draftTask.description || null,
+  completed: draftTask.status === "concluido",
+  done: draftTask.status === "concluido", // compatibilidade com estrutura antiga
+  person: draftTask.assignee,
+  tag:
+    draftTask.related_to === "cliente" || draftTask.related_to === "parceiro"
+      ? draftTask.related_to
+      : "dig",
+  updated_at: new Date().toISOString(),
+};
 
       const { data, error } = await supabase
         .from("tasks")
