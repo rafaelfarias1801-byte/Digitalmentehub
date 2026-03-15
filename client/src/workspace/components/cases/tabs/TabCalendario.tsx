@@ -503,7 +503,6 @@ export default function TabCalendario({
 </div>
                     );
                   })}
-                </>
               )}
             </div>
           );
