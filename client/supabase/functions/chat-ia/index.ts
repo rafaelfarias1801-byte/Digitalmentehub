@@ -82,10 +82,21 @@ serve(async (req) => {
     else if (model === "gemini") {
       if (!GEMINI_KEY) throw new Error("GEMINI_API_KEY não configurada.");
 
-      const geminiMessages = messages.map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      }));
+      const now = new Date().toLocaleDateString("pt-BR", {
+        weekday: "long", day: "2-digit", month: "long", year: "numeric",
+        timeZone: "America/Sao_Paulo",
+      });
+
+      const systemInstruction = `Você é um assistente estratégico para a agência Digitalmente HUB, baseada em Curitiba, Brasil. Responda sempre em português brasileiro, de forma direta e útil. A data e hora atual é: ${now}, horário de Brasília.`;
+
+      const geminiMessages = [
+        { role: "user", parts: [{ text: systemInstruction }] },
+        { role: "model", parts: [{ text: "Entendido! Estou pronto para ajudar a Digitalmente HUB." }] },
+        ...messages.map(m => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        })),
+      ];
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface FinEntry {
   id: string;
@@ -89,6 +90,7 @@ export default function Financeiro({ profile }: Props) {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthKey());
 
   const [calcDisplay, setCalcDisplay] = useState("0");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     supabase
@@ -369,7 +371,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
           <div className="ws-page-sub">Receitas, despesas e controle operacional</div>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button className="ws-btn-ghost" onClick={() => setCalcModal(true)}>
             Calculadora
           </button>
@@ -383,7 +385,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(220px, 280px) 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "minmax(220px, 280px) 1fr",
           gap: 14,
           alignItems: "center",
           marginBottom: 16,
@@ -493,7 +495,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(220px, 1fr))",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, minmax(220px, 1fr))",
           gap: 14,
           marginBottom: 16,
         }}
@@ -539,7 +541,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(240px, 1.3fr) repeat(2, minmax(180px, .8fr)) auto",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "minmax(240px, 1.3fr) repeat(2, minmax(180px, .8fr)) auto",
           gap: 10,
           marginBottom: 16,
           alignItems: "center",
@@ -547,9 +549,10 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
       >
         <input
           className="ws-field"
-          placeholder="Buscar por descrição, cliente/projeto ou observação..."
+          placeholder="Buscar por descrição..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          style={{ gridColumn: isMobile ? "1 / -1" : "auto" }}
         />
 
         <select
@@ -574,7 +577,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
           <option value="pagamento">Pagamento</option>
         </select>
 
-        <div className="ws-filters" style={{ marginBottom: 0, justifyContent: "flex-end" }}>
+        <div className="ws-filters" style={{ marginBottom: 0, justifyContent: "flex-end", display: isMobile ? "none" : "flex" }}>
           {(["all", "pago", "pendente", "vencido"] as const).map((f) => (
             <button
               key={f}

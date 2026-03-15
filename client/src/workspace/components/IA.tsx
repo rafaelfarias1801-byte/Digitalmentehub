@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 type Model = "claude" | "chatgpt" | "gemini";
 
@@ -56,6 +57,7 @@ export default function IA({ profile }: Props) {
   const bottomRef                       = useRef<HTMLDivElement>(null);
 
   const activeModel = MODELS.find(m => m.id === model)!;
+  const isMobile = useIsMobile();;
 
   // ── Carregar conversas ──────────────────────────────────────────
   useEffect(() => {
@@ -192,7 +194,7 @@ export default function IA({ profile }: Props) {
       </div>
 
       {/* Layout chat + histórico */}
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 16, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "220px 1fr", gap: 16, alignItems: "start" }}>
 
         {/* Sidebar de conversas */}
         <div className="ws-card" style={{ padding: "12px 0" }}>
@@ -246,7 +248,7 @@ export default function IA({ profile }: Props) {
         </div>
 
         {/* Chat */}
-        <div className="ws-card" style={{ display: "flex", flexDirection: "column", height: 560 }}>
+        <div className="ws-card" style={{ display: "flex", flexDirection: "column", height: isMobile ? "70vh" : 560 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: activeModel.color, boxShadow: `0 0 6px ${activeModel.color}` }} />
             <span style={{ fontWeight: 600, fontSize: ".9rem", color: "var(--ws-text)" }}>
