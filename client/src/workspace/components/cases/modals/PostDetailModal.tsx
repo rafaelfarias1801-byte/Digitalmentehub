@@ -36,6 +36,9 @@ export default function PostDetailModal({
   const [newComment, setNewComment] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
+
   async function save(updates: Partial<Post>) {
     const merged = { ...currentPost, ...updates };
     setCurrentPost(merged);
@@ -104,6 +107,42 @@ export default function PostDetailModal({
     });
 
     setNewComment("");
+  }
+
+  function startEditComment(comment: Comment) {
+    setEditingCommentId(comment.id);
+    setEditingCommentText(comment.text);
+  }
+
+  function cancelEditComment() {
+    setEditingCommentId(null);
+    setEditingCommentText("");
+  }
+
+  function saveEditComment(commentId: string) {
+    if (!editingCommentText.trim()) return;
+
+    void save({
+      comments: (currentPost.comments || []).map((comment) =>
+        comment.id === commentId
+          ? { ...comment, text: editingCommentText.trim() }
+          : comment
+      ),
+    });
+
+    cancelEditComment();
+  }
+
+  function deleteComment(commentId: string) {
+    void save({
+      comments: (currentPost.comments || []).filter(
+        (comment) => comment.id !== commentId
+      ),
+    });
+
+    if (editingCommentId === commentId) {
+      cancelEditComment();
+    }
   }
 
   function sendToWhatsApp() {
@@ -596,42 +635,125 @@ export default function PostDetailModal({
                   {comment.author.slice(0, 1).toUpperCase()}
                 </div>
 
-                <div>
+                <div style={{ flex: 1 }}>
                   <div
                     style={{
                       fontSize: ".78rem",
                       color: "var(--ws-text2)",
                       marginBottom: 3,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 10,
                     }}
                   >
-                    <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
-                    <span
-                      style={{
-                        color: "var(--ws-text3)",
-                        fontFamily: "DM Mono",
-                        fontSize: ".65rem",
-                      }}
-                    >
-                      {new Date(comment.created_at).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                    <div>
+                      <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
+                      <span
+                        style={{
+                          color: "var(--ws-text3)",
+                          fontFamily: "DM Mono",
+                          fontSize: ".65rem",
+                        }}
+                      >
+                        {new Date(comment.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button
+                        onClick={() => startEditComment(comment)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "var(--ws-text3)",
+                          cursor: "pointer",
+                          fontSize: ".72rem",
+                          fontFamily: "inherit",
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => deleteComment(comment.id)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "var(--ws-accent)",
+                          cursor: "pointer",
+                          fontSize: ".72rem",
+                          fontFamily: "inherit",
+                        }}
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   </div>
 
-                  <div
-                    style={{
-                      background: "var(--ws-surface2)",
-                      borderRadius: 8,
-                      padding: "8px 12px",
-                      fontSize: ".83rem",
-                      color: "var(--ws-text)",
-                    }}
-                  >
-                    {comment.text}
-                  </div>
+                  {editingCommentId === comment.id ? (
+                    <div>
+                      <textarea
+                        className="ws-input"
+                        value={editingCommentText}
+                        onChange={(e) => setEditingCommentText(e.target.value)}
+                        style={{
+                          minHeight: 70,
+                          resize: "vertical",
+                          fontSize: ".83rem",
+                          marginBottom: 6,
+                        }}
+                      />
+
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={() => saveEditComment(comment.id)}
+                          style={{
+                            background: caseData.color,
+                            border: "none",
+                            borderRadius: 8,
+                            color: "#fff",
+                            padding: "6px 12px",
+                            cursor: "pointer",
+                            fontFamily: "inherit",
+                            fontSize: ".78rem",
+                          }}
+                        >
+                          Salvar
+                        </button>
+
+                        <button
+                          onClick={cancelEditComment}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "var(--ws-text3)",
+                            cursor: "pointer",
+                            fontFamily: "inherit",
+                            fontSize: ".78rem",
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        background: "var(--ws-surface2)",
+                        borderRadius: 8,
+                        padding: "8px 12px",
+                        fontSize: ".83rem",
+                        color: "var(--ws-text)",
+                      }}
+                    >
+                      {comment.text}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
