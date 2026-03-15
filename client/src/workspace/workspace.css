@@ -1247,3 +1247,350 @@ select.ws-field {
 .ws-case h3 {
   font-family: 'DM Sans', system-ui, sans-serif;
 }
+
+
+/* ════════════════════════════════════════
+   DIG WORKSPACE — RESPONSIVIDADE MOBILE
+   Breakpoints: 768px (tablet) / 480px (mobile)
+════════════════════════════════════════ */
+
+/* ── Tablet (≤ 768px) ── */
+@media (max-width: 768px) {
+
+  /* Layout principal */
+  .ws-layout {
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .ws-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sidebar vira drawer lateral (já tratado no Sidebar.tsx) */
+  .ws-sidebar {
+    width: 280px !important;
+    min-width: 280px !important;
+  }
+
+  /* Páginas */
+  .ws-page {
+    padding: 20px 16px 32px;
+  }
+
+  .ws-page-title {
+    font-size: 2.2rem;
+  }
+
+  .ws-page-sub {
+    font-size: .68rem;
+    margin-bottom: 20px;
+  }
+
+  /* Stats do Dashboard — 2 colunas */
+  .ws-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Grid 2 cols vira 1 coluna */
+  .ws-cols2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Cards financeiro — 2 colunas */
+  .ws-fin-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Cases — 2 colunas */
+  .ws-cases {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Notas — 2 colunas */
+  .ws-notes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* IA grid */
+  .ws-ia-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Pomodoro */
+  .ws-pomo-wrap {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ws-pomo-box {
+    padding: 32px 24px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ws-pomo-time {
+    font-size: 4rem;
+  }
+
+  /* Login */
+  .ws-login-card {
+    width: calc(100vw - 40px);
+    padding: 32px 24px;
+  }
+
+  /* Calendário da agenda — painel lateral embaixo */
+  .ws-cal-day {
+    min-height: 36px;
+  }
+
+  .ws-cal-month {
+    font-size: 1.4rem;
+  }
+}
+
+/* ── Mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+
+  /* Páginas */
+  .ws-page {
+    padding: 16px 12px 28px;
+  }
+
+  .ws-page-title {
+    font-size: 1.8rem;
+  }
+
+  /* Stats — 2 colunas menores */
+  .ws-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .ws-stat {
+    padding: 16px 14px;
+  }
+
+  .ws-stat-value {
+    font-size: 1.7rem;
+  }
+
+  .ws-stat-detail {
+    font-size: .72rem;
+  }
+
+  /* Cases — 1 coluna */
+  .ws-cases {
+    grid-template-columns: 1fr;
+  }
+
+  /* Notas — 1 coluna */
+  .ws-notes {
+    grid-template-columns: 1fr;
+  }
+
+  /* Financeiro — 1 coluna */
+  .ws-fin-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ws-fin-value {
+    font-size: 1.6rem;
+  }
+
+  /* Cards */
+  .ws-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  /* Pomodoro */
+  .ws-pomo-box {
+    padding: 24px 16px;
+  }
+
+  .ws-pomo-time {
+    font-size: 3.2rem;
+    margin-bottom: 20px;
+  }
+
+  .ws-pomo-tabs {
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .ws-pomo-tab {
+    font-size: .55rem;
+    padding: 6px 12px;
+  }
+
+  /* Botões */
+  .ws-btn,
+  .ws-btn-ghost {
+    padding: 10px 16px;
+    font-size: .8rem;
+  }
+
+  /* Tabela do checklist — scroll horizontal */
+  .ws-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Login */
+  .ws-login-card {
+    width: calc(100vw - 24px);
+    padding: 28px 18px;
+  }
+
+  .ws-logo {
+    font-size: 1.9rem;
+  }
+
+  /* Calendário da agenda — só mês, sem painel lateral */
+  .ws-cal-grid {
+    gap: 3px;
+  }
+
+  .ws-cal-day {
+    min-height: 32px;
+    border-radius: 6px;
+  }
+
+  .ws-cal-day-num {
+    font-size: .75rem;
+  }
+
+  .ws-cal-month {
+    font-size: 1.2rem;
+  }
+
+  /* Agenda — coluna única */
+  .ws-agenda-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Cases workspace sidebar */
+  .ws-case-sidebar {
+    display: none;
+  }
+
+  /* Notas board — scroll horizontal */
+  .ws-notes-board {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Tarefas */
+  .ws-task {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .ws-task-text {
+    font-size: .84rem;
+  }
+
+  /* Badges e tags menores */
+  .ws-tag {
+    font-size: .52rem;
+    padding: 2px 6px;
+  }
+
+  /* Filtros */
+  .ws-filters {
+    gap: 6px;
+  }
+
+  .ws-filter {
+    font-size: .55rem;
+    padding: 5px 10px;
+  }
+
+  /* Input row vira coluna */
+  .ws-input-row {
+    flex-direction: column;
+  }
+
+  /* Sidebar da IA vira parte de cima */
+  .ws-ia-sidebar {
+    order: -1;
+  }
+}
+
+/* ── Agenda: layout responsivo ── */
+@media (max-width: 768px) {
+  /* O grid da agenda (calendário + painel) vira coluna única */
+  .ws-page [style*="gridTemplateColumns: \"1fr 340px\""],
+  .ws-page [style*="grid-template-columns: 1fr 340px"] {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+/* ── Cases workspace: esconde sidebar interna em mobile ── */
+@media (max-width: 600px) {
+  /* CaseWorkspace: sidebar de tabs fica oculta, usuário usa o toggle */
+  .ws-case-tabs-sidebar {
+    display: none;
+  }
+}
+
+/* ── Checklist TaskTable: scroll horizontal ── */
+@media (max-width: 768px) {
+  .ws-checklist-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+}
+
+/* ── Touch targets mínimos (acessibilidade mobile) ── */
+@media (max-width: 768px) {
+  .ws-nav-item {
+    padding: 13px 20px;
+    min-height: 44px;
+  }
+
+  .ws-btn,
+  .ws-btn-ghost,
+  .ws-cal-btn,
+  .ws-filter {
+    min-height: 44px;
+  }
+
+  .ws-check {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Inputs maiores para toque */
+  .ws-input,
+  .ws-field {
+    padding: 14px 16px;
+    font-size: 1rem; /* evita zoom automático no iOS */
+  }
+
+  select.ws-input,
+  select.ws-field {
+    font-size: 1rem; /* evita zoom automático no iOS */
+  }
+}
+
+/* ── Evita zoom no iOS ao focar inputs ── */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: max(16px, 1rem) !important;
+  }
+}
