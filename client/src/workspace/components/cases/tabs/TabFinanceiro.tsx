@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import Empty from "../shared/Empty";
 import Loader from "../shared/Loader";
@@ -27,6 +27,46 @@ const EMPTY_FORM: PaymentFormState = {
   paid_date: "",
 };
 
+const sectionLabelStyle: React.CSSProperties = {
+  fontFamily: "DM Mono, monospace",
+  fontSize: ".68rem",
+  letterSpacing: "1.4px",
+  textTransform: "uppercase",
+  color: "var(--ws-text3)",
+};
+
+const summaryCardBaseStyle: React.CSSProperties = {
+  borderRadius: 16,
+  padding: "18px 20px",
+  minHeight: 104,
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
+  boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+};
+
+const summaryValueStyle: React.CSSProperties = {
+  fontFamily: "inherit",
+  fontWeight: 700,
+  fontSize: "1.9rem",
+  lineHeight: 1.05,
+  letterSpacing: "-0.03em",
+};
+
+const summaryHintStyle: React.CSSProperties = {
+  fontSize: ".82rem",
+  color: "var(--ws-text3)",
+  marginTop: 6,
+};
+
+function sortPayments(list: Payment[]) {
+  return [...list].sort((a, b) => {
+    const aDate = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+    const bDate = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+    return aDate - bDate;
+  });
+}
+
 export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +87,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
         .order("due_date");
 
       if (mounted) {
-        setPayments(data ?? []);
+        setPayments(sortPayments(data ?? []));
         setLoading(false);
       }
     }
@@ -80,7 +120,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
       .single();
 
     if (data) {
-      setPayments((prev) => [...prev, data]);
+      setPayments((prev) => sortPayments([...prev, data]));
       setModal(false);
       setForm(EMPTY_FORM);
     }
@@ -103,7 +143,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
 
     if (data) {
       setPayments((prev) =>
-        prev.map((item) => (item.id === payment.id ? data : item))
+        sortPayments(prev.map((item) => (item.id === payment.id ? data : item)))
       );
     }
   }
@@ -113,83 +153,78 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
     await supabase.from("payments").delete().eq("id", id);
   }
 
-  const paid = payments.filter((payment) => payment.paid);
-  const pending = payments.filter((payment) => !payment.paid);
+  const paid = useMemo(
+    () => payments.filter((payment) => payment.paid),
+    [payments]
+  );
+
+  const pending = useMemo(
+    () => payments.filter((payment) => !payment.paid),
+    [payments]
+  );
+
+  const totalPaid = paid.reduce((sum, payment) => sum + payment.amount, 0);
+  const totalPending = pending.reduce((sum, payment) => sum + payment.amount, 0);
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 12,
-          marginBottom: 24,
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: 14,
         }}
       >
         <div
           style={{
-            background: "#00e67612",
-            border: "1px solid #00e67630",
-            borderRadius: 12,
-            padding: "16px 20px",
+            ...summaryCardBaseStyle,
+            background: "linear-gradient(180deg, rgba(0,230,118,0.09), rgba(0,230,118,0.04))",
+            border: "1px solid rgba(0,230,118,0.18)",
           }}
         >
-          <div
-            style={{
-              fontFamily: "DM Mono",
-              fontSize: ".6rem",
-              letterSpacing: "1.5px",
-              color: "#00e676",
-              marginBottom: 6,
-            }}
-          >
-            RECEBIDO
-          </div>
-          <div
-            style={{
-              fontFamily: "Syne",
-              fontWeight: 800,
-              fontSize: "1.3rem",
-              color: "#00e676",
-            }}
-          >
-            {fmt(paid.reduce((sum, payment) => sum + payment.amount, 0))}
+          <div style={{ ...sectionLabelStyle, color: "#31d98b" }}>Recebido</div>
+
+          <div>
+            <div style={{ ...summaryValueStyle, color: "#e8fff1" }}>
+              {fmt(totalPaid)}
+            </div>
+            <div style={summaryHintStyle}>
+              {paid.length} {paid.length === 1 ? "pagamento recebido" : "pagamentos recebidos"}
+            </div>
           </div>
         </div>
 
         <div
           style={{
-            background: "#ffd60012",
-            border: "1px solid #ffd60030",
-            borderRadius: 12,
-            padding: "16px 20px",
+            ...summaryCardBaseStyle,
+            background: "linear-gradient(180deg, rgba(255,214,0,0.08), rgba(255,214,0,0.035))",
+            border: "1px solid rgba(255,214,0,0.16)",
           }}
         >
-          <div
-            style={{
-              fontFamily: "DM Mono",
-              fontSize: ".6rem",
-              letterSpacing: "1.5px",
-              color: "#ffd600",
-              marginBottom: 6,
-            }}
-          >
-            A VENCER
-          </div>
-          <div
-            style={{
-              fontFamily: "Syne",
-              fontWeight: 800,
-              fontSize: "1.3rem",
-              color: "#ffd600",
-            }}
-          >
-            {fmt(pending.reduce((sum, payment) => sum + payment.amount, 0))}
+          <div style={{ ...sectionLabelStyle, color: "#ffd84d" }}>A vencer</div>
+
+          <div>
+            <div style={{ ...summaryValueStyle, color: "#fff3bf" }}>
+              {fmt(totalPending)}
+            </div>
+            <div style={summaryHintStyle}>
+              {pending.length} {pending.length === 1 ? "pagamento pendente" : "pagamentos pendentes"}
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={sectionLabelStyle}>Lançamentos financeiros</div>
+
         <button className="ws-btn" onClick={() => setModal(true)}>
           + Novo pagamento
         </button>
@@ -200,20 +235,10 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
       ) : payments.length === 0 ? (
         <Empty label="Nenhum pagamento cadastrado." />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {pending.length > 0 && (
-            <>
-              <div
-                style={{
-                  fontFamily: "DM Mono",
-                  fontSize: ".6rem",
-                  letterSpacing: "1.5px",
-                  color: "var(--ws-text3)",
-                  marginBottom: 4,
-                }}
-              >
-                A VENCER
-              </div>
+            <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={sectionLabelStyle}>A vencer</div>
 
               {pending.map((payment) => (
                 <PaymentRow
@@ -223,22 +248,13 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                   onRemove={removePayment}
                 />
               ))}
-            </>
+            </section>
           )}
 
           {paid.length > 0 && (
-            <>
-              <div
-                style={{
-                  fontFamily: "DM Mono",
-                  fontSize: ".6rem",
-                  letterSpacing: "1.5px",
-                  color: "var(--ws-text3)",
-                  marginTop: 12,
-                  marginBottom: 4,
-                }}
-              >
-                PAGOS
+            <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ ...sectionLabelStyle, marginTop: pending.length ? 4 : 0 }}>
+                Pagos
               </div>
 
               {paid.map((payment) => (
@@ -249,7 +265,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                   onRemove={removePayment}
                 />
               ))}
-            </>
+            </section>
           )}
         </div>
       )}
@@ -266,7 +282,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
             <input
               className="ws-input"
               value={form.description}
-              placeholder="Ex: Mensalidade março"
+              placeholder="Ex: Mensalidade abril"
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, description: e.target.value }))
               }
@@ -328,7 +344,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                   }))
                 }
               />
-              <span style={{ fontSize: ".83rem", color: "var(--ws-text2)" }}>
+              <span style={{ fontSize: ".86rem", color: "var(--ws-text2)" }}>
                 Já pago
               </span>
             </label>
