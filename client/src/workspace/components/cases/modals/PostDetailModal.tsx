@@ -120,18 +120,22 @@ export default function PostDetailModal({
   }
 
   function saveEditComment(commentId: string) {
-    if (!editingCommentText.trim()) return;
+  if (!editingCommentText.trim()) return;
 
-    void save({
-      comments: (currentPost.comments || []).map((comment) =>
-        comment.id === commentId
-          ? { ...comment, text: editingCommentText.trim() }
-          : comment
-      ),
-    });
+  void save({
+    comments: (currentPost.comments || []).map((comment) =>
+      comment.id === commentId
+        ? {
+            ...comment,
+            text: editingCommentText.trim(),
+            edited_at: new Date().toISOString(),
+          }
+        : comment
+    ),
+  });
 
-    cancelEditComment();
-  }
+  cancelEditComment();
+}
 
   function deleteComment(commentId: string) {
     void save({
@@ -144,6 +148,10 @@ export default function PostDetailModal({
       cancelEditComment();
     }
   }
+
+function isOwnComment(comment: Comment) {
+  return (comment.author || "").trim() === (profile.name || "").trim();
+}
 
   function sendToWhatsApp() {
     const phone = normalizeWhatsAppPhone(caseData.phone);
@@ -650,49 +658,52 @@ export default function PostDetailModal({
                     <div>
                       <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
                       <span
-                        style={{
-                          color: "var(--ws-text3)",
-                          fontFamily: "DM Mono",
-                          fontSize: ".65rem",
-                        }}
-                      >
-                        {new Date(comment.created_at).toLocaleString("pt-BR", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+  style={{
+    color: "var(--ws-text3)",
+    fontFamily: "DM Mono",
+    fontSize: ".65rem",
+  }}
+>
+  {new Date(comment.created_at).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  })}
+  {comment.edited_at ? " • editado" : ""}
+</span>
                     </div>
 
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button
-                        onClick={() => startEditComment(comment)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "var(--ws-text3)",
-                          cursor: "pointer",
-                          fontSize: ".72rem",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => deleteComment(comment.id)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "var(--ws-accent)",
-                          cursor: "pointer",
-                          fontSize: ".72rem",
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        Excluir
-                      </button>
-                    </div>
+                    {isOwnComment(comment) && (
+  <div style={{ display: "flex", gap: 6 }}>
+    <button
+      onClick={() => startEditComment(comment)}
+      style={{
+        background: "none",
+        border: "none",
+        color: "var(--ws-text3)",
+        cursor: "pointer",
+        fontSize: ".72rem",
+        fontFamily: "inherit",
+      }}
+    >
+      Editar
+    </button>
+    <button
+      onClick={() => deleteComment(comment.id)}
+      style={{
+        background: "none",
+        border: "none",
+        color: "var(--ws-accent)",
+        cursor: "pointer",
+        fontSize: ".72rem",
+        fontFamily: "inherit",
+      }}
+    >
+      Excluir
+    </button>
+  </div>
+)}
                   </div>
 
                   {editingCommentId === comment.id ? (

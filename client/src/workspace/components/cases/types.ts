@@ -25,6 +25,7 @@ export interface Comment {
   author: string;
   text: string;
   created_at: string;
+  edited_at?: string;
 }
 
 export interface Post {
