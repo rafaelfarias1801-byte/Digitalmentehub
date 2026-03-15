@@ -70,10 +70,12 @@ export default function PaymentRow({
 
       <div
         style={{
-          fontFamily: "Syne",
-          fontWeight: 800,
-          fontSize: ".95rem",
-          color: p.paid ? "#00e676" : overdue ? "#ff4433" : "#ffd600",
+          fontFamily: "inherit",
+          fontWeight: 700,
+          fontSize: "1.05rem",
+          letterSpacing: "-0.02em",
+          color: p.paid ? "#31d98b" : overdue ? "#ff4433" : "#ffd84d",
+          whiteSpace: "nowrap",
         }}
       >
         {fmt(p.amount)}
