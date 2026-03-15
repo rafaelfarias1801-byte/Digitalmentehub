@@ -11,7 +11,10 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, model } = await req.json() as {
+    const body = await req.text();
+    if (!body) throw new Error("Body vazio.");
+
+    const { messages, model } = JSON.parse(body) as {
       messages: { role: string; content: string }[];
       model: "claude" | "chatgpt" | "gemini";
     };
@@ -34,14 +37,18 @@ serve(async (req) => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-opus-4-5",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 1024,
           system: "Você é um assistente estratégico para a agência Digitalmente HUB. Responda sempre em português brasileiro, de forma direta e útil.",
           messages,
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+
+      if (!res.ok) throw new Error(`Anthropic error ${res.status}: ${text}`);
+
+      const data = JSON.parse(text);
       reply = data?.content?.[0]?.text ?? "Sem resposta.";
     }
 
@@ -65,7 +72,10 @@ serve(async (req) => {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      if (!res.ok) throw new Error(`OpenAI error ${res.status}: ${text}`);
+
+      const data = JSON.parse(text);
       reply = data?.choices?.[0]?.message?.content ?? "Sem resposta.";
     }
 
@@ -87,7 +97,10 @@ serve(async (req) => {
         }
       );
 
-      const data = await res.json();
+      const text = await res.text();
+      if (!res.ok) throw new Error(`Gemini error ${res.status}: ${text}`);
+
+      const data = JSON.parse(text);
       reply = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "Sem resposta.";
     }
 
