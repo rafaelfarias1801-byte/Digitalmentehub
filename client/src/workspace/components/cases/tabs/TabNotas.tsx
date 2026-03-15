@@ -227,7 +227,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
             >
               <div
                 style={{
-                  fontFamily: "Space Grotesk",
+                  fontFamily: "inherit",
                   fontWeight: 600,
                   fontSize: ".88rem",
                   color: "var(--ws-text)",
