@@ -45,7 +45,11 @@ export default function TabConteudo({
   const [form, setForm] = useState<NewPostForm>(EMPTY_POST);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>("");
   const [activeMonth, setActiveMonth] = useState<string>("");
+
+  // Múltiplos arquivos: lista de URLs já enviadas
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -97,30 +101,62 @@ export default function TabConteudo({
     setActiveMonth(keys.includes(now) ? now : keys[0] || "sem-data");
   }, [posts, activeMonth]);
 
-  async function uploadMedia(file: File) {
+  // Upload de múltiplos arquivos em sequência
+  async function uploadFiles(files: FileList) {
     setUploading(true);
+    const uploaded: string[] = [];
 
-    const ext = file.name.split(".").pop();
-    const path = `posts/${caseData.id}/${Date.now()}.${ext}`;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setUploadProgress(`Enviando ${i + 1} de ${files.length}...`);
 
-    const { error } = await supabase.storage
-      .from("assets")
-      .upload(path, file, { upsert: true });
+      const ext = file.name.split(".").pop();
+      const path = `posts/${caseData.id}/${Date.now()}-${i}.${ext}`;
 
-    if (!error) {
-      const { data } = supabase.storage.from("assets").getPublicUrl(path);
+      const { error } = await supabase.storage
+        .from("assets")
+        .upload(path, file, { upsert: true });
 
-      setForm((prev) => ({
-        ...prev,
-        media_url: data.publicUrl,
-      }));
+      if (!error) {
+        const { data } = supabase.storage.from("assets").getPublicUrl(path);
+        uploaded.push(data.publicUrl);
+      }
     }
 
+    setMediaUrls((prev) => [...prev, ...uploaded]);
+    // O primeiro arquivo vira o media_url principal (usado como thumbnail)
+    setForm((prev) => ({
+      ...prev,
+      media_url: prev.media_url || uploaded[0] || "",
+    }));
+
     setUploading(false);
+    setUploadProgress("");
 
     if (fileRef.current) {
       fileRef.current.value = "";
     }
+  }
+
+  function removeMedia(index: number) {
+    setMediaUrls((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      // Atualiza media_url principal para o primeiro restante
+      setForm((f) => ({ ...f, media_url: next[0] || "" }));
+      return next;
+    });
+  }
+
+  function openModal() {
+    setForm(EMPTY_POST);
+    setMediaUrls([]);
+    setModal(true);
+  }
+
+  function closeModal() {
+    setModal(false);
+    setMediaUrls([]);
+    setForm(EMPTY_POST);
   }
 
   async function save() {
@@ -128,11 +164,20 @@ export default function TabConteudo({
 
     setSaving(true);
 
+    // Salva o primeiro arquivo como media_url (thumbnail),
+    // os demais ficam em extra_info como JSON se não houver outro uso
+    const extraUrls = mediaUrls.slice(1);
+    const extraInfo = extraUrls.length > 0
+      ? `__media_urls__:${JSON.stringify(extraUrls)}${form.extra_info ? `\n${form.extra_info}` : ""}`
+      : form.extra_info;
+
     const payload = {
       ...form,
       case_id: caseData.id,
       slug: form.slug.trim(),
       title: form.title.trim(),
+      media_url: mediaUrls[0] || form.media_url || "",
+      extra_info: extraInfo,
     };
 
     const { data } = await supabase
@@ -143,8 +188,7 @@ export default function TabConteudo({
 
     if (data) {
       setPosts((prev) => [...prev, data]);
-      setModal(false);
-      setForm(EMPTY_POST);
+      closeModal();
     }
 
     setSaving(false);
@@ -219,10 +263,14 @@ export default function TabConteudo({
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   }
 
+  function isVideo(url: string) {
+    return /\.(mp4|mov|webm|ogg)$/i.test(url);
+  }
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <button className="ws-btn" onClick={() => setModal(true)}>
+        <button className="ws-btn" onClick={openModal}>
           + Novo post
         </button>
       </div>
@@ -435,12 +483,13 @@ export default function TabConteudo({
         </>
       )}
 
+      {/* ── Modal novo post ── */}
       {modal && (
         <div
           style={overlayStyle}
-          onClick={(e) => e.target === e.currentTarget && setModal(false)}
+          onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
-          <div style={{ ...modalBoxStyle, width: 500 }}>
+          <div style={{ ...modalBoxStyle, width: 520 }}>
             <div style={modalTitleStyle}>Novo post</div>
 
             <label className="ws-label">Nome no calendário</label>
@@ -465,45 +514,181 @@ export default function TabConteudo({
               style={{ marginBottom: 12 }}
             />
 
-            <label className="ws-label">Mídia</label>
-            <div
-              style={{
-                height: 120,
-                borderRadius: 10,
-                border: "1px dashed var(--ws-border2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                marginBottom: 8,
-                background: "var(--ws-surface2)",
-                overflow: "hidden",
-              }}
-              onClick={() => fileRef.current?.click()}
-            >
-              {form.media_url ? (
-                <div style={{ width: "100%", height: "100%" }}>
-                  <MediaThumb
-                    url={form.media_url}
-                    alt={form.title || form.slug || "Prévia"}
-                    mediaType={form.media_type}
-                  />
-                </div>
-              ) : (
-                <div style={{ color: "var(--ws-text3)", fontSize: ".8rem" }}>
-                  {uploading ? "Enviando..." : "Clique para enviar foto ou vídeo"}
-                </div>
+            {/* ── Área de mídia com múltiplos arquivos ── */}
+            <label className="ws-label">
+              Mídia
+              {form.media_type === "carousel" && (
+                <span style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".58rem", marginLeft: 8 }}>
+                  MÚLTIPLOS ARQUIVOS PERMITIDOS
+                </span>
               )}
-            </div>
+            </label>
+
+            {/* Grid de previews */}
+            {mediaUrls.length > 0 && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                {mediaUrls.map((url, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: "relative",
+                      aspectRatio: "1/1",
+                      borderRadius: 8,
+                      overflow: "hidden",
+                      border: i === 0 ? `2px solid ${caseData.color}` : "1px solid var(--ws-border2)",
+                    }}
+                  >
+                    {isVideo(url) ? (
+                      <video
+                        src={url}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <img
+                        src={url}
+                        alt={`mídia ${i + 1}`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    )}
+
+                    {/* Badge "capa" no primeiro */}
+                    {i === 0 && (
+                      <div style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: `${caseData.color}cc`,
+                        color: "#fff",
+                        fontSize: ".52rem",
+                        fontFamily: "DM Mono",
+                        letterSpacing: "1px",
+                        textAlign: "center",
+                        padding: "2px 0",
+                      }}>
+                        CAPA
+                      </div>
+                    )}
+
+                    {/* Botão remover */}
+                    <button
+                      onClick={() => removeMedia(i)}
+                      style={{
+                        position: "absolute",
+                        top: 3,
+                        right: 3,
+                        width: 18,
+                        height: 18,
+                        borderRadius: "50%",
+                        background: "rgba(0,0,0,.7)",
+                        border: "none",
+                        color: "#fff",
+                        cursor: "pointer",
+                        fontSize: ".7rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        lineHeight: 1,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                {/* Botão adicionar mais */}
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  style={{
+                    aspectRatio: "1/1",
+                    borderRadius: 8,
+                    border: "1px dashed var(--ws-border2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "var(--ws-text3)",
+                    fontSize: "1.4rem",
+                    transition: "all .15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = caseData.color;
+                    e.currentTarget.style.color = caseData.color;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "var(--ws-border2)";
+                    e.currentTarget.style.color = "var(--ws-text3)";
+                  }}
+                >
+                  +
+                </div>
+              </div>
+            )}
+
+            {/* Área de drop quando não há arquivos ainda */}
+            {mediaUrls.length === 0 && (
+              <div
+                style={{
+                  height: 110,
+                  borderRadius: 10,
+                  border: "1px dashed var(--ws-border2)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  marginBottom: 8,
+                  background: "var(--ws-surface2)",
+                  gap: 6,
+                  transition: "all .15s",
+                }}
+                onClick={() => fileRef.current?.click()}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = caseData.color;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--ws-border2)";
+                }}
+              >
+                <div style={{ fontSize: "1.5rem" }}>🖼</div>
+                <div style={{ color: "var(--ws-text3)", fontSize: ".8rem" }}>
+                  {uploading
+                    ? uploadProgress
+                    : "Clique para enviar foto ou vídeo"}
+                </div>
+                <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", fontFamily: "DM Mono" }}>
+                  Selecione um ou mais arquivos
+                </div>
+              </div>
+            )}
+
+            {/* Progress enquanto sobe */}
+            {uploading && mediaUrls.length > 0 && (
+              <div style={{ color: "var(--ws-text3)", fontSize: ".75rem", marginBottom: 8, fontFamily: "DM Mono" }}>
+                {uploadProgress}
+              </div>
+            )}
 
             <input
               ref={fileRef}
               type="file"
               accept="image/*,video/*"
+              multiple
               style={{ display: "none" }}
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void uploadMedia(file);
+                if (e.target.files && e.target.files.length > 0) {
+                  void uploadFiles(e.target.files);
+                }
               }}
             />
 
@@ -591,10 +776,10 @@ export default function TabConteudo({
                 disabled={saving || uploading}
                 style={{ flex: 1 }}
               >
-                {saving ? "Salvando..." : "Salvar post"}
+                {saving ? "Salvando..." : uploading ? uploadProgress : "Salvar post"}
               </button>
 
-              <button className="ws-btn-ghost" onClick={() => setModal(false)}>
+              <button className="ws-btn-ghost" onClick={closeModal}>
                 Cancelar
               </button>
             </div>
