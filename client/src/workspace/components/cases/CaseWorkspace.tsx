@@ -9,6 +9,15 @@ import TabFinanceiro from "./tabs/TabFinanceiro";
 import TabDocumentos from "./tabs/TabDocumentos";
 import TabNotas from "./tabs/TabNotas";
 
+const LS_ACTIVE_TAB = "ws_case_tab";
+const VALID_TABS = SUB_TABS.map((t) => t.id) as string[];
+
+function getSavedTab(): string {
+  const saved = localStorage.getItem(LS_ACTIVE_TAB);
+  if (saved && VALID_TABS.includes(saved)) return saved;
+  return "calendario";
+}
+
 export default function CaseWorkspace({
   caseData,
   onBack,
@@ -16,8 +25,13 @@ export default function CaseWorkspace({
   onDelete,
   profile,
 }: CaseWorkspaceProps) {
-  const [activeTab, setActiveTab] = useState("calendario");
+  const [activeTab, setActiveTab] = useState<string>(getSavedTab);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  function navigate(tabId: string) {
+    localStorage.setItem(LS_ACTIVE_TAB, tabId);
+    setActiveTab(tabId);
+  }
 
   function onToggleSidebar() {
     setSidebarOpen((prev) => !prev);
@@ -250,7 +264,7 @@ export default function CaseWorkspace({
           {SUB_TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => navigate(tab.id)}
               style={{
                 display: "flex",
                 alignItems: "center",

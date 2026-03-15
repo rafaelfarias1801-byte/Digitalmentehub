@@ -7,6 +7,8 @@ import Loader from "./shared/Loader";
 import { CasesGlobalStyle } from "./styles";
 import type { Case, CasesProps } from "./types";
 
+const LS_OPEN_CASE = "ws_open_case_id";
+
 export default function Cases({ profile }: CasesProps) {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,16 @@ export default function Cases({ profile }: CasesProps) {
         .order("created_at");
 
       if (mounted) {
-        setCases(data ?? []);
+        const list = data ?? [];
+        setCases(list);
+
+        // Restaura o case aberto se havia um salvo
+        const savedId = localStorage.getItem(LS_OPEN_CASE);
+        if (savedId) {
+          const found = list.find((c) => c.id === savedId);
+          if (found) setOpenCase(found);
+        }
+
         setLoading(false);
       }
     }
@@ -42,6 +53,16 @@ export default function Cases({ profile }: CasesProps) {
       mounted = false;
     };
   }, []);
+
+  function selectCase(caseItem: Case) {
+    localStorage.setItem(LS_OPEN_CASE, caseItem.id);
+    setOpenCase(caseItem);
+  }
+
+  function closeCase() {
+    localStorage.removeItem(LS_OPEN_CASE);
+    setOpenCase(null);
+  }
 
   function openAdd() {
     setEditing(null);
@@ -130,7 +151,7 @@ export default function Cases({ profile }: CasesProps) {
     setCases((prev) => prev.filter((item) => item.id !== id));
 
     if (openCase?.id === id) {
-      setOpenCase(null);
+      closeCase();
     }
 
     await supabase.from("cases").delete().eq("id", id);
@@ -141,7 +162,7 @@ export default function Cases({ profile }: CasesProps) {
       <>
         <CaseWorkspace
           caseData={openCase}
-          onBack={() => setOpenCase(null)}
+          onBack={closeCase}
           onEdit={() => openEdit(openCase)}
           onDelete={() => void remove(openCase.id)}
           profile={profile}
@@ -197,7 +218,7 @@ export default function Cases({ profile }: CasesProps) {
               key={caseItem.id}
               className="ws-case"
               style={{ cursor: "pointer" }}
-              onClick={() => setOpenCase(caseItem)}
+              onClick={() => selectCase(caseItem)}
             >
               <div
                 className="ws-case-thumb"

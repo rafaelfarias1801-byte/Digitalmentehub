@@ -35,10 +35,18 @@ const PAGES: Record<PageId, React.ComponentType<any>> = {
   pomodoro:   Pomodoro,
 };
 
+const VALID_PAGES = Object.keys(PAGES) as PageId[];
+
+function getSavedPage(): PageId {
+  const saved = localStorage.getItem("ws_page");
+  if (saved && VALID_PAGES.includes(saved as PageId)) return saved as PageId;
+  return "dashboard";
+}
+
 export default function WorkspaceApp() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState<PageId>("dashboard");
+  const [page, setPage] = useState<PageId>(getSavedPage);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -64,6 +72,11 @@ export default function WorkspaceApp() {
     setLoading(false);
   }
 
+  function navigate(newPage: PageId) {
+    localStorage.setItem("ws_page", newPage);
+    setPage(newPage);
+  }
+
   if (loading) return (
     <div className="ws-loading">
       <div className="ws-loading-dot" />
@@ -76,7 +89,7 @@ export default function WorkspaceApp() {
 
   return (
     <div className="ws-layout">
-      <Sidebar currentPage={page} onNavigate={setPage} profile={profile} />
+      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} />
       <main className="ws-main">
         <CurrentPage profile={profile} />
       </main>
