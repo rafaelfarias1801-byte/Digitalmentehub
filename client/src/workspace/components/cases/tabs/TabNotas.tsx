@@ -227,8 +227,8 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
             >
               <div
                 style={{
-                  fontFamily: "Syne",
-                  fontWeight: 800,
+                  fontFamily: "Space Grotesk",
+                  fontWeight: 600,
                   fontSize: ".88rem",
                   color: "var(--ws-text)",
                 }}
@@ -331,8 +331,8 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                             fontFamily: "DM Mono",
                             padding: "2px 6px",
                             borderRadius: 4,
-                            background: "var(--ws-border)",
-                            color: "var(--ws-text2)",
+                            background: "var(--ws-surface3)",
+                            color: "#a0a4cc",
                           }}
                         >
                           📅{" "}
@@ -350,8 +350,8 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                             fontFamily: "DM Mono",
                             padding: "2px 6px",
                             borderRadius: 4,
-                            background: done === total ? "#00e67622" : "var(--ws-border)",
-                            color: done === total ? "#00e676" : "var(--ws-text2)",
+                            background: done === total ? "#00e67622" : "var(--ws-surface3)",
+                            color: done === total ? "#00e676" : "#a0a4cc",
                           }}
                         >
                           ✓ {done}/{total}
@@ -365,8 +365,8 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                             fontFamily: "DM Mono",
                             padding: "2px 6px",
                             borderRadius: 4,
-                            background: "var(--ws-border)",
-                            color: "var(--ws-text2)",
+                            background: "var(--ws-surface3)",
+                            color: "#a0a4cc",
                           }}
                         >
                           💬 {(card.comments || []).length}
