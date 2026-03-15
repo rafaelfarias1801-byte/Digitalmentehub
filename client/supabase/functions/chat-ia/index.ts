@@ -88,10 +88,13 @@ serve(async (req) => {
       }));
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
         {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: {
+            "x-goog-api-key": GEMINI_KEY,
+            "content-type": "application/json",
+          },
           body: JSON.stringify({ contents: geminiMessages }),
         }
       );
