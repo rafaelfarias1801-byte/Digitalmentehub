@@ -39,13 +39,14 @@ export default function IA() {
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
       const res = await fetch(`${SUPABASE_URL}/functions/v1/chat-ia`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          "Authorization": `Bearer ${session?.access_token ?? ""}`,
+          "Authorization": `Bearer ${ANON_KEY}`,
+          "apikey": ANON_KEY,
         },
         body: JSON.stringify({ messages: next, model }),
       });
