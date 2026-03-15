@@ -331,6 +331,26 @@ export default function Financeiro({ profile }: Props) {
     }
   }
 
+function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  const allowedKeys = [
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    ".", "+", "-", "*", "/",
+    "Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"
+  ];
+
+  if (!allowedKeys.includes(e.key)) {
+    e.preventDefault();
+    return;
+  }
+
+  if (e.key === "Enter") {
+    e.preventDefault();
+    calcResult();
+    return;
+  }
+}
+
+
   return (
     <div className="ws-page">
       <div
@@ -971,9 +991,7 @@ export default function Financeiro({ profile }: Props) {
               width: 360,
               boxShadow: "0 30px 80px #00000060",
             }}
-            onKeyDown={(e) => {
-              e.preventDefault();
-            }}
+            
           >
             <div
               style={{
@@ -988,26 +1006,26 @@ export default function Financeiro({ profile }: Props) {
             </div>
 
             <input
-              value={calcDisplay}
-              readOnly
-              tabIndex={-1}
-              style={{
-                width: "100%",
-                background: "var(--ws-surface2)",
-                border: "1px solid var(--ws-border2)",
-                borderRadius: 14,
-                padding: "18px 16px",
-                fontFamily: "DM Sans, system-ui, sans-serif",
-                fontWeight: 700,
-                fontSize: "1.8rem",
-                color: "var(--ws-text)",
-                textAlign: "right",
-                marginBottom: 14,
-                boxSizing: "border-box",
-                outline: "none",
-                pointerEvents: "none",
-              }}
-            />
+  value={calcDisplay}
+  onChange={(e) => setCalcDisplay(e.target.value || "0")}
+  onKeyDown={handleCalcKeyDown}
+  style={{
+    width: "100%",
+    background: "var(--ws-surface2)",
+    border: "1px solid var(--ws-border2)",
+    borderRadius: 14,
+    padding: "18px 16px",
+    fontFamily: "DM Sans, system-ui, sans-serif",
+    fontWeight: 700,
+    fontSize: "1.8rem",
+    color: "var(--ws-text)",
+    textAlign: "right",
+    marginBottom: 14,
+    boxSizing: "border-box",
+    outline: "none",
+  }}
+/>
+
 
             <div
               style={{
