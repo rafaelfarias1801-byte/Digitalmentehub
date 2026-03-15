@@ -9,16 +9,16 @@ interface Message {
   content: string;
 }
 
-const MODELS: { id: Model; name: string; desc: string; icon: string; color: string }[] = [
-  { id: "claude",   name: "Claude",     desc: "Anthropic — copy, estratégia, análise", icon: "🤖", color: "#e91e8c" },
-  { id: "chatgpt",  name: "ChatGPT",    desc: "OpenAI — assistente geral e brainstorm", icon: "◎",  color: "#10a37f" },
-  { id: "gemini",   name: "Gemini",     desc: "Google — pesquisa e Google Suite",       icon: "✦",  color: "#4285f4" },
+const MODELS: { id: Model; name: string; desc: string; icon: string; color: string; available: boolean }[] = [
+  { id: "gemini",  name: "Gemini",  desc: "Google — pesquisa e Google Suite",        icon: "✦", color: "#4285f4", available: true  },
+  { id: "claude",  name: "Claude",  desc: "Anthropic — copy, estratégia, análise",   icon: "🤖", color: "#e91e8c", available: false },
+  { id: "chatgpt", name: "ChatGPT", desc: "OpenAI — assistente geral e brainstorm",  icon: "◎", color: "#10a37f", available: false },
 ];
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 export default function IA() {
-  const [model, setModel]       = useState<Model>("claude");
+  const [model, setModel]       = useState<Model>("gemini");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput]       = useState("");
   const [loading, setLoading]   = useState(false);
@@ -75,12 +75,14 @@ export default function IA() {
       {/* Seleção de modelo */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12, marginBottom: 24 }}>
         {MODELS.map(m => (
-          <div key={m.id} onClick={() => setModel(m.id)} style={{
+          <div key={m.id} onClick={() => m.available && setModel(m.id)} style={{
             background: model === m.id ? `${m.color}18` : "var(--ws-surface)",
             border: `1px solid ${model === m.id ? m.color : "var(--ws-border)"}`,
             borderRadius: "var(--ws-radius)", padding: "16px 18px",
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 14,
+            cursor: m.available ? "pointer" : "default",
+            display: "flex", alignItems: "center", gap: 14,
             transition: "all .15s",
+            opacity: m.available ? 1 : 0.5,
           }}>
             <div style={{
               width: 40, height: 40, borderRadius: 10, fontSize: "1.2rem",
@@ -98,7 +100,7 @@ export default function IA() {
               color: model === m.id ? m.color : "var(--ws-text3)",
               border: `1px solid ${model === m.id ? m.color : "var(--ws-border2)"}`,
             }}>
-              {model === m.id ? "ATIVO" : "USAR"}
+              {!m.available ? "EM BREVE" : model === m.id ? "ATIVO" : "USAR"}
             </span>
           </div>
         ))}
@@ -134,6 +136,9 @@ export default function IA() {
             }}>
               <div style={{ fontSize: "2rem" }}>{activeModel.icon}</div>
               <div style={{ fontSize: ".82rem" }}>Inicie uma conversa com {activeModel.name}</div>
+              <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "DM Mono" }}>
+                Digite sua mensagem abaixo
+              </div>
             </div>
           )}
 
@@ -144,9 +149,7 @@ export default function IA() {
               <div style={{
                 maxWidth: "78%", padding: "10px 14px", borderRadius: 12,
                 fontSize: ".86rem", lineHeight: 1.6,
-                background: msg.role === "user"
-                  ? `${activeModel.color}22`
-                  : "var(--ws-surface2)",
+                background: msg.role === "user" ? `${activeModel.color}22` : "var(--ws-surface2)",
                 color: "var(--ws-text)",
                 borderBottomRightRadius: msg.role === "user" ? 2 : 12,
                 borderBottomLeftRadius:  msg.role === "user" ? 12 : 2,
@@ -210,7 +213,6 @@ export default function IA() {
         </div>
       </div>
 
-      {/* CSS da animação dos dots */}
       <style>{`
         @keyframes ws-bounce {
           0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }

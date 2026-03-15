@@ -37,7 +37,7 @@ serve(async (req) => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-haiku-4-5-20251001",
+          model: "claude-3-haiku-20240307",
           max_tokens: 1024,
           system: "Você é um assistente estratégico para a agência Digitalmente HUB. Responda sempre em português brasileiro, de forma direta e útil.",
           messages,
@@ -45,8 +45,7 @@ serve(async (req) => {
       });
 
       const text = await res.text();
-
-      if (!res.ok) throw new Error(`Anthropic error ${res.status}: ${text}`);
+      if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text}`);
 
       const data = JSON.parse(text);
       reply = data?.content?.[0]?.text ?? "Sem resposta.";
@@ -73,7 +72,7 @@ serve(async (req) => {
       });
 
       const text = await res.text();
-      if (!res.ok) throw new Error(`OpenAI error ${res.status}: ${text}`);
+      if (!res.ok) throw new Error(`OpenAI ${res.status}: ${text}`);
 
       const data = JSON.parse(text);
       reply = data?.choices?.[0]?.message?.content ?? "Sem resposta.";
@@ -98,7 +97,7 @@ serve(async (req) => {
       );
 
       const text = await res.text();
-      if (!res.ok) throw new Error(`Gemini error ${res.status}: ${text}`);
+      if (!res.ok) throw new Error(`Gemini ${res.status}: ${text}`);
 
       const data = JSON.parse(text);
       reply = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "Sem resposta.";
