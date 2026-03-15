@@ -186,13 +186,13 @@ export default function TabCalendario({
       )}
 
       <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-    gap: 2,
-    marginBottom: 24,
-  }}
->
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+          gap: 2,
+          marginBottom: 24,
+        }}
+      >
         {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
           <div
             key={day}
@@ -214,20 +214,20 @@ export default function TabCalendario({
 
           return (
             <div
-  key={index}
-  style={{
-    aspectRatio: "1 / 1",
-    minHeight: 150,
-    background: "var(--ws-surface)",
-    borderRadius: 8,
-    border: "1px solid var(--ws-border)",
-    padding: "4px",
-    opacity: day ? 1 : 0,
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden",
-  }}
->
+              key={index}
+              style={{
+                aspectRatio: "1 / 1",
+                minHeight: 150,
+                background: "var(--ws-surface)",
+                borderRadius: 8,
+                border: "1px solid var(--ws-border)",
+                padding: "4px",
+                opacity: day ? 1 : 0,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
               {day && (
                 <>
                   <div
@@ -243,266 +243,149 @@ export default function TabCalendario({
                   </div>
 
                   <div
-  style={{
-    flex: 1,
-    minHeight: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-  }}
->
-  {dayPosts.slice(0, 1).map((post) => {
-    const approval = APPROVAL_STYLES[post.approval_status];
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    {dayPosts.slice(0, 1).map((post) => {
+                      const approval = APPROVAL_STYLES[post.approval_status];
 
-    return (
-      <div
-        key={post.id}
-        onClick={() => setSelected(post)}
-        style={{
-          borderRadius: 6,
-          cursor: "pointer",
-          overflow: "hidden",
-          border: `1px solid ${approval.color}55`,
-          background: "var(--ws-surface2)",
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {post.media_url ? (
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              height: "100%",
-              minHeight: 0,
-              flex: 1,
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-                background: "#000",
-              }}
-            >
-              <MediaThumb
-                url={post.media_url}
-                alt={post.title || post.slug || "Post"}
-                mediaType={post.media_type}
-              />
-            </div>
+                      return (
+                        <div
+                          key={post.id}
+                          onClick={() => setSelected(post)}
+                          style={{
+                            borderRadius: 6,
+                            cursor: "pointer",
+                            overflow: "hidden",
+                            border: `1px solid ${approval.color}55`,
+                            background: "var(--ws-surface2)",
+                            flex: 1,
+                            minHeight: 0,
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          {post.media_url ? (
+                            <div
+                              style={{
+                                position: "relative",
+                                width: "100%",
+                                height: "100%",
+                                minHeight: 0,
+                                flex: 1,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  overflow: "hidden",
+                                  background: "#000",
+                                }}
+                              >
+                                <MediaThumb
+                                  url={post.media_url}
+                                  alt={post.title || post.slug || "Post"}
+                                  mediaType={post.media_type}
+                                />
+                              </div>
 
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "linear-gradient(transparent 45%, #000000b5 100%)",
-                pointerEvents: "none",
-              }}
-            />
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  background: "linear-gradient(transparent 45%, #000000b5 100%)",
+                                  pointerEvents: "none",
+                                }}
+                              />
 
-            <div
-              style={{
-                position: "absolute",
-                bottom: 4,
-                left: 4,
-                right: 4,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: ".58rem",
-                  color: "#fff",
-                  fontFamily: "DM Mono",
-                  lineHeight: 1.2,
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {post.slug || post.title || "Post"}
-              </div>
-            </div>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  bottom: 4,
+                                  left: 4,
+                                  right: 4,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: ".58rem",
+                                    color: "#fff",
+                                    fontFamily: "DM Mono",
+                                    lineHeight: 1.2,
+                                    overflow: "hidden",
+                                    whiteSpace: "nowrap",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {post.slug || post.title || "Post"}
+                                </div>
+                              </div>
 
-            <div
-              style={{
-                position: "absolute",
-                top: 4,
-                right: 4,
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: approval.color,
-                boxShadow: "0 0 0 2px rgba(0,0,0,.35)",
-              }}
-            />
-          </div>
-        ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "flex-end",
-              padding: "6px",
-              background: `${approval.color}14`,
-              borderLeft: `3px solid ${approval.color}`,
-            }}
-          >
-            <div
-              style={{
-                fontSize: ".62rem",
-                color: approval.color,
-                fontFamily: "DM Mono",
-                lineHeight: 1.3,
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-                width: "100%",
-              }}
-            >
-              {post.slug || post.title || "Post"}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  })}
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: 4,
+                                  right: 4,
+                                  width: 7,
+                                  height: 7,
+                                  borderRadius: "50%",
+                                  background: approval.color,
+                                  boxShadow: "0 0 0 2px rgba(0,0,0,.35)",
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                flex: 1,
+                                display: "flex",
+                                alignItems: "flex-end",
+                                padding: "6px",
+                                background: `${approval.color}14`,
+                                borderLeft: `3px solid ${approval.color}`,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: ".62rem",
+                                  color: approval.color,
+                                  fontFamily: "DM Mono",
+                                  lineHeight: 1.3,
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                  textOverflow: "ellipsis",
+                                  width: "100%",
+                                }}
+                              >
+                                {post.slug || post.title || "Post"}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
 
-  {dayPosts.length > 1 && (
-    <div
-      style={{
-        fontSize: ".56rem",
-        color: "var(--ws-text3)",
-        fontFamily: "DM Mono",
-        textAlign: "center",
-        paddingTop: 2,
-      }}
-    >
-      +{dayPosts.length - 1} item(ns)
-    </div>
-  )}
-</div>
-                    const approval = APPROVAL_STYLES[post.approval_status];
-
-                    return (
+                    {dayPosts.length > 1 && (
                       <div
-  key={post.id}
-  onClick={() => setSelected(post)}
-  style={{
-    borderRadius: 6,
-    cursor: "pointer",
-    overflow: "hidden",
-    border: `1px solid ${approval.color}55`,
-    background: "var(--ws-surface2)",
-    flex: 1,
-    minHeight: 0,
-    display: "flex",
-    flexDirection: "column",
-  }}
->
-  {post.media_url ? (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        minHeight: 0,
-        flex: 1,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          background: "#000",
-        }}
-      >
-        <MediaThumb
-          url={post.media_url}
-          alt={post.title || post.slug || "Post"}
-          mediaType={post.media_type}
-        />
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(transparent 45%, #000000b5 100%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: 4,
-          left: 4,
-          right: 4,
-        }}
-      >
-        <div
-          style={{
-            fontSize: ".58rem",
-            color: "#fff",
-            fontFamily: "DM Mono",
-            lineHeight: 1.2,
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {post.slug || post.title || "Post"}
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          top: 4,
-          right: 4,
-          width: 7,
-          height: 7,
-          borderRadius: "50%",
-          background: approval.color,
-          boxShadow: "0 0 0 2px rgba(0,0,0,.35)",
-        }}
-      />
-    </div>
-  ) : (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        alignItems: "flex-end",
-        padding: "6px",
-        background: `${approval.color}14`,
-        borderLeft: `3px solid ${approval.color}`,
-      }}
-    >
-      <div
-        style={{
-          fontSize: ".62rem",
-          color: approval.color,
-          fontFamily: "DM Mono",
-          lineHeight: 1.3,
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-          width: "100%",
-        }}
-      >
-        {post.slug || post.title || "Post"}
-      </div>
-    </div>
-  )}
-</div>
-                    );
-                  })}
+                        style={{
+                          fontSize: ".56rem",
+                          color: "var(--ws-text3)",
+                          fontFamily: "DM Mono",
+                          textAlign: "center",
+                          paddingTop: 2,
+                        }}
+                      >
+                        +{dayPosts.length - 1} item(ns)
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           );
