@@ -373,8 +373,8 @@ export default function NoteCardModal({
                     }}
                     style={{
                       flex: 1,
-                      fontFamily: "Syne",
-                      fontWeight: 800,
+                      fontFamily: "inherit",
+                      fontWeight: 600,
                       fontSize: "1.05rem",
                     }}
                   />
@@ -403,8 +403,8 @@ export default function NoteCardModal({
                     setTitleValue(currentCard.title);
                   }}
                   style={{
-                    fontFamily: "Syne",
-                    fontWeight: 800,
+                    fontFamily: "inherit",
+                    fontWeight: 600,
                     fontSize: "1.05rem",
                     color: "var(--ws-text)",
                     cursor: "pointer",
