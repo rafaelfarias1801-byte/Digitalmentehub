@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,7 +45,7 @@
   --chart-3: 330 100% 35%;
   --chart-4: 208 56% 45%;
   --chart-5: 280 60% 38%;
-  --font-sans: Inter, system-ui, sans-serif;
+  --font-sans: Poppins, Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: .5rem;

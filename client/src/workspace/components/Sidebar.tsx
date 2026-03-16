@@ -97,7 +97,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
             position: "fixed",
             top: 12,
             left: 12,
-            zIndex: 300,
+            zIndex: 50,
             background: "var(--ws-surface)",
             border: "1px solid var(--ws-border2)",
             borderRadius: 8,

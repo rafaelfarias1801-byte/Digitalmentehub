@@ -786,9 +786,10 @@ select.ws-field {
 .ws-fin-value {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-weight: 800;
-  font-size: 2rem;
+  font-size: clamp(0.8rem, 3.5vw, 1.4rem);
   letter-spacing: -1px;
   line-height: 1.1;
+  white-space: nowrap;
 }
 .ws-green { color: var(--ws-green); }
 .ws-red   { color: var(--ws-red); }
