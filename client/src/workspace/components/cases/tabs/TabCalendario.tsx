@@ -13,7 +13,6 @@ interface TabCalendarioProps {
   profile: Profile;
 }
 
-// Cores por tipo — estilo Google Agenda
 const TYPE_CFG: Record<string, { bg: string; text: string; border: string }> = {
   reels:    { bg: "#e91e8c22", text: "#e91e8c",  border: "#e91e8c" },
   carousel: { bg: "#ffd60022", text: "#c59600",  border: "#ffd600" },
@@ -28,11 +27,11 @@ function typeLabel(type: string) {
 const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export default function TabCalendario({ caseData, profile }: TabCalendarioProps) {
-  const [posts, setPosts]     = useState<Post[]>([]);
-  const [month, setMonth]     = useState(new Date().getMonth());
-  const [year, setYear]       = useState(new Date().getFullYear());
+  const [posts, setPosts]       = useState<Post[]>([]);
+  const [month, setMonth]       = useState(new Date().getMonth());
+  const [year, setYear]         = useState(new Date().getFullYear());
   const [selected, setSelected] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]   = useState(true);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -90,9 +89,12 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button onClick={prevMonth} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", width: 32, height: 32, fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
-          <span style={{ fontFamily: "Syne", fontWeight: 800, fontSize: isMobile ? "1rem" : "1.25rem", color: "var(--ws-text)", minWidth: isMobile ? 120 : 170, textAlign: "center" }}>
+
+          {/* FONTE SYNE para o mês/ano */}
+          <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: isMobile ? "1.1rem" : "1.4rem", color: "var(--ws-text)", letterSpacing: "-0.03em", minWidth: isMobile ? 120 : 170, textAlign: "center" }}>
             {MONTHS_FULL[month]} {year}
           </span>
+
           <button onClick={nextMonth} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", width: 32, height: 32, fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
           <button onClick={() => { setMonth(new Date().getMonth()); setYear(new Date().getFullYear()); }}
             style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "0 10px", height: 32, fontSize: ".68rem", fontFamily: "DM Mono" }}>
@@ -146,7 +148,6 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
               }}>
                 {day && (
                   <>
-                    {/* Número */}
                     <div style={{
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
                       width: 22, height: 22, borderRadius: "50%",
@@ -158,7 +159,6 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
                       marginBottom: 2,
                     }}>{day}</div>
 
-                    {/* Posts */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {dayPosts.slice(0, maxShow).map(post => {
                         const cfg = TYPE_CFG[post.media_type] ?? TYPE_CFG.feed;

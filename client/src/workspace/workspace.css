@@ -1284,8 +1284,6 @@ select.ws-field {
   .ws-main .ws-page {
     padding-top: 62px;
   }
-
-  /* Sidebar vira drawer lateral (já tratado no Sidebar.tsx) */
   .ws-sidebar {
     width: 280px !important;
     min-width: 280px !important;
@@ -1418,8 +1416,15 @@ select.ws-field {
     grid-template-columns: 1fr;
   }
 
+  /* Financeiro — valor menor para caber em 2 colunas */
   .ws-fin-value {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+    word-break: break-all;
+  }
+
+  .ws-fin-label {
+    font-size: .55rem;
   }
 
   /* Cards */

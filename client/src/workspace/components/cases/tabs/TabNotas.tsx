@@ -4,6 +4,7 @@ import { supabase } from "../../../../lib/supabaseClient";
 import NoteCardModal from "../modals/NoteCardModal";
 import Loader from "../shared/Loader";
 import type { Case, NoteCard, NoteColumn } from "../types";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface TabNotasProps {
   caseData: Case;
@@ -26,6 +27,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
   const dragCard = useRef<string | null>(null);
   const dragOverCol = useRef<string | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     let mounted = true;
@@ -192,7 +194,9 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
       style={{
         display: "flex",
         gap: 16,
-        overflowX: "auto",
+        overflowX: isMobile ? "visible" : "auto",
+        overflowY: isMobile ? "visible" : "visible",
+        flexDirection: isMobile ? "column" : "row",
         paddingBottom: 16,
         alignItems: "flex-start",
       }}
@@ -212,7 +216,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
               border: `1px solid ${isDragTarget ? caseData.color : "var(--ws-border)"}`,
               borderRadius: 12,
               padding: "12px 12px 8px",
-              width: 260,
+              width: isMobile ? "100%" : 260,
               flexShrink: 0,
               transition: "border-color .15s, background .15s",
             }}

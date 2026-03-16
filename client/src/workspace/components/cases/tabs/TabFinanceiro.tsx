@@ -178,14 +178,14 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
         <div
           style={{
             ...summaryCardBaseStyle,
-            background: "linear-gradient(180deg, rgba(0,230,118,0.09), rgba(0,230,118,0.04))",
-            border: "1px solid rgba(0,230,118,0.18)",
+            background: "linear-gradient(180deg, rgba(0,230,118,0.14), rgba(0,230,118,0.07))",
+            border: "1px solid rgba(0,230,118,0.30)",
           }}
         >
-          <div style={{ ...sectionLabelStyle, color: "#31d98b" }}>Recebido</div>
+          <div style={{ ...sectionLabelStyle, color: "#00b864" }}>Recebido</div>
 
           <div>
-            <div style={{ ...summaryValueStyle, color: "#e8fff1" }}>
+            <div style={{ ...summaryValueStyle, color: "#009e54" }}>
               {fmt(totalPaid)}
             </div>
             <div style={summaryHintStyle}>
@@ -197,14 +197,14 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
         <div
           style={{
             ...summaryCardBaseStyle,
-            background: "linear-gradient(180deg, rgba(255,214,0,0.08), rgba(255,214,0,0.035))",
-            border: "1px solid rgba(255,214,0,0.16)",
+            background: "linear-gradient(180deg, rgba(255,214,0,0.14), rgba(255,214,0,0.06))",
+            border: "1px solid rgba(255,214,0,0.30)",
           }}
         >
-          <div style={{ ...sectionLabelStyle, color: "#ffd84d" }}>A vencer</div>
+          <div style={{ ...sectionLabelStyle, color: "#a07800" }}>A vencer</div>
 
           <div>
-            <div style={{ ...summaryValueStyle, color: "#fff3bf" }}>
+            <div style={{ ...summaryValueStyle, color: "#b08800" }}>
               {fmt(totalPending)}
             </div>
             <div style={summaryHintStyle}>

@@ -3,6 +3,7 @@ import { supabase } from "../../../../lib/supabaseClient";
 import Empty from "../shared/Empty";
 import Loader from "../shared/Loader";
 import type { Case, CaseDocument } from "../types";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface TabDocumentosProps {
   caseData: Case;
@@ -17,6 +18,7 @@ export default function TabDocumentos({
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   const docType = type === "contrato" ? "contrato" : "outro";
 
@@ -139,68 +141,56 @@ export default function TabDocumentos({
                 borderRadius: 10,
                 padding: "14px 18px",
                 display: "flex",
-                alignItems: "center",
-                gap: 14,
+                alignItems: isMobile ? "flex-start" : "center",
+                gap: 12,
+                flexDirection: isMobile ? "column" : "row",
               }}
             >
-              <div style={{ fontSize: "1.8rem" }}>{getIcon(doc.name)}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
+                <div style={{ fontSize: "1.8rem", flexShrink: 0 }}>{getIcon(doc.name)}</div>
 
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: ".87rem",
-                    color: "var(--ws-text)",
-                  }}
-                >
-                  {doc.name}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: ".87rem", color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                    {doc.name}
+                  </div>
+                  <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "DM Mono", marginTop: 2 }}>
+                    {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    fontSize: ".72rem",
-                    color: "var(--ws-text3)",
-                    fontFamily: "DM Mono",
-                    marginTop: 2,
-                  }}
-                >
-                  {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </div>
+                {!isMobile && (
+                  <button onClick={() => void removeDocument(doc.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
+                )}
               </div>
 
-              <a
-                href={doc.file_url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  background: "var(--ws-surface2)",
-                  border: "1px solid var(--ws-border2)",
-                  borderRadius: 6,
-                  color: "var(--ws-text2)",
-                  padding: "5px 12px",
-                  fontSize: ".75rem",
-                  textDecoration: "none",
-                }}
-              >
-                Abrir
-              </a>
-
-              <button
-                onClick={() => void removeDocument(doc.id)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--ws-text3)",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                ×
-              </button>
+              {/* Ações — linha separada no mobile para garantir visibilidade */}
+              <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }}>
+                <a
+                  href={doc.file_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    flex: isMobile ? 1 : undefined,
+                    background: caseData.color,
+                    border: "none",
+                    borderRadius: 8,
+                    color: "#fff",
+                    padding: "10px 20px",
+                    fontSize: ".8rem",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    textAlign: "center",
+                    display: "block",
+                  }}
+                >
+                  Abrir
+                </a>
+                {isMobile && (
+                  <button onClick={() => void removeDocument(doc.id)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
+                    Excluir
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

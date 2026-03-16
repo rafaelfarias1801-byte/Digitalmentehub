@@ -496,8 +496,10 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         style={{
           display: "grid",
           gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, minmax(220px, 1fr))",
-          gap: 14,
+          gap: isMobile ? 10 : 14,
           marginBottom: 16,
+          width: "100%",
+          boxSizing: "border-box",
         }}
       >
         <div className="ws-fin-card" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
