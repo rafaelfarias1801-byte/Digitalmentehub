@@ -139,7 +139,7 @@ export default function TaskTable({
                 key={label}
                 style={{
                   padding: "13px 14px",
-                  fontFamily: "DM Mono, monospace",
+                  fontFamily: "Poppins, monospace",
                   fontSize: ".58rem",
                   letterSpacing: "1.4px",
                   textTransform: "uppercase",

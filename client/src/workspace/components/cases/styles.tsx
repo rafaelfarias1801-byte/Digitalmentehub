@@ -81,7 +81,7 @@ export const modalTitleStyle: CSSProperties = {
 };
 
 export const labelStyle: CSSProperties = {
-  fontFamily: "DM Mono",
+  fontFamily: "Poppins",
   fontSize: ".58rem",
   letterSpacing: "1.5px",
   textTransform: "uppercase",

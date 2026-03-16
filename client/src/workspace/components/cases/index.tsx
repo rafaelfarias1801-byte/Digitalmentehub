@@ -301,7 +301,7 @@ export default function Cases({ profile }: CasesProps) {
             <div style={{ fontSize: "1.6rem" }}>+</div>
             <div
               style={{
-                fontFamily: "DM Mono",
+                fontFamily: "Poppins",
                 fontSize: ".62rem",
                 letterSpacing: "1px",
               }}

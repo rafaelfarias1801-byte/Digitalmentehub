@@ -210,14 +210,14 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
             <button onClick={() => setSidebarVisible(false)} style={{
               flex: 1, padding: "11px 0", background: "none", border: "none",
               color: !sidebarVisible ? ACCENT : "var(--ws-text3)",
-              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
               borderBottom: !sidebarVisible ? `2px solid ${ACCENT}` : "2px solid transparent",
               cursor: "pointer",
             }}>CONTEÚDO</button>
             <button onClick={() => setSidebarVisible(true)} style={{
               flex: 1, padding: "11px 0", background: "none", border: "none",
               color: sidebarVisible ? ACCENT : "var(--ws-text3)",
-              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
               borderBottom: sidebarVisible ? `2px solid ${ACCENT}` : "2px solid transparent",
               cursor: "pointer",
             }}>AÇÕES</button>
@@ -384,7 +384,7 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
                   <div>
                     <div style={{ fontSize: ".78rem", color: "var(--ws-text2)", marginBottom: 3 }}>
                       <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
-                      <span style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".65rem" }}>
+                      <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
                         {new Date(comment.created_at).toLocaleString("pt-BR", {
                           day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
                         })}

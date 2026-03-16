@@ -101,7 +101,7 @@ export default function Dashboard({ profile }: Props) {
 
   if (loading) return (
     <div className="ws-page">
-      <div style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".8rem", marginTop: 40 }}>Carregando...</div>
+      <div style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".8rem", marginTop: 40 }}>Carregando...</div>
     </div>
   );
 
@@ -183,7 +183,7 @@ export default function Dashboard({ profile }: Props) {
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: ".84rem", fontWeight: 600, color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{a.title}</div>
-                    <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "DM Mono", marginTop: 2 }}>{a.caseName} · {a.date}</div>
+                    <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>{a.caseName} · {a.date}</div>
                   </div>
                   <span style={{ fontSize: ".75rem", fontWeight: 700, color: APPROVAL_COLOR[a.status], flexShrink: 0 }}>
                     {APPROVAL_ICON[a.status]}
@@ -212,13 +212,13 @@ export default function Dashboard({ profile }: Props) {
                 }}>
                   <div style={{ flexShrink: 0, textAlign: "center", minWidth: 36 }}>
                     <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.2rem", color: isToday ? "var(--ws-accent)" : "var(--ws-text)", lineHeight: 1 }}>{d.getDate()}</div>
-                    <div style={{ fontFamily: "DM Mono", fontSize: ".5rem", letterSpacing: "1px", color: "var(--ws-text3)", textTransform: "uppercase" }}>
+                    <div style={{ fontFamily: "Poppins", fontSize: ".5rem", letterSpacing: "1px", color: "var(--ws-text3)", textTransform: "uppercase" }}>
                       {d.toLocaleDateString("pt-BR", { weekday: "short" })}
                     </div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: ".85rem", fontWeight: 600, color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{ev.title}</div>
-                    {isToday && <div style={{ fontSize: ".62rem", fontFamily: "DM Mono", color: "var(--ws-accent)", marginTop: 2 }}>HOJE</div>}
+                    {isToday && <div style={{ fontSize: ".62rem", fontFamily: "Poppins", color: "var(--ws-accent)", marginTop: 2 }}>HOJE</div>}
                   </div>
                 </div>
               );

@@ -28,7 +28,7 @@ const EMPTY_FORM: PaymentFormState = {
 };
 
 const sectionLabelStyle: React.CSSProperties = {
-  fontFamily: "DM Mono, monospace",
+  fontFamily: "Poppins, monospace",
   fontSize: ".68rem",
   letterSpacing: "1.4px",
   textTransform: "uppercase",

@@ -81,7 +81,7 @@ export default function Pomodoro() {
             <p>🍅 Trabalhe focado por <strong style={{ color: "var(--ws-accent)" }}>25 minutos</strong></p>
             <p style={{ marginTop: 8 }}>⏸ Faça uma pausa de <strong style={{ color: "var(--ws-text)" }}>5 minutos</strong></p>
             <p style={{ marginTop: 8 }}>🔄 A cada 4 sessões, pausa longa de <strong style={{ color: "var(--ws-text)" }}>15 minutos</strong></p>
-            <div style={{ marginTop: 20, padding: "14px", background: "var(--ws-surface2)", borderRadius: "var(--ws-radius-sm)", fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "DM Mono" }}>
+            <div style={{ marginTop: 20, padding: "14px", background: "var(--ws-surface2)", borderRadius: "var(--ws-radius-sm)", fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
               SESSÕES COMPLETAS: {sessions.filter(Boolean).length}/4
             </div>
           </div>

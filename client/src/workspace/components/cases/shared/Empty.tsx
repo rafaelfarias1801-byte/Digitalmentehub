@@ -8,7 +8,7 @@ export default function Empty({ label }: EmptyProps) {
       style={{
         textAlign: "center",
         color: "var(--ws-text3)",
-        fontFamily: "DM Mono",
+        fontFamily: "Poppins",
         fontSize: ".75rem",
         padding: "48px 0",
       }}

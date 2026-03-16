@@ -3,7 +3,7 @@
     <div
       style={{
         color: "var(--ws-text3)",
-        fontFamily: "DM Mono",
+        fontFamily: "Poppins",
         fontSize: ".8rem",
       }}
     >

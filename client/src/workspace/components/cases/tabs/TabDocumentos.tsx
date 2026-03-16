@@ -153,7 +153,7 @@ export default function TabDocumentos({
                   <div style={{ fontWeight: 600, fontSize: ".87rem", color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                     {doc.name}
                   </div>
-                  <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "DM Mono", marginTop: 2 }}>
+                  <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
                     {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
                   </div>
                 </div>

@@ -6,7 +6,7 @@
    Hierarquia:
    - Poppins: interface, leitura, números e botões
    - Poppins: branding e títulos principais
-   - DM Mono: labels, metas e microinfos
+   - Poppins: labels, metas e microinfos
 ════════════════════════════════════════ */
 
 .ws-root,
@@ -151,7 +151,7 @@
 }
 .ws-logo .ws-dot { color: var(--ws-accent); }
 .ws-logo-sub {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .62rem;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -160,7 +160,7 @@
 }
 .ws-label {
   display: block;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .62rem;
   letter-spacing: 1.8px;
   text-transform: uppercase;
@@ -212,7 +212,7 @@
 }
 .ws-login-error {
   color: var(--ws-red);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .72rem;
   margin-bottom: 12px;
 }
@@ -242,7 +242,7 @@
 }
 .ws-brand .ws-dot { color: var(--ws-accent); }
 .ws-brand-sub {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .55rem;
   letter-spacing: 3px;
   color: var(--ws-text3);
@@ -279,7 +279,7 @@
   color: var(--ws-text);
 }
 .ws-user-role {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .56rem;
   color: var(--ws-text3);
   letter-spacing: 1px;
@@ -287,7 +287,7 @@
 .ws-nav { padding: 16px 0; flex: 1; }
 .ws-nav-section {
   padding: 4px 20px 2px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .54rem;
   letter-spacing: 2.5px;
   text-transform: uppercase;
@@ -342,7 +342,7 @@
   font-size: .77rem;
   color: var(--ws-text3);
   cursor: pointer;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   letter-spacing: 1px;
   transition: color .15s;
 }
@@ -374,7 +374,7 @@
 
 
 .ws-page-sub {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .74rem;
   color: var(--ws-text3);
   margin-top: 10px;
@@ -404,7 +404,7 @@
   justify-content: space-between;
 }
 .ws-badge {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .58rem;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -475,7 +475,7 @@
 select.ws-field {
   cursor: pointer;
   color: var(--ws-text2);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .73rem;
 }
 
@@ -487,7 +487,7 @@ select.ws-field {
   flex-wrap: wrap;
 }
 .ws-filter {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .6rem;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -563,7 +563,7 @@ select.ws-field {
   gap: 8px;
 }
 .ws-tag {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .57rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -623,7 +623,7 @@ select.ws-field {
 }
 
 .ws-stat-label {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .66rem;
   letter-spacing: 1.8px;
   text-transform: uppercase;
@@ -668,7 +668,7 @@ select.ws-field {
 }
 
 .ws-agenda-date {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .66rem;
   color: var(--ws-accent);
   flex-shrink: 0;
@@ -720,7 +720,7 @@ select.ws-field {
   gap: 5px;
 }
 .ws-cal-hdr {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .57rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -776,7 +776,7 @@ select.ws-field {
   padding: 20px 24px;
 }
 .ws-fin-label {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .58rem;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -801,7 +801,7 @@ select.ws-field {
   font-size: .84rem;
 }
 .ws-table th {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .57rem;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -821,7 +821,7 @@ select.ws-field {
 }
 .ws-status {
   display: inline-block;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .55rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -876,7 +876,7 @@ select.ws-field {
 }
 .ws-case-status {
   display: inline-block;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .55rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -913,7 +913,7 @@ select.ws-field {
   min-height: 110px;
 }
 .ws-note-date {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .57rem;
   color: var(--ws-text3);
   margin-top: 10px;
@@ -986,7 +986,7 @@ select.ws-field {
 .ws-ia-status {
   margin-left: auto;
   flex-shrink: 0;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .57rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -1036,7 +1036,7 @@ select.ws-field {
   justify-content: center;
 }
 .ws-pomo-tab {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: .6rem;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -1154,7 +1154,7 @@ select.ws-field {
 
 .ws-case-finance .ws-fin-label,
 .ws-fin-card .ws-fin-label {
-  font-family: 'DM Mono', monospace !important;
+  font-family: 'Poppins', monospace !important;
   font-size: .66rem !important;
   letter-spacing: 1.6px !important;
   color: rgba(244,246,255,0.62) !important;

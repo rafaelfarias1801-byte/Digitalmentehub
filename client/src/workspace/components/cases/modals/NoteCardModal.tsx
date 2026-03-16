@@ -342,14 +342,14 @@ export default function NoteCardModal({
             <button onClick={() => setSidebarVisible(false)} style={{
               flex: 1, padding: "11px 0", background: "none", border: "none",
               color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
-              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
               borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
               cursor: "pointer",
             }}>CONTEÚDO</button>
             <button onClick={() => setSidebarVisible(true)} style={{
               flex: 1, padding: "11px 0", background: "none", border: "none",
               color: sidebarVisible ? caseData.color : "var(--ws-text3)",
-              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
               borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
               cursor: "pointer",
             }}>AÇÕES</button>
@@ -683,7 +683,7 @@ export default function NoteCardModal({
                     <span
                       style={{
                         color: "var(--ws-text3)",
-                        fontFamily: "DM Mono",
+                        fontFamily: "Poppins",
                         fontSize: ".65rem",
                       }}
                     >

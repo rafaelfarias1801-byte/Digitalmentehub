@@ -294,7 +294,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                       {post.slug || post.title || "Post"}
                       {extraCount > 0 && (
                         <span style={{
-                          marginLeft: 8, fontSize: ".62rem", fontFamily: "DM Mono",
+                          marginLeft: 8, fontSize: ".62rem", fontFamily: "Poppins",
                           background: "var(--ws-surface2)", color: "var(--ws-text3)",
                           padding: "1px 6px", borderRadius: 4,
                         }}>🎠 {extraCount + 1} slides</span>
@@ -303,7 +303,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                     {post.title && post.slug && (
                       <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 2 }}>{post.title}</div>
                     )}
-                    <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "DM Mono" }}>
+                    <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "Poppins" }}>
                       {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "Sem data"}
                       {" · "}
                       {post.media_type === "feed" ? "Feed" : post.media_type === "stories" ? "Stories" : post.media_type === "reels" ? "Reels" : "Carrossel"}
@@ -357,7 +357,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
             <label className="ws-label">
               Mídia
               {mediaUrls.length > 0 && (
-                <span style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".57rem", marginLeft: 8 }}>
+                <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".57rem", marginLeft: 8 }}>
                   {mediaUrls.length} arquivo{mediaUrls.length > 1 ? "s" : ""} · arraste para reordenar · ★ define a capa
                 </span>
               )}
@@ -383,7 +383,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                     <div style={{
                       position: "absolute", top: 3, left: 3, width: 16, height: 16, borderRadius: "50%",
                       background: "rgba(0,0,0,.65)", color: "#fff", fontSize: ".56rem",
-                      fontFamily: "DM Mono", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700,
+                      fontFamily: "Poppins", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700,
                     }}>{i + 1}</div>
                     {/* Estrela: definir capa */}
                     {i !== 0 && (
@@ -398,7 +398,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                       <div style={{
                         position: "absolute", bottom: 0, left: 0, right: 0,
                         background: `${caseData.color}dd`, color: "#fff",
-                        fontSize: ".5rem", fontFamily: "DM Mono", letterSpacing: "1px", textAlign: "center", padding: "2px 0",
+                        fontSize: ".5rem", fontFamily: "Poppins", letterSpacing: "1px", textAlign: "center", padding: "2px 0",
                       }}>CAPA</div>
                     )}
                     {/* Remover */}
@@ -432,14 +432,14 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                 <div style={{ color: "var(--ws-text3)", fontSize: ".8rem" }}>
                   {uploading ? uploadProgress : "Clique para enviar foto ou vídeo"}
                 </div>
-                <div style={{ color: "var(--ws-text3)", fontSize: ".65rem", fontFamily: "DM Mono" }}>
+                <div style={{ color: "var(--ws-text3)", fontSize: ".65rem", fontFamily: "Poppins" }}>
                   Selecione um ou mais arquivos de uma vez
                 </div>
               </div>
             )}
 
             {uploading && (
-              <div style={{ color: "var(--ws-text3)", fontSize: ".72rem", marginBottom: 8, fontFamily: "DM Mono" }}>
+              <div style={{ color: "var(--ws-text3)", fontSize: ".72rem", marginBottom: 8, fontFamily: "Poppins" }}>
                 ⏳ {uploadProgress}
               </div>
             )}

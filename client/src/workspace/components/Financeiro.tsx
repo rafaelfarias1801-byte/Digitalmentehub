@@ -394,7 +394,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         <div>
           <div
             style={{
-              fontFamily: "DM Mono, monospace",
+              fontFamily: "Poppins, monospace",
               fontSize: ".58rem",
               letterSpacing: "1.4px",
               textTransform: "uppercase",
@@ -434,7 +434,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
           <div>
             <div
               style={{
-                fontFamily: "DM Mono, monospace",
+                fontFamily: "Poppins, monospace",
                 fontSize: ".58rem",
                 letterSpacing: "1.4px",
                 textTransform: "uppercase",
@@ -451,7 +451,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
           <div>
             <div
               style={{
-                fontFamily: "DM Mono, monospace",
+                fontFamily: "Poppins, monospace",
                 fontSize: ".58rem",
                 letterSpacing: "1.4px",
                 textTransform: "uppercase",
@@ -468,7 +468,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
           <div>
             <div
               style={{
-                fontFamily: "DM Mono, monospace",
+                fontFamily: "Poppins, monospace",
                 fontSize: ".58rem",
                 letterSpacing: "1.4px",
                 textTransform: "uppercase",
@@ -603,7 +603,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         }}
       >
         {loading ? (
-          <div style={{ padding: 24, color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".8rem" }}>
+          <div style={{ padding: 24, color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".8rem" }}>
             Carregando...
           </div>
         ) : (
@@ -657,7 +657,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
                       </span>
                     </td>
 
-                    <td style={{ fontFamily: "DM Mono", fontSize: ".8rem" }}>
+                    <td style={{ fontFamily: "Poppins", fontSize: ".8rem" }}>
                       {new Date(e.due_date + "T12:00:00").toLocaleDateString("pt-BR")}
                     </td>
 
@@ -779,7 +779,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
             >
               <div
                 style={{
-                  fontFamily: "DM Mono, monospace",
+                  fontFamily: "Poppins, monospace",
                   fontSize: ".62rem",
                   letterSpacing: "1.4px",
                   textTransform: "uppercase",

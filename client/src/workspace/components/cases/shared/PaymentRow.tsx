@@ -56,7 +56,7 @@ export default function PaymentRow({
           style={{
             fontSize: ".72rem",
             color: "var(--ws-text3)",
-            fontFamily: "DM Mono",
+            fontFamily: "Poppins",
             marginTop: 2,
           }}
         >

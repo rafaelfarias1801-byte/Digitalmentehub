@@ -182,7 +182,7 @@ export default function IA({ profile }: Props) {
               <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", marginTop: 1 }}>{m.desc}</div>
             </div>
             <span style={{
-              fontSize: ".58rem", fontFamily: "DM Mono", letterSpacing: "1px", padding: "2px 7px", borderRadius: 6,
+              fontSize: ".58rem", fontFamily: "Poppins", letterSpacing: "1px", padding: "2px 7px", borderRadius: 6,
               background: model === m.id ? `${m.color}22` : "var(--ws-surface2)",
               color: model === m.id ? m.color : "var(--ws-text3)",
               border: `1px solid ${model === m.id ? m.color : "var(--ws-border2)"}`,
@@ -199,7 +199,7 @@ export default function IA({ profile }: Props) {
         {/* Sidebar de conversas */}
         <div className="ws-card" style={{ padding: "12px 0" }}>
           <div style={{ padding: "0 14px 10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontFamily: "DM Mono", fontSize: ".6rem", letterSpacing: "1px", color: "var(--ws-text3)" }}>
+            <div style={{ fontFamily: "Poppins", fontSize: ".6rem", letterSpacing: "1px", color: "var(--ws-text3)" }}>
               CONVERSAS
             </div>
             <button onClick={newConversation} style={{
@@ -229,7 +229,7 @@ export default function IA({ profile }: Props) {
                     }}>
                       {conv.title || "Conversa"}
                     </div>
-                    <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "DM Mono", marginTop: 2 }}>
+                    <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
                       {fmtDate(conv.updated_at)}
                     </div>
                   </div>
@@ -262,7 +262,7 @@ export default function IA({ profile }: Props) {
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--ws-text3)", gap: 8 }}>
                 <div style={{ fontSize: "2rem" }}>{activeModel.icon}</div>
                 <div style={{ fontSize: ".82rem" }}>Inicie uma conversa com {activeModel.name}</div>
-                <div style={{ fontSize: ".7rem", fontFamily: "DM Mono" }}>Digite sua mensagem abaixo</div>
+                <div style={{ fontSize: ".7rem", fontFamily: "Poppins" }}>Digite sua mensagem abaixo</div>
               </div>
             )}
 

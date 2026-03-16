@@ -97,7 +97,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
 
           <button onClick={nextMonth} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", width: 32, height: 32, fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
           <button onClick={() => { setMonth(new Date().getMonth()); setYear(new Date().getFullYear()); }}
-            style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "0 10px", height: 32, fontSize: ".68rem", fontFamily: "DM Mono" }}>
+            style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "0 10px", height: 32, fontSize: ".68rem", fontFamily: "Poppins" }}>
             Hoje
           </button>
         </div>
@@ -112,7 +112,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
       {/* ── Legenda ── */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
         {Object.entries(TYPE_CFG).map(([key, cfg]) => (
-          <div key={key} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: ".65rem", fontFamily: "DM Mono", color: cfg.text }}>
+          <div key={key} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: ".65rem", fontFamily: "Poppins", color: cfg.text }}>
             <div style={{ width: 8, height: 8, borderRadius: 2, background: cfg.border }} />
             {typeLabel(key)}
           </div>
@@ -124,7 +124,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
         {/* Cabeçalho dias */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "var(--ws-surface)", borderBottom: "1px solid var(--ws-border)" }}>
           {DAYS.map(d => (
-            <div key={d} style={{ textAlign: "center", padding: "8px 2px", fontFamily: "DM Mono", fontSize: ".58rem", letterSpacing: "1px", color: "var(--ws-text3)", textTransform: "uppercase" }}>{d}</div>
+            <div key={d} style={{ textAlign: "center", padding: "8px 2px", fontFamily: "Poppins", fontSize: ".58rem", letterSpacing: "1px", color: "var(--ws-text3)", textTransform: "uppercase" }}>{d}</div>
           ))}
         </div>
 
@@ -169,7 +169,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
                             background: cfg.bg, borderLeft: `2px solid ${cfg.border}`,
                             border: "none", borderRadius: 3, padding: isMobile ? "1px 3px" : "2px 5px",
                             cursor: "pointer", fontSize: isMobile ? ".5rem" : ".62rem",
-                            color: cfg.text, fontFamily: "DM Mono", lineHeight: 1.4,
+                            color: cfg.text, fontFamily: "Poppins", lineHeight: 1.4,
                             overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
                           }}>
                             {isMobile ? label.slice(0, 10) : label}
@@ -177,7 +177,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
                         );
                       })}
                       {dayPosts.length > maxShow && (
-                        <div style={{ fontSize: ".52rem", color: "var(--ws-text3)", fontFamily: "DM Mono", paddingLeft: 3 }}>
+                        <div style={{ fontSize: ".52rem", color: "var(--ws-text3)", fontFamily: "Poppins", paddingLeft: 3 }}>
                           +{dayPosts.length - maxShow}
                         </div>
                       )}

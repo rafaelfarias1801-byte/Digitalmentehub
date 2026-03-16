@@ -157,7 +157,7 @@ export default function Agenda({ profile }: Props) {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: ".87rem", fontWeight: 600, color: "var(--ws-text)", marginBottom: 4 }}>{ev.title}</div>
                     <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "DM Mono", fontSize: ".55rem", letterSpacing: "1px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: TYPE_COLORS[ev.type] + "22", color: TYPE_COLORS[ev.type] }}>{TYPE_LABELS[ev.type]}</span>
+                      <span style={{ fontFamily: "Poppins", fontSize: ".55rem", letterSpacing: "1px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: TYPE_COLORS[ev.type] + "22", color: TYPE_COLORS[ev.type] }}>{TYPE_LABELS[ev.type]}</span>
                       {ev.client && ev.client !== "—" && <span style={{ fontSize: ".72rem", color: "var(--ws-text3)" }}>{ev.client}</span>}
                     </div>
                     {ev.note && <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 6 }}>{ev.note}</div>}
@@ -181,7 +181,7 @@ export default function Agenda({ profile }: Props) {
             <div style={{ width: 3, height: 32, borderRadius: 2, background: TYPE_COLORS[ev.type], flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: ".82rem", color: "var(--ws-text)" }}>{ev.title}</div>
-              <div style={{ fontFamily: "DM Mono", fontSize: ".58rem", color: "var(--ws-accent)", marginTop: 2 }}>
+              <div style={{ fontFamily: "Poppins", fontSize: ".58rem", color: "var(--ws-accent)", marginTop: 2 }}>
                 {new Date(ev.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).toUpperCase()}
               </div>
             </div>

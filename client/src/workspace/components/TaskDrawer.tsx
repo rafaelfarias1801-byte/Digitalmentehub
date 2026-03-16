@@ -33,7 +33,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontFamily: "DM Mono, monospace",
+        fontFamily: "Poppins, monospace",
         fontSize: ".58rem",
         letterSpacing: "1.4px",
         textTransform: "uppercase",
@@ -108,7 +108,7 @@ export default function TaskDrawer({
         >
           <div
             style={{
-              fontFamily: "DM Mono, monospace",
+              fontFamily: "Poppins, monospace",
               fontSize: ".62rem",
               letterSpacing: "1.4px",
               textTransform: "uppercase",

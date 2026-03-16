@@ -213,7 +213,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
               cursor: "pointer",
               transition: "all .15s",
               color: "var(--ws-text2)",
-              fontFamily: "DM Mono, monospace",
+              fontFamily: "Poppins, monospace",
               fontSize: ".62rem",
               letterSpacing: "1px",
               textTransform: "uppercase",

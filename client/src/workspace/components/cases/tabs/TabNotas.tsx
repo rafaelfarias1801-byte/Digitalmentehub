@@ -332,7 +332,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                         <span
                           style={{
                             fontSize: ".65rem",
-                            fontFamily: "DM Mono",
+                            fontFamily: "Poppins",
                             padding: "2px 6px",
                             borderRadius: 4,
                             background: "var(--ws-surface3)",
@@ -351,7 +351,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                         <span
                           style={{
                             fontSize: ".65rem",
-                            fontFamily: "DM Mono",
+                            fontFamily: "Poppins",
                             padding: "2px 6px",
                             borderRadius: 4,
                             background: done === total ? "#00e67622" : "var(--ws-surface3)",
@@ -366,7 +366,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                         <span
                           style={{
                             fontSize: ".65rem",
-                            fontFamily: "DM Mono",
+                            fontFamily: "Poppins",
                             padding: "2px 6px",
                             borderRadius: 4,
                             background: "var(--ws-surface3)",

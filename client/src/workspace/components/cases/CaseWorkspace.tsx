@@ -57,7 +57,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px 6px" }}>
             <button onClick={onBack} style={{
               background: "none", border: "none", color: "var(--ws-accent)",
-              cursor: "pointer", fontSize: ".72rem", fontFamily: "DM Mono",
+              cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins",
               letterSpacing: "1px", padding: 0, flexShrink: 0,
             }}>← CASES</button>
 
@@ -78,7 +78,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
                 overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
               }}>{caseData.name}</span>
               <span style={{
-                flexShrink: 0, fontSize: ".52rem", fontFamily: "DM Mono", letterSpacing: "1px",
+                flexShrink: 0, fontSize: ".52rem", fontFamily: "Poppins", letterSpacing: "1px",
                 padding: "1px 6px", borderRadius: 4,
                 color: caseData.status === "ativo" ? "#00e676" : caseData.status === "pausado" ? "#ffd600" : "#aaa",
                 border: `1px solid ${caseData.status === "ativo" ? "#00e676" : caseData.status === "pausado" ? "#ffd600" : "#aaa"}`,
@@ -133,7 +133,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
             color: "var(--ws-text3)", cursor: "pointer", width: 24, height: 24,
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".75rem",
           }}>▶</button>
-          <div style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: ".6rem", fontFamily: "DM Mono", letterSpacing: "1.5px", color: "var(--ws-text3)", marginTop: 8, userSelect: "none" }}>
+          <div style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: ".6rem", fontFamily: "Poppins", letterSpacing: "1.5px", color: "var(--ws-text3)", marginTop: 8, userSelect: "none" }}>
             {caseData.name.slice(0, 10).toUpperCase()}
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px 6px 16px" }}>
           <button onClick={onBack} style={{
             display: "flex", alignItems: "center", gap: 5, background: "none", border: "none",
-            color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "DM Mono", letterSpacing: "1px", padding: 0,
+            color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px", padding: 0,
           }}
             onMouseEnter={e => { e.currentTarget.style.color = "var(--ws-text)"; }}
             onMouseLeave={e => { e.currentTarget.style.color = "var(--ws-text3)"; }}
@@ -211,7 +211,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
             <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.4rem", color: "var(--ws-text)" }}>
               {activeTabData?.icon} {activeTabData?.label}<span style={{ color: caseData.color }}>.</span>
             </div>
-            <div style={{ color: "var(--ws-text3)", fontSize: ".8rem", fontFamily: "DM Mono", marginTop: 2 }}>{caseData.name}</div>
+            <div style={{ color: "var(--ws-text3)", fontSize: ".8rem", fontFamily: "Poppins", marginTop: 2 }}>{caseData.name}</div>
           </div>
           <TabContent />
         </div>

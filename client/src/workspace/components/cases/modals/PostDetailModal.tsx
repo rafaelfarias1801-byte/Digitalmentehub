@@ -126,14 +126,14 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             <button onClick={() => setSidebarVisible(false)} style={{
               flex: 1, padding: "11px 0", background: "none", border: "none",
               color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
-              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
               borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
               cursor: "pointer",
             }}>CONTEÚDO</button>
             <button onClick={() => setSidebarVisible(true)} style={{
               flex: 1, padding: "11px 0", background: "none", border: "none",
               color: sidebarVisible ? caseData.color : "var(--ws-text3)",
-              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
               borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
               cursor: "pointer",
             }}>AÇÕES</button>
@@ -160,7 +160,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {currentPost.title && currentPost.slug && (
                 <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", marginBottom: 4 }}>{currentPost.title}</div>
               )}
-              <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "DM Mono" }}>
+              <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
                 {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : "Sem data"}
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     <div style={{
                       position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
                       background: "rgba(0,0,0,.55)", borderRadius: 20, padding: "3px 10px",
-                      color: "#fff", fontSize: ".65rem", fontFamily: "DM Mono", letterSpacing: "1px",
+                      color: "#fff", fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px",
                     }}>{slideIdx + 1} / {allSlides.length}</div>
                   </>
                 )}
@@ -369,7 +369,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 <div style={{ fontSize: ".8rem", color: "var(--ws-text2)", marginBottom: 3, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <div>
                     <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
-                    <span style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".65rem" }}>
+                    <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
                       {new Date(comment.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                       {comment.edited_at ? " • editado" : ""}
                     </span>

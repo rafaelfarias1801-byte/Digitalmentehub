@@ -118,7 +118,7 @@ export default function Notas({ profile }: Props) {
       <div className="ws-page-sub">Quadros e cartões organizados por listas</div>
 
       {loading ? (
-        <div style={{ color: "var(--ws-text3)", fontFamily: "DM Mono", fontSize: ".8rem" }}>Carregando...</div>
+        <div style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".8rem" }}>Carregando...</div>
       ) : (
         <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, alignItems: "flex-start" }}>
 
@@ -188,17 +188,17 @@ export default function Notas({ profile }: Props) {
                         {/* Badges: data, checklist, comentários */}
                         <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                           {card.due_date && (
-                            <span style={{ fontSize: ".65rem", fontFamily: "DM Mono", padding: "2px 6px", borderRadius: 4, background: "var(--ws-surface3)", color: "#a0a4cc" }}>
+                            <span style={{ fontSize: ".65rem", fontFamily: "Poppins", padding: "2px 6px", borderRadius: 4, background: "var(--ws-surface3)", color: "#a0a4cc" }}>
                               📅 {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                             </span>
                           )}
                           {total > 0 && (
-                            <span style={{ fontSize: ".65rem", fontFamily: "DM Mono", padding: "2px 6px", borderRadius: 4, background: done === total ? "#00e67622" : "var(--ws-surface3)", color: done === total ? "#00e676" : "#a0a4cc" }}>
+                            <span style={{ fontSize: ".65rem", fontFamily: "Poppins", padding: "2px 6px", borderRadius: 4, background: done === total ? "#00e67622" : "var(--ws-surface3)", color: done === total ? "#00e676" : "#a0a4cc" }}>
                               ✓ {done}/{total}
                             </span>
                           )}
                           {(card.comments || []).length > 0 && (
-                            <span style={{ fontSize: ".65rem", fontFamily: "DM Mono", padding: "2px 6px", borderRadius: 4, background: "var(--ws-surface3)", color: "#a0a4cc" }}>
+                            <span style={{ fontSize: ".65rem", fontFamily: "Poppins", padding: "2px 6px", borderRadius: 4, background: "var(--ws-surface3)", color: "#a0a4cc" }}>
                               💬 {(card.comments || []).length}
                             </span>
                           )}
