@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap');
 
 /* client/src/workspace/workspace.css */
 /* ════════════════════════════════════════
@@ -13,7 +13,7 @@
 .ws-layout,
 .ws-loading,
 .ws-login {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   color: var(--ws-text);
 }
 
@@ -174,7 +174,7 @@
   border-radius: var(--ws-radius-sm);
   padding: 13px 16px;
   color: var(--ws-text);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: .95rem;
   outline: none;
   transition: border-color .2s, box-shadow .2s, background .2s;
@@ -193,7 +193,7 @@
   border: none;
   border-radius: var(--ws-radius-sm);
   padding: 14px;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: .92rem;
   letter-spacing: .2px;
@@ -267,7 +267,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 800;
   font-size: .72rem;
   color: white;
@@ -394,7 +394,7 @@
 }
 
 .ws-card-title {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: 1.22rem;
   color: #ffffff;
@@ -422,7 +422,7 @@
   border: none;
   border-radius: var(--ws-radius-sm);
   padding: 11px 20px;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: .84rem;
   cursor: pointer;
@@ -439,7 +439,7 @@
   border: 1px solid var(--ws-border2);
   border-radius: var(--ws-radius-sm);
   color: var(--ws-text2);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: .82rem;
   cursor: pointer;
   padding: 11px 16px;
@@ -462,7 +462,7 @@
   border-radius: var(--ws-radius-sm);
   padding: 11px 15px;
   color: var(--ws-text);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: .9rem;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
@@ -583,7 +583,7 @@ select.ws-field {
   justify-content: center;
   font-size: .62rem;
   font-weight: 700;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   color: var(--ws-text2);
 }
 .ws-del {
@@ -632,7 +632,7 @@ select.ws-field {
 }
 
 .ws-stat-value {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: 2.25rem;
   letter-spacing: -0.04em;
@@ -708,7 +708,7 @@ select.ws-field {
   color: var(--ws-accent);
 }
 .ws-cal-month {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 800;
   font-size: 1.9rem;
   letter-spacing: -1px;
@@ -748,7 +748,7 @@ select.ws-field {
 }
 .ws-cal-day.other { opacity: .25; }
 .ws-cal-day-num {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: .9rem;
   color: var(--ws-text);
@@ -784,7 +784,7 @@ select.ws-field {
   margin-bottom: 10px;
 }
 .ws-fin-value {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 800;
   font-size: clamp(0.8rem, 3.5vw, 1.4rem);
   letter-spacing: -1px;
@@ -862,7 +862,7 @@ select.ws-field {
 }
 .ws-case-body { padding: 16px 18px; }
 .ws-case-name {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: .96rem;
   margin-bottom: 5px;
@@ -906,7 +906,7 @@ select.ws-field {
   border: none;
   outline: none;
   color: var(--ws-text);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: .84rem;
   line-height: 1.7;
   resize: none;
@@ -973,7 +973,7 @@ select.ws-field {
   flex-shrink: 0;
 }
 .ws-ia-name {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 700;
   font-size: .96rem;
   margin-bottom: 3px;
@@ -1054,7 +1054,7 @@ select.ws-field {
   color: white;
 }
 .ws-pomo-time {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 800;
   font-size: 5rem;
   letter-spacing: -3px;
@@ -1098,7 +1098,7 @@ select.ws-field {
 .ws-checklist .ws-stat-value,
 .ws-checklist-page .ws-stat-value,
 .ws-stat-value {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   font-weight: 700 !important;
   letter-spacing: -0.04em !important;
   font-variant-numeric: tabular-nums;
@@ -1115,7 +1115,7 @@ select.ws-field {
 .ws-agenda-right h3,
 .ws-agenda-panel-title,
 .ws-agenda-selected-date {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   font-weight: 700 !important;
   letter-spacing: -0.03em !important;
   color: var(--ws-text) !important;
@@ -1136,7 +1136,7 @@ select.ws-field {
 .ws-case-amount,
 .ws-payment-value,
 .ws-payment-amount {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   letter-spacing: -0.03em !important;
 }
 
@@ -1163,14 +1163,14 @@ select.ws-field {
 /* lista de pagamentos do financeiro da case */
 .ws-payment-row,
 .ws-payment-item {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
 }
 
 .ws-payment-row strong,
 .ws-payment-item strong,
 .ws-payment-row .title,
 .ws-payment-item .title {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   font-weight: 700 !important;
 }
 
@@ -1178,7 +1178,7 @@ select.ws-field {
 .ws-payment-item .date,
 .ws-payment-row .meta,
 .ws-payment-item .meta {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   color: var(--ws-text2) !important;
 }
 
@@ -1194,7 +1194,7 @@ select.ws-field {
 .ws-case-header h1,
 .ws-case-header h2,
 .ws-case-header h3 {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   letter-spacing: -0.03em !important;
 }
 
@@ -1214,7 +1214,7 @@ select.ws-field {
 .ws-case-notes .ws-page-sub,
 .ws-case-header .client-subtitle,
 .ws-case-notes .client-meta {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
   font-size: .92rem !important;
   color: var(--ws-text2) !important;
 }
@@ -1236,7 +1236,7 @@ select.ws-field {
 .ws-checklist textarea,
 .ws-checklist button,
 .ws-checklist select {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'Poppins', system-ui, sans-serif !important;
 }
 
 /* fallback mais bruto para títulos internos de cards/listas */
@@ -1252,7 +1252,7 @@ select.ws-field {
 .ws-case h1,
 .ws-case h2,
 .ws-case h3 {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
 }
 
 
