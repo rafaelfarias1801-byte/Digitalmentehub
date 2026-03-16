@@ -1419,10 +1419,13 @@ select.ws-field {
 
   /* Financeiro — valor menor para caber em 2 colunas */
   .ws-fin-value {
-    font-size: 1.3rem;
-    letter-spacing: -0.02em;
-    word-break: break-all;
-  }
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(0.8rem, 3.5vw, 1.4rem);
+  letter-spacing: -1px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
 
   .ws-fin-label {
     font-size: .55rem;
