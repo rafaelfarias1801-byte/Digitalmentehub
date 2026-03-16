@@ -25,6 +25,7 @@ const EMPTY_POST: NewPostForm = {
   media_url: "",
   media_type: "feed",
   scheduled_date: "",
+  scheduled_time: "",
   approval_status: "pendente",
   extra_info: "",
   media_urls: [],
@@ -157,6 +158,11 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
     const userText = stripMediaTag(form.extra_info);
     const extra_info = encodeExtraUrls(extraUrls, userText);
 
+    // Combina data + hora em timestamp
+    const scheduledDateTime = form.scheduled_date
+      ? `${form.scheduled_date}T${form.scheduled_time || "09:00"}:00`
+      : null;
+
     const payload = {
       slug: form.slug.trim(),
       title: form.title.trim(),
@@ -164,7 +170,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
       hashtags: form.hashtags,
       media_url: coverUrl,
       media_type: form.media_type,
-      scheduled_date: form.scheduled_date || null,
+      scheduled_date: scheduledDateTime,
       approval_status: form.approval_status,
       extra_info,
       media_urls: mediaUrls,
@@ -306,7 +312,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                       <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 2 }}>{post.title}</div>
                     )}
                     <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "Poppins" }}>
-                      {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "Sem data"}
+                      {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
                       {" · "}
                       {post.media_type === "feed" ? "Feed" : post.media_type === "stories" ? "Stories" : post.media_type === "reels" ? "Reels" : "Carrossel"}
                     </div>
@@ -337,7 +343,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
             <input className="ws-input" value={form.title} placeholder="Assunto ou tema do post"
               onChange={e => setForm(p => ({ ...p, title: e.target.value }))} style={{ marginBottom: 12 }} />
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
               <div>
                 <label className="ws-label">Tipo</label>
                 <select className="ws-input" value={form.media_type}
@@ -349,9 +355,14 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                 </select>
               </div>
               <div>
-                <label className="ws-label">Data agendada</label>
+                <label className="ws-label">Data de agendamento</label>
                 <input className="ws-input" type="date" value={form.scheduled_date}
                   onChange={e => setForm(p => ({ ...p, scheduled_date: e.target.value }))} />
+              </div>
+              <div>
+                <label className="ws-label">Horário</label>
+                <input className="ws-input" type="time" value={form.scheduled_time ?? "09:00"}
+                  onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))} />
               </div>
             </div>
 
