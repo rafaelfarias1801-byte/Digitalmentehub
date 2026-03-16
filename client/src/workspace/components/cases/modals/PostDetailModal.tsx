@@ -28,11 +28,13 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const isMobile = useIsMobile();
 
-  // Navegação de slides
+  // Navegação de slides — usa media_urls se disponível, senão fallback para extra_info
   const extraUrls = decodeExtraUrls(currentPost.extra_info);
-  const allSlides = currentPost.media_url
-    ? [currentPost.media_url, ...extraUrls]
-    : extraUrls;
+  const allSlides = (currentPost.media_urls && currentPost.media_urls.length > 0)
+    ? currentPost.media_urls
+    : currentPost.media_url
+      ? [currentPost.media_url, ...extraUrls]
+      : extraUrls;
   const [slideIdx, setSlideIdx] = useState(0);
   const activeSlideUrl = allSlides[slideIdx] ?? "";
 
@@ -104,7 +106,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const doneCount = (currentPost.checklist || []).filter(i => i.done).length;
   const totalCheck = (currentPost.checklist || []).length;
   const aspectRatio = currentPost.media_type === "feed" ? "4 / 5" : currentPost.media_type === "carousel" ? "1 / 1" : "9 / 16";
-  const scheduledDate = parseDateAtNoon(currentPost.scheduled_date);
+  const scheduledDate = currentPost.scheduled_date ? new Date(currentPost.scheduled_date) : null;
+  const scheduledDateValue = scheduledDate ? scheduledDate.toISOString().slice(0, 10) : "";
+  const scheduledTimeValue = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
 
   return (
     <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -161,7 +165,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", marginBottom: 4 }}>{currentPost.title}</div>
               )}
               <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
-                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) : "Sem data"}
+                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
               </div>
             </div>
             <button onClick={onClose} style={closeBtnStyle}>×</button>
@@ -438,6 +442,22 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 }} />
               ))}
             </div>
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <div style={labelStyle}>Data de agendamento</div>
+            <input type="date" className="ws-input" value={scheduledDateValue}
+              onChange={e => {
+                const newDate = e.target.value;
+                const time = scheduledTimeValue || "09:00";
+                void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
+              }} style={{ fontSize: ".8rem", marginBottom: 6 }} />
+            <input type="time" className="ws-input" value={scheduledTimeValue}
+              onChange={e => {
+                const newTime = e.target.value;
+                const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
+                void save({ scheduled_date: `${date}T${newTime}:00` });
+              }} style={{ fontSize: ".8rem" }} />
           </div>
 
           <div style={{ marginBottom: 20 }}>
