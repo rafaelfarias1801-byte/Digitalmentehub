@@ -1,4 +1,4 @@
-import type { Profile } from "../../../lib/supabaseClient";
+﻿import type { Profile } from "../../../lib/supabaseClient";
 
 export interface Case {
   id: string;

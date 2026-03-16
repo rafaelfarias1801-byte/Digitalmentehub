@@ -1,4 +1,4 @@
-// client/src/workspace/components/Pomodoro.tsx
+﻿// client/src/workspace/components/Pomodoro.tsx
 import { useState, useEffect, useRef } from "react";
 
 type Mode = "focus" | "short" | "long";

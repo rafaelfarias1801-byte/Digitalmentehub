@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import caseBg from "@assets/Digitalmente_(1)_1771625189778.png";
 import inateLogo from "@assets/2_1771623412063.png";
 

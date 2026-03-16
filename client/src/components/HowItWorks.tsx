@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 
 const steps = [
   { number: "01", title: "Diagnóstico", description: "Entendemos o momento da marca, mercado e metas." },

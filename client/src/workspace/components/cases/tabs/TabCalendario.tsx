@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import { MONTHS_FULL } from "../constants";
@@ -90,8 +90,8 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button onClick={prevMonth} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", width: 32, height: 32, fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
 
-          {/* FONTE SYNE para o mês/ano */}
-          <span style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: isMobile ? "1.1rem" : "1.4rem", color: "var(--ws-text)", letterSpacing: "-0.03em", minWidth: isMobile ? 120 : 170, textAlign: "center" }}>
+          {/* FONTE Poppins para o mês/ano */}
+          <span style={{ fontFamily: "Poppins, sans-serif", fontWeight: 800, fontSize: isMobile ? "1.1rem" : "1.4rem", color: "var(--ws-text)", letterSpacing: "-0.03em", minWidth: isMobile ? 120 : 170, textAlign: "center" }}>
             {MONTHS_FULL[month]} {year}
           </span>
 
@@ -155,7 +155,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
                       fontSize: isMobile ? ".62rem" : ".72rem",
                       fontWeight: isToday ? 700 : 400,
                       color: isToday ? "#fff" : "var(--ws-text2)",
-                      fontFamily: "DM Sans, sans-serif",
+                      fontFamily: "Poppins, sans-serif",
                       marginBottom: 2,
                     }}>{day}</div>
 

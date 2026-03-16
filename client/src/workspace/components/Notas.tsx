@@ -1,4 +1,4 @@
-// client/src/workspace/components/Notas.tsx
+﻿// client/src/workspace/components/Notas.tsx
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";

@@ -1,4 +1,4 @@
-// client/src/workspace/components/TaskDrawer.tsx
+﻿// client/src/workspace/components/TaskDrawer.tsx
 import type React from "react";
 import type {
   ChecklistTask,
@@ -140,7 +140,7 @@ export default function TaskDrawer({
             outline: "none",
             resize: "none",
             overflow: "hidden",
-            fontFamily: "DM Sans, system-ui, sans-serif",
+            fontFamily: "Poppins, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: "1.9rem",
             lineHeight: 1.12,
@@ -232,7 +232,7 @@ export default function TaskDrawer({
               borderRadius: 14,
               padding: "14px 15px",
               color: "var(--ws-text)",
-              fontFamily: "DM Sans, system-ui, sans-serif",
+              fontFamily: "Poppins, system-ui, sans-serif",
               fontSize: ".92rem",
               lineHeight: 1.6,
               outline: "none",
@@ -267,7 +267,7 @@ export default function TaskDrawer({
                   borderRadius: 10,
                   padding: "10px 14px",
                   cursor: "pointer",
-                  fontFamily: "DM Sans, system-ui, sans-serif",
+                  fontFamily: "Poppins, system-ui, sans-serif",
                   fontWeight: 600,
                   fontSize: ".85rem",
                 }}

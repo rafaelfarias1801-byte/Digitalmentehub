@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
 import { ArrowDown } from "lucide-react";
 

@@ -1,4 +1,4 @@
-export function isVideoFile(url?: string | null) {
+﻿export function isVideoFile(url?: string | null) {
   if (!url) return false;
   return /\.(mp4|mov|webm|ogg)$/i.test(url);
 }

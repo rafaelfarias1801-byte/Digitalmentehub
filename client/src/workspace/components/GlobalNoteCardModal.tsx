@@ -1,4 +1,4 @@
-// client/src/workspace/components/GlobalNoteCardModal.tsx
+﻿// client/src/workspace/components/GlobalNoteCardModal.tsx
 import { useState } from "react";
 import type { Profile } from "../../lib/supabaseClient";
 import { supabase } from "../../lib/supabaseClient";
@@ -179,7 +179,7 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
   }
 
   const titleStyle: React.CSSProperties = {
-    fontFamily: "DM Sans, system-ui, sans-serif",
+    fontFamily: "Poppins, system-ui, sans-serif",
     fontWeight: 700,
     fontSize: "1.15rem",
     color: "var(--ws-text)",

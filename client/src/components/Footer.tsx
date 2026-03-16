@@ -1,4 +1,4 @@
-import { FaWhatsapp, FaInstagram } from "react-icons/fa";
+﻿import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import { SiThreads } from "react-icons/si";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "wouter";

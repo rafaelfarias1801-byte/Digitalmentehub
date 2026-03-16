@@ -1,4 +1,4 @@
-// client/src/workspace/components/Financeiro.tsx
+﻿// client/src/workspace/components/Financeiro.tsx
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
@@ -801,7 +801,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 
             <div
               style={{
-                fontFamily: "DM Sans, system-ui, sans-serif",
+                fontFamily: "Poppins, system-ui, sans-serif",
                 fontWeight: 700,
                 fontSize: "1.5rem",
                 lineHeight: 1.08,
@@ -920,7 +920,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
                 borderRadius: 14,
                 padding: "14px 15px",
                 color: "var(--ws-text)",
-                fontFamily: "DM Sans, system-ui, sans-serif",
+                fontFamily: "Poppins, system-ui, sans-serif",
                 fontSize: ".92rem",
                 lineHeight: 1.55,
                 outline: "none",
@@ -955,7 +955,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
                       borderRadius: 10,
                       padding: "10px 14px",
                       cursor: "pointer",
-                      fontFamily: "DM Sans, system-ui, sans-serif",
+                      fontFamily: "Poppins, system-ui, sans-serif",
                       fontWeight: 600,
                       fontSize: ".85rem",
                     }}
@@ -1000,7 +1000,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
           >
             <div
               style={{
-                fontFamily: "DM Sans, system-ui, sans-serif",
+                fontFamily: "Poppins, system-ui, sans-serif",
                 fontWeight: 700,
                 fontSize: "1.15rem",
                 color: "var(--ws-text)",
@@ -1020,7 +1020,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     border: "1px solid var(--ws-border2)",
     borderRadius: 14,
     padding: "18px 16px",
-    fontFamily: "DM Sans, system-ui, sans-serif",
+    fontFamily: "Poppins, system-ui, sans-serif",
     fontWeight: 700,
     fontSize: "1.8rem",
     color: "var(--ws-text)",

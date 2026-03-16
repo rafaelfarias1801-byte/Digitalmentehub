@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+﻿import type { CSSProperties } from "react";
 
 export const fmt = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -73,7 +73,7 @@ export const modalBoxStyle: CSSProperties = {
 };
 
 export const modalTitleStyle: CSSProperties = {
-  fontFamily: "Syne",
+  fontFamily: "Poppins",
   fontWeight: 800,
   fontSize: "1.2rem",
   color: "var(--ws-text)",

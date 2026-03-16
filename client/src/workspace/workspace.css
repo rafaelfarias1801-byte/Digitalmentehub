@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Poppins:wght@600;700;800&display=swap');
 
 /* client/src/workspace/workspace.css */
 /* ════════════════════════════════════════
    DIG WORKSPACE — Estilos completos
    Hierarquia:
-   - DM Sans: interface, leitura, números e botões
-   - Syne: branding e títulos principais
+   - Poppins: interface, leitura, números e botões
+   - Poppins: branding e títulos principais
    - DM Mono: labels, metas e microinfos
 ════════════════════════════════════════ */
 
@@ -141,7 +141,7 @@
   box-shadow: var(--ws-shadow), 0 0 0 1px rgba(255,255,255,.04) inset;
 }
 .ws-logo {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-weight: 800;
   font-size: 2.35rem;
   letter-spacing: -2px;
@@ -233,7 +233,7 @@
   border-bottom: 1px solid var(--ws-border);
 }
 .ws-brand {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-weight: 800;
   font-size: 1.6rem;
   letter-spacing: -1.5px;
@@ -359,7 +359,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 .ws-page-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-weight: 800;
   font-size: 3.15rem;
   letter-spacing: -0.05em;
@@ -855,7 +855,7 @@ select.ws-field {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-weight: 800;
   font-size: 1.6rem;
   letter-spacing: -1px;
@@ -1121,7 +1121,7 @@ select.ws-field {
   color: var(--ws-text) !important;
 }
 
-/* caso a data por extenso esteja usando Syne por herança */
+/* caso a data por extenso esteja usando Poppins por herança */
 .ws-agenda-side *,
 .ws-agenda-right * {
   font-variant-ligatures: none;

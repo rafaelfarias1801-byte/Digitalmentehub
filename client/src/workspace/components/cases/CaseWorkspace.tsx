@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { CasesGlobalStyle } from "./styles";
 import { STATUS_STYLES, SUB_TABS } from "./constants";
 import type { CaseWorkspaceProps } from "./types";
@@ -74,7 +74,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
                 }}>{caseData.name.slice(0, 2).toUpperCase()}</div>
               )}
               <span style={{
-                fontFamily: "Syne", fontWeight: 800, fontSize: ".85rem", color: "var(--ws-text)",
+                fontFamily: "Poppins", fontWeight: 800, fontSize: ".85rem", color: "var(--ws-text)",
                 overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
               }}>{caseData.name}</span>
               <span style={{
@@ -175,7 +175,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
               : <span style={{ color: caseData.color, fontSize: ".9rem", fontWeight: 800 }}>{caseData.name.slice(0, 2).toUpperCase()}</span>
             }
           </div>
-          <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: ".9rem", color: "var(--ws-text)", lineHeight: 1.2 }}>{caseData.name}</div>
+          <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: ".9rem", color: "var(--ws-text)", lineHeight: 1.2 }}>{caseData.name}</div>
           <span className={`ws-case-status ${STATUS_STYLES[caseData.status]}`} style={{
             marginTop: 4, display: "inline-block",
             color: caseData.status === "ativo" ? "#00e676" : caseData.status === "pausado" ? "#ffd600" : "#aaa",
@@ -208,7 +208,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
         <CasesGlobalStyle />
         <div style={{ padding: "28px 32px" }}>
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.4rem", color: "var(--ws-text)" }}>
+            <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.4rem", color: "var(--ws-text)" }}>
               {activeTabData?.icon} {activeTabData?.label}<span style={{ color: caseData.color }}>.</span>
             </div>
             <div style={{ color: "var(--ws-text3)", fontSize: ".8rem", fontFamily: "DM Mono", marginTop: 2 }}>{caseData.name}</div>

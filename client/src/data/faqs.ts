@@ -1,4 +1,4 @@
-export const faqs = [
+﻿export const faqs = [
   {
     question: "A Digitalmente é focada só em Alimentos & Bebidas?",
     answer: "Não. Somos uma agência multi-nicho — atendemos eventos, notícias, marca pessoal e mais. Mas colocamos energia extra em A&B porque é onde temos mais repertório e paixão."

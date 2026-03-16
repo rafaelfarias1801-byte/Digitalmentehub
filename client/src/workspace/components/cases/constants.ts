@@ -1,4 +1,4 @@
-import type { Case, NoteLabel, Post } from "./types";
+﻿import type { Case, NoteLabel, Post } from "./types";
 
 export const COLORS = [
   "#e91e8c",

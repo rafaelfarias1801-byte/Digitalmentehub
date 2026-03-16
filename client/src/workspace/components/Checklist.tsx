@@ -1,4 +1,4 @@
-// client/src/workspace/components/Checklist.tsx
+﻿// client/src/workspace/components/Checklist.tsx
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
@@ -200,7 +200,7 @@ export default function Checklist({ profile }: Props) {
         ].map(item => (
           <div key={item.label} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "10px 14px", minWidth: 100, flex: isMobile ? "1" : "none" }}>
             <div style={{ fontFamily: "DM Mono, monospace", fontSize: ".58rem", letterSpacing: "1.4px", textTransform: "uppercase", color: "var(--ws-text3)" }}>{item.label}</div>
-            <div style={{ marginTop: 6, fontFamily: "DM Sans, system-ui, sans-serif", fontWeight: 700, fontSize: "1rem", color: item.color }}>{item.value}</div>
+            <div style={{ marginTop: 6, fontFamily: "Poppins, system-ui, sans-serif", fontWeight: 700, fontSize: "1rem", color: item.color }}>{item.value}</div>
           </div>
         ))}
       </div>

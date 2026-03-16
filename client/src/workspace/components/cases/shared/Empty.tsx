@@ -1,4 +1,4 @@
-interface EmptyProps {
+﻿interface EmptyProps {
   label: string;
 }
 

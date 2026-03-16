@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 
 interface RichEditorProps {

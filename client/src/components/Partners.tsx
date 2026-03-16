@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { partners } from "../data/partners";
 
 export default function Partners() {

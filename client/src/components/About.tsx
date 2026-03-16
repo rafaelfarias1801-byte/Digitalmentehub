@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import instagramScreen from "@assets/image_1771619575169.png";
 
 export default function About() {

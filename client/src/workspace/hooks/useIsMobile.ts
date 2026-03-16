@@ -1,4 +1,4 @@
-// client/src/workspace/hooks/useIsMobile.ts
+﻿// client/src/workspace/hooks/useIsMobile.ts
 import { useEffect, useState } from "react";
 
 export function useIsMobile(breakpoint = 768) {

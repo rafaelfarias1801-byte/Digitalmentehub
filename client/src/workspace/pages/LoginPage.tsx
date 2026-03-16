@@ -1,4 +1,4 @@
-// client/src/workspace/pages/LoginPage.tsx
+﻿// client/src/workspace/pages/LoginPage.tsx
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";

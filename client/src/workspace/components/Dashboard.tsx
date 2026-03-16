@@ -1,4 +1,4 @@
-// client/src/workspace/components/Dashboard.tsx
+﻿// client/src/workspace/components/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
@@ -211,7 +211,7 @@ export default function Dashboard({ profile }: Props) {
                   borderLeft: `3px solid ${EVENT_COLOR[ev.type] ?? "var(--ws-accent)"}`,
                 }}>
                   <div style={{ flexShrink: 0, textAlign: "center", minWidth: 36 }}>
-                    <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.2rem", color: isToday ? "var(--ws-accent)" : "var(--ws-text)", lineHeight: 1 }}>{d.getDate()}</div>
+                    <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.2rem", color: isToday ? "var(--ws-accent)" : "var(--ws-text)", lineHeight: 1 }}>{d.getDate()}</div>
                     <div style={{ fontFamily: "DM Mono", fontSize: ".5rem", letterSpacing: "1px", color: "var(--ws-text3)", textTransform: "uppercase" }}>
                       {d.toLocaleDateString("pt-BR", { weekday: "short" })}
                     </div>

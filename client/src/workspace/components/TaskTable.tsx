@@ -1,4 +1,4 @@
-// client/src/workspace/components/TaskTable.tsx
+﻿// client/src/workspace/components/TaskTable.tsx
 import type React from "react";
 import type { ChecklistTask, TaskStatus } from "./Checklist";
 
@@ -218,7 +218,7 @@ export default function TaskTable({
                         border: "none",
                         outline: "none",
                         color: "inherit",
-                        fontFamily: "DM Sans, system-ui, sans-serif",
+                        fontFamily: "Poppins, system-ui, sans-serif",
                         fontSize: ".78rem",
                         cursor: "pointer",
                         borderRadius: 999,

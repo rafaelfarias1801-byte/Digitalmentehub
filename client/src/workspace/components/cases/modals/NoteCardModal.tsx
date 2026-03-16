@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { DEFAULT_LABELS } from "../constants";

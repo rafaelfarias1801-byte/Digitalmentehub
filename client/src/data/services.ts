@@ -1,4 +1,4 @@
-import { Megaphone, Target, Package, Globe, Smartphone, Search, PenTool, Instagram } from "lucide-react";
+﻿import { Megaphone, Target, Package, Globe, Smartphone, Search, PenTool, Instagram } from "lucide-react";
 
 export const services = [
   {

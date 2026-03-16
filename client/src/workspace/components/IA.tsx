@@ -1,4 +1,4 @@
-// client/src/workspace/components/IA.tsx
+﻿// client/src/workspace/components/IA.tsx
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";

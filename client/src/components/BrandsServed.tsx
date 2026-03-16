@@ -1,4 +1,4 @@
-import { FaWhatsapp } from "react-icons/fa";
+﻿import { FaWhatsapp } from "react-icons/fa";
 
 import brand1 from "@assets/1_1771613135862.png";
 import brand2 from "@assets/2_1771613135864.png";

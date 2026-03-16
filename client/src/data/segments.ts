@@ -1,4 +1,4 @@
-export const segments = [
+﻿export const segments = [
   "Alimentos",
   "Bebidas",
   "Eventos",

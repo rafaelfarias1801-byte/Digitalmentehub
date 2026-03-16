@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { APPROVAL_STYLES, LABEL_COLORS } from "../constants";
@@ -154,7 +154,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {currentPost.label_color && (
                 <div style={{ width: 40, height: 6, borderRadius: 3, background: currentPost.label_color, marginBottom: 8 }} />
               )}
-              <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)", marginBottom: 4 }}>
+              <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)", marginBottom: 4 }}>
                 {currentPost.slug || currentPost.title || "Post"}
               </div>
               {currentPost.title && currentPost.slug && (

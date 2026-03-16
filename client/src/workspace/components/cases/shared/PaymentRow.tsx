@@ -1,4 +1,4 @@
-import type { Payment } from "../types";
+﻿import type { Payment } from "../types";
 import { fmt } from "../styles";
 import { formatDateBR, isOverdueDate } from "../utils";
 
