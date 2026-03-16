@@ -40,6 +40,7 @@ export interface Post {
   scheduled_date: string;
   approval_status: "pendente" | "aprovado" | "reprovado" | "alteracao";
   extra_info?: string;
+  media_urls?: string[];
   description?: string;
   checklist?: CheckItem[];
   due_date?: string;
