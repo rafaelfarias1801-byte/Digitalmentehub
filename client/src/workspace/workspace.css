@@ -367,10 +367,16 @@
   line-height: 0.95;
 }
 
+/* ponto rosa após títulos — regra global standalone */
+.ws-dot {
+  color: var(--ws-accent) !important;
+}
+
+
 .ws-page-sub {
   font-family: 'DM Mono', monospace;
   font-size: .74rem;
-  color: rgba(244, 246, 255, 0.42);
+  color: var(--ws-text3);
   margin-top: 10px;
   letter-spacing: 1.2px;
   margin-bottom: 30px;
@@ -1269,6 +1275,14 @@ select.ws-field {
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    /* Evita que o hambúrguer (38px + 12px top + 12px gap) sobreponha o conteúdo */
+    padding-top: 0;
+  }
+
+  /* Quando sidebar fechada: empurra o conteúdo para não sobrepor o hambúrguer */
+  /* O hambúrguer é 38px altura + 12px top = 62px total de espaço necessário */
+  .ws-main .ws-page {
+    padding-top: 62px;
   }
 
   /* Sidebar vira drawer lateral (já tratado no Sidebar.tsx) */
@@ -1592,5 +1606,76 @@ select.ws-field {
 @media (max-width: 768px) {
   input, textarea, select {
     font-size: max(16px, 1rem) !important;
+  }
+}
+
+/* ════════════════════════════════════════
+   TEMA CLARO — ajustes complementares
+════════════════════════════════════════ */
+
+[data-theme="light"] .ws-card {
+  background: #ffffff;
+  border: 1px solid var(--ws-border);
+  box-shadow: 0 2px 12px rgba(24,32,56,0.06);
+}
+
+[data-theme="light"] .ws-card-title {
+  color: var(--ws-text);
+}
+
+[data-theme="light"] .ws-badge {
+  background: var(--ws-surface2);
+  border-color: var(--ws-border);
+  color: var(--ws-text3);
+}
+
+[data-theme="light"] .ws-stat {
+  background: var(--ws-surface);
+  border: 1px solid var(--ws-border);
+}
+
+[data-theme="light"] .ws-sidebar {
+  background: var(--ws-surface);
+  border-right-color: var(--ws-border);
+}
+
+[data-theme="light"] .ws-nav-item:hover {
+  background: var(--ws-surface2);
+}
+
+[data-theme="light"] .ws-task {
+  background: var(--ws-surface2);
+  border-color: var(--ws-border);
+}
+
+[data-theme="light"] .ws-fin-card {
+  background: var(--ws-surface);
+}
+
+[data-theme="light"] .ws-table th {
+  background: var(--ws-surface2);
+  color: var(--ws-text3);
+}
+
+[data-theme="light"] .ws-table tr:hover td {
+  background: var(--ws-surface2);
+}
+
+/* ── Drawer fix: garante scroll no mobile ── */
+@media (max-width: 768px) {
+  /* TaskDrawer overlay não bloqueia o aside */
+  aside[style*="position: fixed"][style*="right: 0"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* ── Modais fullscreen mobile (PostDetailModal, NoteCardModal) ── */
+@media (max-width: 768px) {
+  /* overlay dos modais — alinha na base da tela */
+  [style*="position: fixed"][style*="inset: 0"][style*="z-index: 100"],
+  [style*="position:fixed"][style*="inset:0"] {
+    align-items: flex-end !important;
+    padding: 0 !important;
   }
 }

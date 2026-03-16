@@ -31,17 +31,39 @@ const NAV = [
 
 const ADMIN_ONLY: PageId[] = ["financeiro", "notas", "ia"];
 
-function isMobile() {
+function getIsMobile() {
   return typeof window !== "undefined" && window.innerWidth < 768;
+}
+
+function getSavedTheme(): "dark" | "light" {
+  try {
+    return (localStorage.getItem("ws_theme") as "dark" | "light") || "dark";
+  } catch {
+    return "dark";
+  }
+}
+
+function applyTheme(theme: "dark" | "light") {
+  const root = document.documentElement;
+  if (theme === "light") {
+    root.setAttribute("data-theme", "light");
+  } else {
+    root.removeAttribute("data-theme");
+  }
+  try { localStorage.setItem("ws_theme", theme); } catch {}
 }
 
 export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
   const isAdmin = profile.role === "admin";
+  const [open, setOpen] = useState(!getIsMobile());
+  const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
 
-  // On mobile starts closed; on desktop starts open
-  const [open, setOpen] = useState(!isMobile());
+  // Aplicar tema salvo na montagem
+  useEffect(() => {
+    applyTheme(theme);
+  }, []);
 
-  // Close on resize to mobile
+  // Fechar sidebar ao redimensionar para mobile
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth < 768) setOpen(false);
@@ -51,15 +73,22 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Close sidebar when navigating on mobile
   function navigate(page: PageId) {
     onNavigate(page);
-    if (isMobile()) setOpen(false);
+    if (getIsMobile()) setOpen(false);
   }
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    applyTheme(next);
+  }
+
+  const isDark = theme === "dark";
 
   return (
     <>
-      {/* ── Hamburger button — always visible when sidebar is closed ── */}
+      {/* ── Hambúrguer — só aparece quando sidebar fechada ── */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -83,80 +112,52 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
             boxShadow: "0 2px 12px #00000040",
             transition: "all .15s",
           }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = "var(--ws-accent)"}
-          onMouseLeave={e => e.currentTarget.style.borderColor = "var(--ws-border2)"}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
         >
-          {/* Hamburger lines */}
           <span style={{ display: "block", width: 16, height: 2, background: "var(--ws-text)", borderRadius: 2 }} />
           <span style={{ display: "block", width: 16, height: 2, background: "var(--ws-text)", borderRadius: 2 }} />
           <span style={{ display: "block", width: 12, height: 2, background: "var(--ws-text)", borderRadius: 2, alignSelf: "flex-start", marginLeft: 2 }} />
         </button>
       )}
 
-      {/* ── Overlay for mobile when open ── */}
-      {open && isMobile() && (
+      {/* ── Overlay mobile ── */}
+      {open && getIsMobile() && (
         <div
           onClick={() => setOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "#00000060",
-            zIndex: 198,
-          }}
+          style={{ position: "fixed", inset: 0, background: "#00000060", zIndex: 198 }}
         />
       )}
 
-      {/* ── Sidebar panel ── */}
+      {/* ── Painel da sidebar ── */}
       <aside
         className="ws-sidebar"
         style={{
-          position: isMobile() ? "fixed" : "relative",
-          top: 0,
-          left: 0,
-          height: "100%",
+          position: getIsMobile() ? "fixed" : "relative",
+          top: 0, left: 0, height: "100%",
           zIndex: 199,
           transform: open ? "translateX(0)" : "translateX(-110%)",
           transition: "transform .22s cubic-bezier(.4,0,.2,1)",
-          boxShadow: open && isMobile() ? "4px 0 24px #00000050" : "none",
-          display: "flex",
-          flexDirection: "column",
+          boxShadow: open && getIsMobile() ? "4px 0 24px #00000050" : "none",
+          display: "flex", flexDirection: "column",
         }}
       >
-        {/* ── Top: brand + close button ── */}
+        {/* ── Topo: brand + fechar ── */}
         <div className="ws-sidebar-top" style={{ position: "relative" }}>
-          {/* Close / collapse button */}
           <button
             onClick={() => setOpen(false)}
             aria-label="Fechar menu"
-            title="Ocultar sidebar"
             style={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              background: "none",
-              border: "1px solid var(--ws-border2)",
-              borderRadius: 6,
-              width: 26,
-              height: 26,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              color: "var(--ws-text3)",
-              fontSize: ".75rem",
-              transition: "all .15s",
-              flexShrink: 0,
+              position: "absolute", top: 10, right: 10,
+              background: "none", border: "1px solid var(--ws-border2)",
+              borderRadius: 6, width: 26, height: 26,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem",
+              transition: "all .15s", flexShrink: 0,
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.borderColor = "var(--ws-text2)";
-              e.currentTarget.style.color = "var(--ws-text)";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.borderColor = "var(--ws-border2)";
-              e.currentTarget.style.color = "var(--ws-text3)";
-            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-text2)"; e.currentTarget.style.color = "var(--ws-text)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
           >
-            {/* X icon */}
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
@@ -174,7 +175,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
           </div>
         </div>
 
-        {/* ── Navigation ── */}
+        {/* ── Navegação ── */}
         <nav className="ws-nav" style={{ flex: 1, overflowY: "auto" }}>
           {NAV.map(group => (
             <div key={group.section}>
@@ -195,6 +196,50 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
             </div>
           ))}
         </nav>
+
+        {/* ── Toggle de tema ── */}
+        <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
+          <button
+            onClick={toggleTheme}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              background: "var(--ws-surface2)",
+              border: "1px solid var(--ws-border2)",
+              borderRadius: 10,
+              padding: "10px 14px",
+              cursor: "pointer",
+              transition: "all .15s",
+              color: "var(--ws-text2)",
+              fontFamily: "DM Mono, monospace",
+              fontSize: ".62rem",
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "1rem" }}>{isDark ? "🌙" : "☀️"}</span>
+              {isDark ? "Tema escuro" : "Tema claro"}
+            </span>
+            {/* Toggle pill */}
+            <span style={{
+              width: 36, height: 20, borderRadius: 999,
+              background: isDark ? "var(--ws-surface3)" : "var(--ws-accent)",
+              position: "relative", flexShrink: 0, transition: "background .2s",
+            }}>
+              <span style={{
+                position: "absolute", top: 3, left: isDark ? 3 : 19,
+                width: 14, height: 14, borderRadius: "50%",
+                background: isDark ? "var(--ws-text3)" : "#fff",
+                transition: "left .2s",
+              }} />
+            </span>
+          </button>
+        </div>
 
         {/* ── Footer: logout ── */}
         <div className="ws-sidebar-footer">

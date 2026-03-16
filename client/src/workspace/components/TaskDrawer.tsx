@@ -72,6 +72,8 @@ export default function TaskDrawer({
           inset: 0,
           background: "rgba(0,0,0,0.22)",
           zIndex: 60,
+          /* Permite que eventos de toque passem para o aside quando o toque começa no drawer */
+          touchAction: "none",
         }}
       />
 
@@ -83,12 +85,16 @@ export default function TaskDrawer({
           width: 470,
           maxWidth: "96vw",
           height: "100vh",
-          background: "linear-gradient(180deg, rgba(16,21,39,0.98), rgba(12,16,30,0.99))",
-          borderLeft: "1px solid rgba(255,255,255,0.06)",
+          height: "100dvh",
+          background: "var(--ws-surface)",
+          borderLeft: "1px solid var(--ws-border)",
           zIndex: 61,
           overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
           padding: 24,
           boxShadow: "-20px 0 60px rgba(0,0,0,0.24)",
+          /* Garante que o drawer receba eventos de touch independente do overlay */
+          touchAction: "pan-y",
         }}
       >
         <div

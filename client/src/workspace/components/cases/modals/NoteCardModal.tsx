@@ -2,12 +2,9 @@ import { useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { DEFAULT_LABELS } from "../constants";
-import {
-  closeBtnStyle,
-  labelStyle,
-  overlayStyle,
-} from "../styles";
+import { closeBtnStyle, labelStyle, overlayStyle } from "../styles";
 import type { Case, NoteCard, NoteLabel } from "../types";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface NoteCardModalProps {
   card: NoteCard;
@@ -244,6 +241,8 @@ export default function NoteCardModal({
   const [editDesc, setEditDesc] = useState(false);
   const [newCheck, setNewCheck] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const isMobile = useIsMobile();
 
   function save(updates: Partial<NoteCard>) {
     const merged = { ...currentCard, ...updates };
@@ -326,17 +325,43 @@ export default function NoteCardModal({
       <div
         style={{
           background: "var(--ws-surface)",
-          borderRadius: 16,
-          width: "min(780px,95vw)",
-          maxHeight: "90vh",
+          borderRadius: isMobile ? "16px 16px 0 0" : 16,
+          width: isMobile ? "100%" : "min(780px,95vw)",
+          maxHeight: isMobile ? "94dvh" : "90vh",
           overflowY: "auto",
           border: "1px solid var(--ws-border2)",
           boxShadow: "0 30px 80px #00000070",
-          display: "grid",
-          gridTemplateColumns: "1fr 260px",
+          display: "flex",
+          flexDirection: "column",
+          ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: "auto" } : {}),
         }}
       >
-        <div style={{ padding: "28px 24px", borderRight: "1px solid var(--ws-border)" }}>
+        {/* Mobile: tabs CONTEÚDO / AÇÕES */}
+        {isMobile && (
+          <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>
+            <button onClick={() => setSidebarVisible(false)} style={{
+              flex: 1, padding: "11px 0", background: "none", border: "none",
+              color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
+              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
+              cursor: "pointer",
+            }}>CONTEÚDO</button>
+            <button onClick={() => setSidebarVisible(true)} style={{
+              flex: 1, padding: "11px 0", background: "none", border: "none",
+              color: sidebarVisible ? caseData.color : "var(--ws-text3)",
+              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
+              cursor: "pointer",
+            }}>AÇÕES</button>
+          </div>
+        )}
+
+        <div style={{
+          display: isMobile ? "block" : "grid",
+          gridTemplateColumns: isMobile ? undefined : "1fr 260px",
+          flex: 1, minHeight: 0,
+        }}>
+        <div style={{ padding: isMobile ? "16px" : "28px 24px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", overflowY: isMobile ? "auto" : undefined }}>
           {labelColor && (
             <div
               style={{
@@ -739,7 +764,7 @@ export default function NoteCardModal({
           </div>
         </div>
 
-        <div style={{ padding: "28px 18px" }}>
+        <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
           <div style={labelStyle}>Ações</div>
 
           <div style={{ marginBottom: 20 }}>
@@ -779,6 +804,7 @@ export default function NoteCardModal({
             × Excluir cartão
           </button>
         </div>
+        </div>{/* fecha grid */}
       </div>
     </div>
   );

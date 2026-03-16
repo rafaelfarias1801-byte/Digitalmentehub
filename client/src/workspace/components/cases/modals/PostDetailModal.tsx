@@ -7,6 +7,7 @@ import { isVideoFile, normalizeWhatsAppPhone, parseDateAtNoon } from "../utils";
 import type { Case, CheckItem, Comment, Post } from "../types";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { decodeExtraUrls, stripMediaTag } from "../tabs/TabConteudo";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface PostDetailModalProps {
   post: Post;
@@ -24,6 +25,8 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [saving, setSaving] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const isMobile = useIsMobile();
 
   // Navegação de slides
   const extraUrls = decodeExtraUrls(currentPost.extra_info);
@@ -106,13 +109,46 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   return (
     <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background: "var(--ws-surface)", borderRadius: 16,
-        width: "min(860px,95vw)", maxHeight: "90vh", overflowY: "auto",
-        border: "1px solid var(--ws-border2)", boxShadow: "0 30px 80px #00000070",
-        display: "grid", gridTemplateColumns: "1fr 280px",
+        background: "var(--ws-surface)",
+        borderRadius: isMobile ? "16px 16px 0 0" : 16,
+        width: isMobile ? "100%" : "min(860px,95vw)",
+        maxHeight: isMobile ? "94dvh" : "90vh",
+        overflowY: "auto",
+        border: "1px solid var(--ws-border2)",
+        boxShadow: "0 30px 80px #00000070",
+        display: "flex",
+        flexDirection: "column",
+        ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: "auto", margin: 0 } : {}),
       }}>
+        {/* Mobile: botão toggle de ações */}
+        {isMobile && (
+          <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)" }}>
+            <button onClick={() => setSidebarVisible(false)} style={{
+              flex: 1, padding: "11px 0", background: "none", border: "none",
+              color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
+              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
+              cursor: "pointer",
+            }}>CONTEÚDO</button>
+            <button onClick={() => setSidebarVisible(true)} style={{
+              flex: 1, padding: "11px 0", background: "none", border: "none",
+              color: sidebarVisible ? caseData.color : "var(--ws-text3)",
+              fontFamily: "DM Mono", fontSize: ".65rem", letterSpacing: "1px",
+              borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
+              cursor: "pointer",
+            }}>AÇÕES</button>
+          </div>
+        )}
+
+        {/* Conteúdo desktop: grid 2 colunas | mobile: só uma coluna visível */}
+        <div style={{
+          display: isMobile ? "block" : "grid",
+          gridTemplateColumns: isMobile ? undefined : "1fr 280px",
+          flex: 1,
+          minHeight: 0,
+        }}>
         {/* ── Coluna principal ── */}
-        <div style={{ padding: "28px 24px", borderRight: "1px solid var(--ws-border)" }}>
+        <div style={{ padding: "20px 18px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 }}>
             <div style={{ flex: 1 }}>
               {currentPost.label_color && (
@@ -387,7 +423,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         </div>
 
         {/* ── Coluna lateral ── */}
-        <div style={{ padding: "28px 18px" }}>
+        <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
           <div style={labelStyle}>Ações</div>
 
           <div style={{ marginBottom: 20 }}>
@@ -428,7 +464,6 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             {currentPost.media_type === "carousel" && "📐 1080 × 1080 px — Carrossel"}
           </div>
 
-          {/* Info de slides */}
           {allSlides.length > 1 && (
             <div style={{ marginTop: 20, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, fontSize: ".73rem", color: "var(--ws-text3)", lineHeight: 1.8 }}>
               🎠 <b style={{ color: "var(--ws-text2)" }}>{allSlides.length} slides</b><br />
@@ -437,6 +472,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             </div>
           )}
         </div>
+        </div>{/* fecha o container grid/flex */}
       </div>
     </div>
   );
