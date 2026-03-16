@@ -1610,60 +1610,249 @@ select.ws-field {
 }
 
 /* ════════════════════════════════════════
-   TEMA CLARO — ajustes complementares
+   TEMA CLARO — overrides completos de contraste
 ════════════════════════════════════════ */
 
+/* ── Cards ── */
 [data-theme="light"] .ws-card {
   background: #ffffff;
   border: 1px solid var(--ws-border);
-  box-shadow: 0 2px 12px rgba(24,32,56,0.06);
+  box-shadow: 0 2px 12px rgba(24,32,56,0.07);
 }
-
 [data-theme="light"] .ws-card-title {
   color: var(--ws-text);
 }
-
 [data-theme="light"] .ws-badge {
   background: var(--ws-surface2);
   border-color: var(--ws-border);
   color: var(--ws-text3);
 }
 
+/* ── Stats ── */
 [data-theme="light"] .ws-stat {
-  background: var(--ws-surface);
+  background: #ffffff;
   border: 1px solid var(--ws-border);
+  box-shadow: 0 2px 10px rgba(24,32,56,0.06);
+}
+[data-theme="light"] .ws-stat-label {
+  color: var(--ws-text3);
+}
+[data-theme="light"] .ws-stat-value {
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-stat-detail {
+  color: var(--ws-text3);
 }
 
-[data-theme="light"] .ws-sidebar {
-  background: var(--ws-surface);
-  border-right-color: var(--ws-border);
-}
-
-[data-theme="light"] .ws-nav-item:hover {
+/* ── Agenda items ── */
+[data-theme="light"] .ws-agenda-item {
   background: var(--ws-surface2);
+  border: 1px solid var(--ws-border);
+  color: var(--ws-text2);
+}
+[data-theme="light"] .ws-agenda-item p,
+[data-theme="light"] .ws-agenda-item div {
+  color: var(--ws-text2);
+}
+[data-theme="light"] .ws-agenda-date {
+  color: var(--ws-accent);
 }
 
+/* ── Tarefas ── */
 [data-theme="light"] .ws-task {
   background: var(--ws-surface2);
   border-color: var(--ws-border);
 }
-
-[data-theme="light"] .ws-fin-card {
-  background: var(--ws-surface);
+[data-theme="light"] .ws-task-text {
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-check {
+  border-color: var(--ws-border2);
 }
 
+/* ── Sidebar ── */
+[data-theme="light"] .ws-sidebar {
+  background: var(--ws-surface);
+  border-right: 1px solid var(--ws-border);
+}
+[data-theme="light"] .ws-nav-item {
+  color: var(--ws-text2);
+}
+[data-theme="light"] .ws-nav-item:hover {
+  background: var(--ws-surface2);
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-nav-item.active {
+  color: var(--ws-accent);
+  background: #e91e8c12;
+}
+[data-theme="light"] .ws-nav-section {
+  color: var(--ws-text3);
+}
+[data-theme="light"] .ws-sidebar-top {
+  border-bottom-color: var(--ws-border);
+}
+[data-theme="light"] .ws-user-pill {
+  background: var(--ws-surface2);
+  border-color: var(--ws-border);
+}
+[data-theme="light"] .ws-user-name {
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-user-role {
+  color: var(--ws-text3);
+}
+[data-theme="light"] .ws-brand {
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-brand-sub {
+  color: var(--ws-text3);
+}
+[data-theme="light"] .ws-logout {
+  color: var(--ws-text3);
+}
+[data-theme="light"] .ws-sidebar-footer {
+  border-top-color: var(--ws-border);
+}
+
+/* ── Inputs, fields, selects ── */
+[data-theme="light"] .ws-input,
+[data-theme="light"] .ws-field,
+[data-theme="light"] textarea.ws-input {
+  background: #ffffff;
+  border-color: var(--ws-border);
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-input::placeholder,
+[data-theme="light"] .ws-field::placeholder {
+  color: var(--ws-muted);
+}
+[data-theme="light"] .ws-label {
+  color: var(--ws-text2);
+}
+
+/* ── Drawer lateral (Financeiro, Checklist) ── */
+[data-theme="light"] aside {
+  background: #ffffff !important;
+  border-left-color: var(--ws-border) !important;
+}
+
+/* ── Tabelas ── */
 [data-theme="light"] .ws-table th {
   background: var(--ws-surface2);
   color: var(--ws-text3);
+  border-bottom-color: var(--ws-border);
 }
-
+[data-theme="light"] .ws-table td {
+  border-bottom-color: var(--ws-border);
+  color: var(--ws-text2);
+}
 [data-theme="light"] .ws-table tr:hover td {
   background: var(--ws-surface2);
+  color: var(--ws-text);
+}
+
+/* ── Financeiro global ── */
+[data-theme="light"] .ws-fin-card {
+  background: #ffffff;
+  border-color: var(--ws-border);
+}
+[data-theme="light"] .ws-fin-label {
+  color: var(--ws-text3);
+}
+
+/* ── Botões ghost ── */
+[data-theme="light"] .ws-btn-ghost {
+  background: var(--ws-surface2);
+  border-color: var(--ws-border2);
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-btn-ghost:hover {
+  border-color: var(--ws-accent);
+  color: var(--ws-accent);
+}
+
+/* ── Calendário ── */
+[data-theme="light"] .ws-cal-day {
+  background: var(--ws-surface2);
+}
+[data-theme="light"] .ws-cal-day:hover {
+  border-color: var(--ws-accent);
+}
+[data-theme="light"] .ws-cal-day.today {
+  border-color: var(--ws-accent);
+  background: #e91e8c12;
+}
+
+/* ── Notas / Kanban ── */
+[data-theme="light"] .ws-note-col {
+  background: var(--ws-surface2);
+  border-color: var(--ws-border);
+}
+[data-theme="light"] .ws-note-card {
+  background: #ffffff;
+  border-color: var(--ws-border);
+  color: var(--ws-text);
+  box-shadow: 0 1px 4px rgba(24,32,56,0.06);
+}
+
+/* ── Modais (PostDetailModal, NoteCardModal) ── */
+[data-theme="light"] .ws-modal,
+[data-theme="light"] [style*="var(--ws-surface)"] {
+  color: var(--ws-text);
+}
+
+/* ── Cases workspace interno ── */
+[data-theme="light"] .ws-fin-card,
+[data-theme="light"] .ws-case-fin-card {
+  background: #ffffff;
+}
+
+/* ── Botões de aprovação nas cases (APPROVAL_STYLES) ──
+   Problema: os backgrounds claros ficam quase invisíveis no light.
+   Aumentamos saturação/opacidade dos bg de aprovação. */
+[data-theme="light"] [style*="background: rgba(0,230,118,0.12)"],
+[data-theme="light"] [style*="background: rgba(0,230,118"] {
+  background: rgba(0,160,80,0.15) !important;
+}
+[data-theme="light"] [style*="background: rgba(255,92,122"],
+[data-theme="light"] [style*="background: rgba(233,30,140"] {
+  background: rgba(200,20,80,0.13) !important;
+}
+[data-theme="light"] [style*="background: rgba(255,214,0"] {
+  background: rgba(180,140,0,0.15) !important;
+}
+[data-theme="light"] [style*="background: rgba(77,171,247"] {
+  background: rgba(30,120,210,0.13) !important;
+}
+
+/* ── Pomodoro ── */
+[data-theme="light"] .ws-pomo-box {
+  background: #ffffff;
+  border-color: var(--ws-border);
+}
+[data-theme="light"] .ws-pomo-time {
+  color: var(--ws-text);
+}
+[data-theme="light"] .ws-pomo-tab {
+  color: var(--ws-text2);
+  border-color: var(--ws-border);
+}
+[data-theme="light"] .ws-pomo-tab.active {
+  background: var(--ws-accent);
+  color: #fff;
+}
+
+/* ── Página base ── */
+[data-theme="light"] .ws-main {
+  background: var(--ws-bg);
+}
+[data-theme="light"] .ws-page-title {
+  color: var(--ws-text);
 }
 
 /* ── Drawer fix: garante scroll no mobile ── */
 @media (max-width: 768px) {
-  /* TaskDrawer overlay não bloqueia o aside */
   aside[style*="position: fixed"][style*="right: 0"] {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -1672,7 +1861,6 @@ select.ws-field {
 
 /* ── Modais fullscreen mobile (PostDetailModal, NoteCardModal) ── */
 @media (max-width: 768px) {
-  /* overlay dos modais — alinha na base da tela */
   [style*="position: fixed"][style*="inset: 0"][style*="z-index: 100"],
   [style*="position:fixed"][style*="inset:0"] {
     align-items: flex-end !important;

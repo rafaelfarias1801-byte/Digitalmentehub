@@ -44,23 +44,23 @@ export const APPROVAL_STYLES: Record<
   { bg: string; color: string; label: string }
 > = {
   pendente: {
-    bg: "#2a2a3a",
-    color: "#e0e0e0",
+    bg: "var(--ws-surface2)",
+    color: "var(--ws-text2)",
     label: "Pendente",
   },
   aprovado: {
-    bg: "#00e67622",
-    color: "#00e676",
+    bg: "rgba(0,180,100,0.15)",
+    color: "#00a864",
     label: "Aprovado",
   },
   reprovado: {
-    bg: "#ff443322",
-    color: "#ff4433",
+    bg: "rgba(220,50,50,0.13)",
+    color: "#d63232",
     label: "Reprovado",
   },
   alteracao: {
-    bg: "#ffd60022",
-    color: "#ffd600",
+    bg: "rgba(190,140,0,0.15)",
+    color: "#b08a00",
     label: "Alteração solicitada",
   },
 };
