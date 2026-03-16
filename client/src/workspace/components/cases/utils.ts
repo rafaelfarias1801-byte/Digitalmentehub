@@ -9,7 +9,9 @@ export function normalizeWhatsAppPhone(phone?: string | null) {
 
 export function parseDateAtNoon(value?: string | null) {
   if (!value) return null;
-  return new Date(`${value}T12:00:00`);
+  // Pega só os primeiros 10 caracteres (YYYY-MM-DD)
+  const dateOnly = value.slice(0, 10);
+  return new Date(`${dateOnly}T12:00:00`);
 }
 
 export function formatDateBR(
