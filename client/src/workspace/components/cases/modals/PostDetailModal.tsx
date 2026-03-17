@@ -242,11 +242,16 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               background: approval.bg, color: approval.color, borderRadius: 20,
               padding: "4px 12px", fontSize: ".78rem", fontWeight: 600, marginBottom: 12,
             }}>
-              {currentPost.approval_status === "aprovado" ? "✓" : currentPost.approval_status === "reprovado" ? "✕" : currentPost.approval_status === "alteracao" ? "⚠" : "◷"}{" "}
+              {currentPost.approval_status === "aprovado" ? "✓" : currentPost.approval_status === "reprovado" ? "✕" : currentPost.approval_status === "alteracao" ? "⚠" : currentPost.approval_status === "agendado" ? "🗓" : "◷"}{" "}
               {approval.label}
             </div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-              {(["aprovado", "reprovado", "alteracao"] as const).map(status => (
+              {currentPost.approval_status === "agendado" ? (
+                <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                  🗓 Post agendado pelo Make — será publicado no horário definido.
+                </div>
+              ) : (
+                (["aprovado", "reprovado", "alteracao"] as const).map(status => (
                 <button key={status} onClick={() => void saveApproval(status)} disabled={saving} style={{
                   padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                   fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
@@ -257,7 +262,8 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 }}>
                   {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
                 </button>
-              ))}
+              ))
+              )}
             </div>
           </div>
 

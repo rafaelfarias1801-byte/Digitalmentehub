@@ -312,7 +312,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                       <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 2 }}>{post.title}</div>
                     )}
                     <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "Poppins" }}>
-                      {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
+                      {post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
                       {" · "}
                       {post.media_type === "feed" ? "Feed" : post.media_type === "stories" ? "Stories" : post.media_type === "reels" ? "Reels" : "Carrossel"}
                     </div>

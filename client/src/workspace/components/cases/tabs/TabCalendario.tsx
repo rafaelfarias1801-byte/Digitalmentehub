@@ -172,6 +172,11 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
                             color: cfg.text, fontFamily: "Poppins", lineHeight: 1.4,
                             overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
                           }}>
+                            {!isMobile && post.scheduled_date && (
+                              <span style={{ opacity: 0.7, marginRight: 3 }}>
+                                {new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                            )}
                             {isMobile ? label.slice(0, 10) : label}
                           </button>
                         );

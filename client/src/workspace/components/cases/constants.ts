@@ -68,6 +68,11 @@ export const APPROVAL_STYLES: Record<
     color: "#b08a00",
     label: "Alteração solicitada",
   },
+  agendado: {
+    bg: "rgba(75,100,255,0.13)",
+    color: "#4b6bff",
+    label: "Agendado",
+  },
 };
 
 export const SUB_TABS = [
