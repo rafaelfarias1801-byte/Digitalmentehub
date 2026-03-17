@@ -71,6 +71,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [form, setForm] = useState<PaymentFormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
 
@@ -113,30 +114,61 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
       paid_date: form.paid ? form.paid_date || todayLocalISO() : null,
     };
 
-    const { data } = await supabase
-      .from("payments")
-      .insert(payload)
-      .select()
-      .single();
+    if (editingPayment) {
+      // Edição
+      const { data } = await supabase
+        .from("payments")
+        .update(payload)
+        .eq("id", editingPayment.id)
+        .select()
+        .single();
 
-    if (data) {
-      setPayments((prev) => sortPayments([...prev, data]));
+      if (data) {
+        setPayments((prev) => sortPayments(prev.map(p => p.id === editingPayment.id ? data : p)));
 
-      // Sincroniza com o financeiro global
-      await supabase.from("financial").insert({
-        description: payload.description,
-        type: "recebimento",
-        due_date: payload.due_date || todayLocalISO(),
-        amount: payload.amount,
-        positive: true,
-        status: payload.paid ? "pago" : "pendente",
-        related_name: caseData.name || null,
-        notes: `Lançado automaticamente via case: ${caseData.name}`,
-        created_at: new Date().toISOString(),
-      });
+        // Atualiza no financeiro global
+        await supabase
+          .from("financial")
+          .update({
+            description: payload.description,
+            amount: payload.amount,
+            due_date: payload.due_date || todayLocalISO(),
+            status: payload.paid ? "pago" : "pendente",
+          })
+          .eq("description", editingPayment.description)
+          .eq("related_name", caseData.name);
 
-      setModal(false);
-      setForm(EMPTY_FORM);
+        setModal(false);
+        setEditingPayment(null);
+        setForm(EMPTY_FORM);
+      }
+    } else {
+      // Novo pagamento
+      const { data } = await supabase
+        .from("payments")
+        .insert(payload)
+        .select()
+        .single();
+
+      if (data) {
+        setPayments((prev) => sortPayments([...prev, data]));
+
+        // Sincroniza com o financeiro global
+        await supabase.from("financial").insert({
+          description: payload.description,
+          type: "recebimento",
+          due_date: payload.due_date || todayLocalISO(),
+          amount: payload.amount,
+          positive: true,
+          status: payload.paid ? "pago" : "pendente",
+          related_name: caseData.name || null,
+          notes: `Lançado automaticamente via case: ${caseData.name}`,
+          created_at: new Date().toISOString(),
+        });
+
+        setModal(false);
+        setForm(EMPTY_FORM);
+      }
     }
 
     setSaving(false);
@@ -177,9 +209,31 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
     }
   }
 
+  function openEdit(payment: Payment) {
+    setEditingPayment(payment);
+    setForm({
+      description: payment.description,
+      amount: String(payment.amount),
+      due_date: payment.due_date || "",
+      paid: payment.paid,
+      paid_date: payment.paid_date || "",
+    });
+    setModal(true);
+  }
+
   async function removePayment(id: string) {
+    const payment = payments.find(p => p.id === id);
     setPayments((prev) => prev.filter((item) => item.id !== id));
     await supabase.from("payments").delete().eq("id", id);
+
+    // Remove do financeiro global também
+    if (payment) {
+      await supabase
+        .from("financial")
+        .delete()
+        .eq("description", payment.description)
+        .eq("related_name", caseData.name);
+    }
   }
 
   const paid = useMemo(
@@ -275,6 +329,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                   p={payment}
                   onToggle={togglePaid}
                   onRemove={removePayment}
+                  onEdit={openEdit}
                 />
               ))}
             </section>
@@ -292,6 +347,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                   p={payment}
                   onToggle={togglePaid}
                   onRemove={removePayment}
+                  onEdit={openEdit}
                 />
               ))}
             </section>
@@ -305,7 +361,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
           onClick={(e) => e.target === e.currentTarget && setModal(false)}
         >
           <div style={modalBoxStyle}>
-            <div style={modalTitleStyle}>Novo pagamento</div>
+            <div style={modalTitleStyle}>{editingPayment ? "Editar pagamento" : "Novo pagamento"}</div>
 
             <label className="ws-label">Descrição</label>
             <input
@@ -403,7 +459,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                 {saving ? "Salvando..." : "Salvar"}
               </button>
 
-              <button className="ws-btn-ghost" onClick={() => setModal(false)}>
+              <button className="ws-btn-ghost" onClick={() => { setModal(false); setEditingPayment(null); setForm(EMPTY_FORM); }}>
                 Cancelar
               </button>
             </div>
