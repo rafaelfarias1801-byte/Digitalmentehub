@@ -23,6 +23,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [editCaption, setEditCaption] = useState(false);
   const [captionDraft, setCaptionDraft] = useState(currentPost.caption || "");
   const [hashtagsDraft, setHashtagsDraft] = useState(currentPost.hashtags || "");
+  const [confirmStatus, setConfirmStatus] = useState<Post["approval_status"] | null>(null);
+
+  const isLocked = currentPost.approval_status === "aprovado" || currentPost.approval_status === "postado";
   const [newCheck, setNewCheck] = useState("");
   const [newComment, setNewComment] = useState("");
   const [saving, setSaving] = useState(false);
@@ -105,7 +108,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msgs[currentPost.approval_status])}`, "_blank");
   }
 
-  const approval = APPROVAL_STYLES[currentPost.approval_status];
+  const approval = APPROVAL_STYLES[currentPost.approval_status] ?? APPROVAL_STYLES["pendente"];
   const doneCount = (currentPost.checklist || []).filter(i => i.done).length;
   const totalCheck = (currentPost.checklist || []).length;
   const aspectRatio = currentPost.media_type === "feed" ? "4 / 5" : currentPost.media_type === "carousel" ? "1 / 1" : "9 / 16";
@@ -245,29 +248,68 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               background: approval.bg, color: approval.color, borderRadius: 20,
               padding: "4px 12px", fontSize: ".78rem", fontWeight: 600, marginBottom: 12,
             }}>
-              {currentPost.approval_status === "aprovado" ? "✓" : currentPost.approval_status === "reprovado" ? "✕" : currentPost.approval_status === "alteracao" ? "⚠" : currentPost.approval_status === "agendado" ? "🗓" : "◷"}{" "}
+              {currentPost.approval_status === "aprovado" ? "✓" : currentPost.approval_status === "reprovado" ? "✕" : currentPost.approval_status === "alteracao" ? "⚠" : currentPost.approval_status === "agendado" ? "🗓" : currentPost.approval_status === "postado" ? "✅" : "◷"}{" "}
               {approval.label}
             </div>
-            <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-              {currentPost.approval_status === "agendado" ? (
-                <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
-                  🗓 Post agendado pelo Make — será publicado no horário definido.
+
+            {/* Bloqueado */}
+            {isLocked ? (
+              <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                {currentPost.approval_status === "postado" ? "✅ Post publicado — não é possível alterar o status." : "🔒 Aprovado pelo cliente — não é possível alterar o status."}
+              </div>
+            ) : confirmStatus ? (
+              /* Confirmação */
+              <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
+                <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 10 }}>
+                  Confirmar mudança para <b style={{ color: APPROVAL_STYLES[confirmStatus].color }}>{APPROVAL_STYLES[confirmStatus].label}</b>?
                 </div>
-              ) : (
-                (["aprovado", "reprovado", "alteracao"] as const).map(status => (
-                <button key={status} onClick={() => void saveApproval(status)} disabled={saving} style={{
-                  padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                  fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                  background: APPROVAL_STYLES[status].bg, color: APPROVAL_STYLES[status].color,
-                  opacity: currentPost.approval_status === status ? 1 : 0.6,
-                  outline: currentPost.approval_status === status ? `2px solid ${APPROVAL_STYLES[status].color}` : "none",
-                  transition: "all .15s",
-                }}>
-                  {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
-                </button>
-              ))
-              )}
-            </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={async () => { await saveApproval(confirmStatus); setConfirmStatus(null); }} disabled={saving}
+                    style={{ background: APPROVAL_STYLES[confirmStatus].bg, color: APPROVAL_STYLES[confirmStatus].color, border: `1px solid ${APPROVAL_STYLES[confirmStatus].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
+                    Confirmar
+                  </button>
+                  <button onClick={() => setConfirmStatus(null)}
+                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Botões de ação */
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                {currentPost.approval_status === "agendado" ? (
+                  <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                    🗓 Post agendado pelo Make — será publicado no horário definido.
+                  </div>
+                ) : (
+                  <>
+                    {/* Se reprovado ou alteracao, mostra botão voltar pra pendente */}
+                    {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao") && (
+                      <button onClick={() => setConfirmStatus("pendente")} style={{
+                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                        background: APPROVAL_STYLES["pendente"].bg, color: APPROVAL_STYLES["pendente"].color,
+                      }}>
+                        ◷ Voltar para Pendente
+                      </button>
+                    )}
+                    {/* Botões principais */}
+                    {(["aprovado", "reprovado", "alteracao"] as const).map(status => (
+                      <button key={status} onClick={() => setConfirmStatus(status)} disabled={saving} style={{
+                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                        background: APPROVAL_STYLES[status].bg, color: APPROVAL_STYLES[status].color,
+                        opacity: currentPost.approval_status === status ? 1 : 0.6,
+                        outline: currentPost.approval_status === status ? `2px solid ${APPROVAL_STYLES[status].color}` : "none",
+                        transition: "all .15s",
+                      }}>
+                        {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {!!caseData.phone && (

@@ -73,6 +73,11 @@ export const APPROVAL_STYLES: Record<
     color: "#4b6bff",
     label: "Agendado",
   },
+  postado: {
+    bg: "rgba(0,200,150,0.13)",
+    color: "#00a878",
+    label: "Postado",
+  },
 };
 
 export const SUB_TABS = [

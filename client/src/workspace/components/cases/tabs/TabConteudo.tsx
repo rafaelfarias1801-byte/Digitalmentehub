@@ -285,7 +285,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {currentPosts.map(post => {
-              const approval = APPROVAL_STYLES[post.approval_status];
+              const approval = APPROVAL_STYLES[post.approval_status] ?? APPROVAL_STYLES["pendente"];
               const scheduledDate = parseDateAtNoon(post.scheduled_date);
               const extraCount = decodeExtraUrls(post.extra_info).length;
               return (
