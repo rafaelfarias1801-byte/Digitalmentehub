@@ -534,6 +534,35 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           </div>
 
           <div style={{ marginBottom: 20 }}>
+            <div style={labelStyle}>Plataformas</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {([
+                { value: "instagram", label: "Instagram", icon: "📸" },
+                { value: "linkedin",  label: "LinkedIn",  icon: "💼" },
+                { value: "tiktok",    label: "TikTok",    icon: "🎵" },
+              ] as const).map(({ value, label, icon }) => {
+                const isSelected = (currentPost.platforms ?? []).includes(value);
+                return (
+                  <button key={value} onClick={() => {
+                    const current = currentPost.platforms ?? [];
+                    void save({ platforms: isSelected ? current.filter(v => v !== value) : [...current, value] });
+                  }} style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
+                    fontFamily: "inherit", fontSize: ".75rem", fontWeight: 600,
+                    background: isSelected ? `${caseData.color}22` : "var(--ws-surface2)",
+                    color: isSelected ? caseData.color : "var(--ws-text3)",
+                    outline: isSelected ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
+                    transition: "all .15s",
+                  }}>
+                    <span>{icon}</span> {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Data de agendamento</div>
             <input type="date" className="ws-input" value={scheduledDateValue}
               onChange={e => {

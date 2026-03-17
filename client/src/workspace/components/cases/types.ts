@@ -53,6 +53,7 @@ export interface Post {
   due_date?: string;
   label_color?: string;
   comments?: Comment[];
+  platforms?: string[];
 }
 
 export interface Payment {

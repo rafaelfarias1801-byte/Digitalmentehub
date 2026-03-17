@@ -17,6 +17,12 @@ interface TabConteudoProps {
 
 type NewPostForm = Omit<Post, "id" | "case_id">;
 
+const PLATFORMS = [
+  { value: "instagram", label: "Instagram", icon: "📸" },
+  { value: "linkedin",  label: "LinkedIn",  icon: "💼" },
+  { value: "tiktok",    label: "TikTok",    icon: "🎵" },
+] as const;
+
 const EMPTY_POST: NewPostForm = {
   slug: "",
   title: "",
@@ -34,6 +40,7 @@ const EMPTY_POST: NewPostForm = {
   comments: [],
   due_date: "",
   label_color: "",
+  platforms: [],
 };
 
 function isVideoUrl(url: string) {
@@ -179,6 +186,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
       comments: form.comments ?? [],
       due_date: form.due_date || null,
       label_color: form.label_color ?? "",
+      platforms: form.platforms ?? [],
       case_id: caseData.id,
     };
 
@@ -321,6 +329,9 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                       {post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
                       {" · "}
                       {post.media_type === "feed" ? "Feed" : post.media_type === "stories" ? "Stories" : post.media_type === "reels" ? "Reels" : "Carrossel"}
+                      {(post.platforms ?? []).length > 0 && (
+                        <> · {(post.platforms ?? []).map(pl => pl === "instagram" ? "📸" : pl === "linkedin" ? "💼" : "🎵").join(" ")}</>
+                      )}
                     </div>
                   </div>
                   <div style={{ background: approval.bg, color: approval.color, borderRadius: 20, padding: "3px 10px", fontSize: ".72rem", fontWeight: 600 }}>
@@ -511,6 +522,34 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                   limpar
                 </button>
               )}
+            </div>
+
+            <label className="ws-label" style={{ marginTop: 4, marginBottom: 6 }}>Plataformas</label>
+            <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+              {PLATFORMS.map(({ value, label, icon }) => {
+                const isSelected = (form.platforms ?? []).includes(value);
+                return (
+                  <button key={value} onClick={() => setForm(p => {
+                    const current = p.platforms ?? [];
+                    return {
+                      ...p,
+                      platforms: isSelected
+                        ? current.filter(v => v !== value)
+                        : [...current, value],
+                    };
+                  })} style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
+                    fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                    background: isSelected ? `${caseData.color}22` : "var(--ws-surface2)",
+                    color: isSelected ? caseData.color : "var(--ws-text3)",
+                    outline: isSelected ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
+                    transition: "all .15s",
+                  }}>
+                    <span>{icon}</span> {label}
+                  </button>
+                );
+              })}
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
