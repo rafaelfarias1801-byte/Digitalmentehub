@@ -13,6 +13,7 @@ import type { Case, Post } from "../types";
 interface TabConteudoProps {
   caseData: Case;
   profile: Profile;
+  readonly?: boolean;
 }
 
 type NewPostForm = Omit<Post, "id" | "case_id">;
@@ -68,7 +69,7 @@ export function stripMediaTag(extra_info?: string | null): string {
   return extra_info.replace(/^__media_urls__:\[.*?\]\n?/, "");
 }
 
-export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
+export default function TabConteudo({ caseData, profile, readonly = false }: TabConteudoProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -250,7 +251,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <button className="ws-btn" onClick={openModal}>+ Novo post</button>
+{!readonly && <button className="ws-btn" onClick={openModal}>+ Novo post</button>}
       </div>
 
       {loading ? <Loader /> : posts.length === 0 ? <Empty label="Nenhum post cadastrado ainda." /> : (
@@ -337,8 +338,8 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                   <div style={{ background: approval.bg, color: approval.color, borderRadius: 20, padding: "3px 10px", fontSize: ".72rem", fontWeight: 600 }}>
                     {approval.label}
                   </div>
-                  <button onClick={e => { e.stopPropagation(); void removePost(post.id); }}
-                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem" }}>×</button>
+                  {!readonly && <button onClick={e => { e.stopPropagation(); void removePost(post.id); }}
+                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem" }}>×</button>}
                 </div>
               );
             })}
@@ -347,7 +348,7 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
       )}
 
       {/* ── Modal novo post ── */}
-      {modal && (
+      {modal && !readonly && (
         <div style={overlayStyle} onClick={e => e.target === e.currentTarget && closeModal()}>
           <div style={{ ...modalBoxStyle, width: 540, maxHeight: "90vh", overflowY: "auto" }}>
             <div style={modalTitleStyle}>Novo post</div>

@@ -9,6 +9,7 @@ import type { Case, Payment } from "../types";
 
 interface TabFinanceiroProps {
   caseData: Case;
+  readonly?: boolean;
 }
 
 interface PaymentFormState {
@@ -67,7 +68,7 @@ function sortPayments(list: Payment[]) {
   });
 }
 
-export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
+export default function TabFinanceiro({ caseData, readonly = false }: TabFinanceiroProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -308,9 +309,11 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
       >
         <div style={sectionLabelStyle}>Lançamentos financeiros</div>
 
-        <button className="ws-btn" onClick={() => setModal(true)}>
-          + Novo pagamento
-        </button>
+        {!readonly && (
+          <button className="ws-btn" onClick={() => setModal(true)}>
+            + Novo pagamento
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -327,9 +330,10 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                 <PaymentRow
                   key={payment.id}
                   p={payment}
-                  onToggle={togglePaid}
-                  onRemove={removePayment}
-                  onEdit={openEdit}
+                  onToggle={readonly ? undefined : togglePaid}
+                  onRemove={readonly ? undefined : removePayment}
+                  onEdit={readonly ? undefined : openEdit}
+                  readonly={readonly}
                 />
               ))}
             </section>
@@ -345,9 +349,10 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
                 <PaymentRow
                   key={payment.id}
                   p={payment}
-                  onToggle={togglePaid}
-                  onRemove={removePayment}
-                  onEdit={openEdit}
+                  onToggle={readonly ? undefined : togglePaid}
+                  onRemove={readonly ? undefined : removePayment}
+                  onEdit={readonly ? undefined : openEdit}
+                  readonly={readonly}
                 />
               ))}
             </section>
@@ -355,7 +360,7 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
         </div>
       )}
 
-      {modal && (
+      {modal && !readonly && (
         <div
           style={overlayStyle}
           onClick={(e) => e.target === e.currentTarget && setModal(false)}

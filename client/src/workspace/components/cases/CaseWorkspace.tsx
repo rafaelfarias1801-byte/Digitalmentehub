@@ -1,4 +1,5 @@
 ﻿import { useState } from "react";
+import SendAccessModal from "./modals/SendAccessModal";
 import { CasesGlobalStyle } from "./styles";
 import { STATUS_STYLES, SUB_TABS } from "./constants";
 import type { CaseWorkspaceProps } from "./types";
@@ -22,6 +23,7 @@ function getSavedTab(): string {
 export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, profile }: CaseWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<string>(getSavedTab);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [accessModal, setAccessModal] = useState(false);
   const isMobile = useIsMobile();
 
   function navigate(tabId: string) {
@@ -200,6 +202,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
 
         <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)", display: "flex", flexDirection: "column", gap: 6 }}>
           <button onClick={onEdit} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>✎ Editar case</button>
+          <button onClick={() => setAccessModal(true)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>👤 Criar acesso ao cliente</button>
           <button onClick={onDelete} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>× Excluir case</button>
         </div>
       </div>
@@ -216,6 +219,9 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
           <TabContent />
         </div>
       </div>
+      {accessModal && (
+        <SendAccessModal caseData={caseData} onClose={() => setAccessModal(false)} />
+      )}
     </div>
   );
 }

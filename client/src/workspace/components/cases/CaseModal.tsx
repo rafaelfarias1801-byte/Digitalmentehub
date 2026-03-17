@@ -215,7 +215,7 @@ export default function CaseModal({
                 <input
                   className="ws-input"
                   value={form.contact}
-                  placeholder="Nome ou e-mail"
+                  placeholder="Nome do contato"
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, contact: e.target.value }))
                   }
@@ -242,6 +242,18 @@ export default function CaseModal({
               placeholder="Ex: 5511999999999"
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, phone: e.target.value }))
+              }
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="ws-label">Email do cliente</label>
+            <input
+              className="ws-input"
+              type="email"
+              value={form.client_email || ""}
+              placeholder="email@cliente.com.br"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, client_email: e.target.value }))
               }
               style={{ marginBottom: 12 }}
             />

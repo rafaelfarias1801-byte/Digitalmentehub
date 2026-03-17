@@ -1,8 +1,9 @@
-﻿// client/src/workspace/WorkspaceApp.tsx
+// client/src/workspace/WorkspaceApp.tsx
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { Profile } from "../lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import Checklist from "./components/Checklist";
@@ -12,6 +13,7 @@ import Cases from "./components/Cases";
 import Notas from "./components/Notas";
 import IA from "./components/IA";
 import Pomodoro from "./components/Pomodoro";
+import ClientView from "./components/ClientView";
 import "./workspace.css";
 
 export type PageId =
@@ -84,6 +86,18 @@ export default function WorkspaceApp() {
   );
 
   if (!profile) return <LoginPage onLogin={setProfile} />;
+
+  // Primeiro acesso: forçar troca de senha
+  if (profile.must_change_password) {
+    return (
+      <ChangePasswordPage onDone={() => setProfile(p => p ? { ...p, must_change_password: false } : p)} />
+    );
+  }
+
+  // Cliente: layout dedicado com apenas o case dele
+  if (profile.role === "cliente") {
+    return <ClientView profile={profile} />;
+  }
 
   const CurrentPage = PAGES[page];
 

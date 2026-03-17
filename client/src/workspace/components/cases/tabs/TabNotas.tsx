@@ -9,9 +9,10 @@ import { useIsMobile } from "../../../hooks/useIsMobile";
 interface TabNotasProps {
   caseData: Case;
   profile: Profile;
+  readonly?: boolean;
 }
 
-export default function TabNotas({ caseData, profile }: TabNotasProps) {
+export default function TabNotas({ caseData, profile, readonly = false }: TabNotasProps) {
   const [columns, setColumns] = useState<NoteColumn[]>([]);
   const [cards, setCards] = useState<NoteCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,19 +241,21 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                 {column.title}
               </div>
 
-              <button
-                onClick={() => void removeColumn(column.id)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--ws-text3)",
-                  cursor: "pointer",
-                  fontSize: ".9rem",
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
+              {!readonly && (
+                <button
+                  onClick={() => void removeColumn(column.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--ws-text3)",
+                    cursor: "pointer",
+                    fontSize: ".9rem",
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              )}
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 8 }}>
@@ -382,7 +385,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
               })}
             </div>
 
-            {addingCard === column.id ? (
+            {!readonly && addingCard === column.id ? (
               <div style={{ marginTop: 8 }}>
                 <textarea
                   value={newCardText}
@@ -444,7 +447,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : !readonly ? (
               <button
                 onClick={() => {
                   setAddingCard(column.id);
@@ -479,7 +482,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
         );
       })}
 
-      <div style={{ width: 240, flexShrink: 0 }}>
+      {!readonly && <div style={{ width: 240, flexShrink: 0 }}>
         {addingCol ? (
           <div
             style={{
@@ -567,7 +570,7 @@ export default function TabNotas({ caseData, profile }: TabNotasProps) {
             + Adicionar outra lista
           </button>
         )}
-      </div>
+      </div>}
 
       {openCard && (
         <NoteCardModal

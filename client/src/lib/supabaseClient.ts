@@ -1,4 +1,4 @@
-﻿// client/src/lib/supabaseClient.ts
+// client/src/lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = "https://nznyzjvtmqfcjkogkfju.supabase.co";
@@ -14,6 +14,9 @@ export interface Profile {
   name: string;
   role: UserRole;
   initials: string;
+  avatar_url?: string;
+  case_id?: string;          // para clientes: vincula ao case deles
+  must_change_password?: boolean; // true no primeiro acesso
   created_at: string;
 }
 

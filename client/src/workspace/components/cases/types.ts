@@ -12,6 +12,7 @@ export interface Case {
   phone?: string;
   since?: string;
   notes?: string;
+  client_email?: string;    // email de acesso do cliente
   // Redes Sociais
   instagram_username?: string;
   instagram_page_id?: string;

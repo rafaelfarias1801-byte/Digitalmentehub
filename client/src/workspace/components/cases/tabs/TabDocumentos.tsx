@@ -8,11 +8,15 @@ import { useIsMobile } from "../../../hooks/useIsMobile";
 interface TabDocumentosProps {
   caseData: Case;
   type: "contrato" | "documento";
+  readonly?: boolean;
+  canUpload?: boolean;
 }
 
 export default function TabDocumentos({
   caseData,
   type,
+  readonly = false,
+  canUpload = true,
 }: TabDocumentosProps) {
   const [docs, setDocs] = useState<CaseDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,28 +103,30 @@ export default function TabDocumentos({
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <button
-          className="ws-btn"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-        >
-          {uploading
-            ? "Enviando..."
-            : `+ Enviar ${type === "contrato" ? "contrato" : "documento"}`}
-        </button>
+      {(!readonly || canUpload) && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+          <button
+            className="ws-btn"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading
+              ? "Enviando..."
+              : `+ Enviar ${type === "contrato" ? "contrato" : "documento"}`}
+          </button>
 
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void upload(file);
-          }}
-        />
-      </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void upload(file);
+            }}
+          />
+        </div>
+      )}
 
       {loading ? (
         <Loader />
@@ -158,7 +164,7 @@ export default function TabDocumentos({
                   </div>
                 </div>
 
-                {!isMobile && (
+                {!isMobile && !readonly && (
                   <button onClick={() => void removeDocument(doc.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
                 )}
               </div>
@@ -185,7 +191,7 @@ export default function TabDocumentos({
                 >
                   Abrir
                 </a>
-                {isMobile && (
+                {isMobile && !readonly && (
                   <button onClick={() => void removeDocument(doc.id)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
                     Excluir
                   </button>
