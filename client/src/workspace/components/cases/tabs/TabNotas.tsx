@@ -385,7 +385,7 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
               })}
             </div>
 
-            {!readonly && addingCard === column.id ? (
+            {!readonly && (addingCard === column.id ? (
               <div style={{ marginTop: 8 }}>
                 <textarea
                   value={newCardText}
@@ -447,7 +447,7 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
                   </button>
                 </div>
               </div>
-            ) : !readonly ? (
+            ) : (
               <button
                 onClick={() => {
                   setAddingCard(column.id);
@@ -477,7 +477,7 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
               >
                 + Adicionar um cartão
               </button>
-            )}
+            ))}
           </div>
         );
       })}
