@@ -20,6 +20,9 @@ interface PostDetailModalProps {
 export default function PostDetailModal({ post, caseData, onClose, onUpdate, profile }: PostDetailModalProps) {
   const [currentPost, setCurrentPost] = useState<Post>(post);
   const [editDesc, setEditDesc] = useState(false);
+  const [editCaption, setEditCaption] = useState(false);
+  const [captionDraft, setCaptionDraft] = useState(currentPost.caption || "");
+  const [hashtagsDraft, setHashtagsDraft] = useState(currentPost.hashtags || "");
   const [newCheck, setNewCheck] = useState("");
   const [newComment, setNewComment] = useState("");
   const [saving, setSaving] = useState(false);
@@ -312,25 +315,44 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             )}
           </div>
 
-          {/* ── Legenda ── */}
-          {currentPost.caption && (
-            <div style={{ marginBottom: 20 }}>
+          {/* ── Legenda + Hashtags ── */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={labelStyle}>Legenda</div>
-              <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                {currentPost.caption}
-              </div>
+              {!editCaption && (
+                <button onClick={() => { setCaptionDraft(currentPost.caption || ""); setHashtagsDraft(currentPost.hashtags || ""); setEditCaption(true); }}
+                  style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
+                  ✏ Editar
+                </button>
+              )}
             </div>
-          )}
-
-          {/* ── Hashtags ── */}
-          {currentPost.hashtags && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={labelStyle}>Hashtags</div>
-              <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".8rem", color: "#7b9cff", lineHeight: 1.7, wordBreak: "break-word" }}>
-                {currentPost.hashtags}
+            {editCaption ? (
+              <div>
+                <textarea className="ws-input" value={captionDraft} onChange={e => setCaptionDraft(e.target.value)}
+                  placeholder="Legenda do post..." style={{ minHeight: 100, resize: "vertical", fontSize: ".84rem", marginBottom: 10, lineHeight: 1.6 }} />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => { void save({ caption: captionDraft }); setEditCaption(false); }}
+                    style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+                    Salvar
+                  </button>
+                  <button onClick={() => setEditCaption(false)}
+                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+                    Cancelar
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <>
+                {currentPost.caption ? (
+                  <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {currentPost.caption}
+                  </div>
+                ) : (
+                  <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Sem legenda</div>
+                )}
+              </>
+            )}
+          </div>
 
           {/* ── Extra info (sem a tag de URLs) ── */}
           {stripMediaTag(currentPost.extra_info) && (
@@ -438,7 +460,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
 
           <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Etiqueta</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
               {LABEL_COLORS.map(color => (
                 <div key={color} onClick={() => void save({ label_color: currentPost.label_color === color ? "" : color })} style={{
                   width: 24, height: 24, borderRadius: 4, background: color, cursor: "pointer",
@@ -447,6 +469,25 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   transition: "all .15s",
                 }} />
               ))}
+              {/* Picker customizado */}
+              <label title="Cor personalizada" style={{
+                position: "relative", width: 24, height: 24, borderRadius: 4, cursor: "pointer", flexShrink: 0, overflow: "hidden",
+                background: currentPost.label_color && !LABEL_COLORS.includes(currentPost.label_color) ? currentPost.label_color : "var(--ws-border2)",
+                border: currentPost.label_color && !LABEL_COLORS.includes(currentPost.label_color) ? "3px solid white" : "3px solid transparent",
+                boxShadow: currentPost.label_color && !LABEL_COLORS.includes(currentPost.label_color) ? `0 0 0 2px ${currentPost.label_color}` : "none",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontSize: ".7rem", color: "var(--ws-text3)", pointerEvents: "none" }}>+</span>
+                <input type="color" value={currentPost.label_color || "#000000"}
+                  onChange={e => void save({ label_color: e.target.value })}
+                  style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
+              </label>
+              {currentPost.label_color && (
+                <button onClick={() => void save({ label_color: "" })}
+                  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>
+                  limpar
+                </button>
+              )}
             </div>
           </div>
 
