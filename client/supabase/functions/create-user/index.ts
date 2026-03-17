@@ -13,13 +13,14 @@ serve(async (req) => {
   }
 
   try {
-    // Admin client usa SERVICE_ROLE_KEY — nunca exposta no frontend
     const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    const { email, password, name, role, case_id } = await req.json();
+    const body = await req.json();
+    const { email, password, name, role, case_id } = body;
 
     if (!email || !password || !name || !role) {
       return new Response(JSON.stringify({ error: "Campos obrigatórios faltando." }), {
@@ -27,11 +28,11 @@ serve(async (req) => {
       });
     }
 
-    // 1. Criar usuário no Supabase Auth
+    // 1. Criar usuário no Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // já confirma o email automaticamente
+      email_confirm: true,
     });
 
     if (authError) {
@@ -41,14 +42,15 @@ serve(async (req) => {
     }
 
     const userId = authData.user.id;
+    const initials = name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
 
-    // 2. Criar perfil na tabela profiles
+    // 2. Criar perfil
     const { error: profileError } = await supabaseAdmin.from("profiles").upsert({
       id: userId,
       email,
       name,
       role,
-      initials: name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
+      initials,
       case_id: role === "cliente" ? case_id : null,
       must_change_password: true,
       created_at: new Date().toISOString(),
