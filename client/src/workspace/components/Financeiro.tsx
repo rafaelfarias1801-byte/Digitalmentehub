@@ -88,6 +88,7 @@ export default function Financeiro({ profile }: Props) {
   const [typeFilter, setTypeFilter] = useState<"all" | FinEntry["type"]>("all");
   const [search, setSearch] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthKey());
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const [calcDisplay, setCalcDisplay] = useState("0");
   const isMobile = useIsMobile();
@@ -186,8 +187,27 @@ export default function Financeiro({ profile }: Props) {
   }
 
   async function remove(id: string) {
+    const entry = entries.find((e) => e.id === id);
     setEntries((prev) => prev.filter((e) => e.id !== id));
     await supabase.from("financial").delete().eq("id", id);
+
+    // Se tiver related_name, remove o payment correspondente na case também
+    if (entry?.related_name) {
+      const { data: cases } = await supabase
+        .from("cases")
+        .select("id")
+        .eq("name", entry.related_name)
+        .maybeSingle();
+
+      if (cases?.id) {
+        await supabase
+          .from("payments")
+          .delete()
+          .eq("case_id", cases.id)
+          .eq("description", entry.description);
+      }
+    }
+
     if (editing?.id === id) {
       closeDrawer();
     }
@@ -715,20 +735,34 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
                         >
                           ✎
                         </button>
-                        <button
-                          onClick={() => remove(e.id)}
-                          style={{
-                            background: "var(--ws-surface2)",
-                            border: "1px solid var(--ws-border2)",
-                            borderRadius: 8,
-                            color: "var(--ws-accent)",
-                            cursor: "pointer",
-                            padding: "6px 10px",
-                            fontSize: ".75rem",
-                          }}
-                        >
-                          ×
-                        </button>
+                        {confirmingId === e.id ? (
+                          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <span style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", whiteSpace: "nowrap" }}>Excluir?</span>
+                            <button onClick={() => { void remove(e.id); setConfirmingId(null); }} style={{
+                              background: "#ff443315", border: "1px solid #ff443350", borderRadius: 6,
+                              color: "#ff4433", cursor: "pointer", fontSize: ".72rem", padding: "4px 8px", fontFamily: "inherit",
+                            }}>Sim</button>
+                            <button onClick={() => setConfirmingId(null)} style={{
+                              background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6,
+                              color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", padding: "4px 8px", fontFamily: "inherit",
+                            }}>Não</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmingId(e.id)}
+                            style={{
+                              background: "var(--ws-surface2)",
+                              border: "1px solid var(--ws-border2)",
+                              borderRadius: 8,
+                              color: "var(--ws-accent)",
+                              cursor: "pointer",
+                              padding: "6px 10px",
+                              fontSize: ".75rem",
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
