@@ -15,9 +15,10 @@ interface PostDetailModalProps {
   onClose: () => void;
   onUpdate: (post: Post) => void;
   profile: Profile;
+  readonly?: boolean;
 }
 
-export default function PostDetailModal({ post, caseData, onClose, onUpdate, profile }: PostDetailModalProps) {
+export default function PostDetailModal({ post, caseData, onClose, onUpdate, profile, readonly = false }: PostDetailModalProps) {
   const [currentPost, setCurrentPost] = useState<Post>(post);
   const [editDesc, setEditDesc] = useState(false);
   const [editCaption, setEditCaption] = useState(false);
@@ -253,7 +254,11 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             </div>
 
             {/* Bloqueado */}
-            {isLocked ? (
+            {readonly ? (
+              <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                Apenas a equipe DIG pode alterar o status.
+              </div>
+            ) : isLocked ? (
               <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                 {currentPost.approval_status === "postado" ? "✅ Post publicado — não é possível alterar o status." : "🔒 Aprovado pelo cliente — não é possível alterar o status."}
               </div>
@@ -325,7 +330,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           {/* ── Descrição ── */}
           <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Descrição</div>
-            {editDesc ? (
+            {editDesc && !readonly ? (
               <div>
                 <RichEditor value={currentPost.description || ""} onChange={v => setCurrentPost(p => ({ ...p, description: v }))} placeholder="Descrição detalhada..." />
                 <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -340,7 +345,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </div>
               </div>
             ) : (
-              <div onClick={() => setEditDesc(true)} style={{
+              <div onClick={() => !readonly && setEditDesc(true)} style={{
                 minHeight: 60, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8,
                 cursor: "pointer", border: "1px solid transparent", transition: "border-color .15s",
               }}
@@ -361,7 +366,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <div style={labelStyle}>Legenda</div>
-              {!editCaption && (
+              {!editCaption && !readonly && (
                 <button onClick={() => { setCaptionDraft(currentPost.caption || ""); setHashtagsDraft(currentPost.hashtags || ""); setEditCaption(true); }}
                   style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
                   ✏ Editar
@@ -420,11 +425,11 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 <span style={{ flex: 1, fontSize: ".84rem", color: item.done ? "var(--ws-text3)" : "var(--ws-text)", textDecoration: item.done ? "line-through" : "none" }}>
                   {item.text}
                 </span>
-                <button onClick={() => removeCheck(item.id)}
-                  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem" }}>×</button>
+                {!readonly && <button onClick={() => removeCheck(item.id)}
+                  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem" }}>×</button>}
               </div>
             ))}
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            {!readonly && <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
               <input className="ws-input" value={newCheck} onChange={e => setNewCheck(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addCheckItem()} placeholder="Novo item..."
                 style={{ flex: 1, fontSize: ".83rem" }} />
@@ -500,7 +505,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
           <div style={labelStyle}>Ações</div>
 
-          <div style={{ marginBottom: 20 }}>
+          {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Etiqueta</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
               {LABEL_COLORS.map(color => (
@@ -531,9 +536,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </button>
               )}
             </div>
-          </div>
+          </div>}
 
-          <div style={{ marginBottom: 20 }}>
+          {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Plataformas</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {([
@@ -560,9 +565,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 );
               })}
             </div>
-          </div>
+          </div>}
 
-          <div style={{ marginBottom: 20 }}>
+          {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Data de agendamento</div>
             <input type="date" className="ws-input" value={scheduledDateValue}
               onChange={e => {
@@ -576,15 +581,15 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
                 void save({ scheduled_date: `${date}T${newTime}:00` });
               }} style={{ fontSize: ".8rem" }} />
-          </div>
+          </div>}
 
-          <div style={{ marginBottom: 20 }}>
+          {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Data de entrega</div>
             <input type="date" className="ws-input" value={currentPost.due_date || ""}
               onChange={e => void save({ due_date: e.target.value })} style={{ fontSize: ".8rem" }} />
-          </div>
+          </div>}
 
-          <div style={{ marginBottom: 20 }}>
+          {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Tipo de conteúdo</div>
             <select className="ws-input" value={currentPost.media_type}
               onChange={e => void save({ media_type: e.target.value as Post["media_type"] })} style={{ fontSize: ".8rem" }}>
@@ -600,7 +605,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             {currentPost.media_type === "stories" && "📐 1080 × 1920 px — Stories"}
             {currentPost.media_type === "reels" && "📐 1080 × 1920 px — Reels"}
             {currentPost.media_type === "carousel" && "📐 1080 × 1080 px — Carrossel"}
-          </div>
+          </div>}
 
           {allSlides.length > 1 && (
             <div style={{ marginTop: 20, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, fontSize: ".73rem", color: "var(--ws-text3)", lineHeight: 1.8 }}>

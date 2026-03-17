@@ -570,6 +570,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
           onClose={() => setSelected(null)}
           onUpdate={updatePost}
           profile={profile}
+          readonly={readonly}
         />
       )}
     </div>
