@@ -27,6 +27,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [confirmStatus, setConfirmStatus] = useState<Post["approval_status"] | null>(null);
 
   const isLocked = currentPost.approval_status === "aprovado" || currentPost.approval_status === "postado";
+  const isPostado = currentPost.approval_status === "postado";
   const [newCheck, setNewCheck] = useState("");
   const [newComment, setNewComment] = useState("");
   const [saving, setSaving] = useState(false);
@@ -253,53 +254,42 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {approval.label}
             </div>
 
-            {/* Bloqueado */}
-            {readonly ? (
+            {/* Bloqueado para todos — postado */}
+            {isPostado ? (
               <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
-                Apenas a equipe DIG pode alterar o status.
+                ✅ Post publicado — não é possível alterar o status.
               </div>
-            ) : isLocked ? (
-              <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
-                {currentPost.approval_status === "postado" ? "✅ Post publicado — não é possível alterar o status." : "🔒 Aprovado pelo cliente — não é possível alterar o status."}
-              </div>
-            ) : confirmStatus ? (
-              /* Confirmação */
-              <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
-                <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 10 }}>
-                  Confirmar mudança para <b style={{ color: APPROVAL_STYLES[confirmStatus].color }}>{APPROVAL_STYLES[confirmStatus].label}</b>?
+
+            ) : readonly ? (
+              /* Cliente: pode aprovar/reprovar/alteracao, mas não voltar pra pendente */
+              isLocked ? (
+                <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                  🔒 Você já aprovou este post.
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={async () => { await saveApproval(confirmStatus); setConfirmStatus(null); }} disabled={saving}
-                    style={{ background: APPROVAL_STYLES[confirmStatus].bg, color: APPROVAL_STYLES[confirmStatus].color, border: `1px solid ${APPROVAL_STYLES[confirmStatus].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
-                    Confirmar
-                  </button>
-                  <button onClick={() => setConfirmStatus(null)}
-                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Botões de ação */
-              <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                {currentPost.approval_status === "agendado" ? (
-                  <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
-                    🗓 Post agendado pelo Make — será publicado no horário definido.
+              ) : confirmStatus ? (
+                <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
+                  <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 10 }}>
+                    Confirmar mudança para <b style={{ color: APPROVAL_STYLES[confirmStatus].color }}>{APPROVAL_STYLES[confirmStatus].label}</b>?
                   </div>
-                ) : (
-                  <>
-                    {/* Se reprovado ou alteracao, mostra botão voltar pra pendente */}
-                    {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao") && (
-                      <button onClick={() => setConfirmStatus("pendente")} style={{
-                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                        background: APPROVAL_STYLES["pendente"].bg, color: APPROVAL_STYLES["pendente"].color,
-                      }}>
-                        ◷ Voltar para Pendente
-                      </button>
-                    )}
-                    {/* Botões principais */}
-                    {(["aprovado", "reprovado", "alteracao"] as const).map(status => (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={async () => { await saveApproval(confirmStatus); setConfirmStatus(null); }} disabled={saving}
+                      style={{ background: APPROVAL_STYLES[confirmStatus].bg, color: APPROVAL_STYLES[confirmStatus].color, border: `1px solid ${APPROVAL_STYLES[confirmStatus].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
+                      Confirmar
+                    </button>
+                    <button onClick={() => setConfirmStatus(null)}
+                      style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                  {currentPost.approval_status === "agendado" ? (
+                    <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                      🗓 Post agendado — será publicado no horário definido.
+                    </div>
+                  ) : (
+                    (["aprovado", "reprovado", "alteracao"] as const).map(status => (
                       <button key={status} onClick={() => setConfirmStatus(status)} disabled={saving} style={{
                         padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                         fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
@@ -310,10 +300,63 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                       }}>
                         {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
                       </button>
-                    ))}
-                  </>
-                )}
-              </div>
+                    ))
+                  )}
+                </div>
+              )
+
+            ) : (
+              /* Admin: controle total */
+              confirmStatus ? (
+                <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
+                  <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 10 }}>
+                    Confirmar mudança para <b style={{ color: APPROVAL_STYLES[confirmStatus].color }}>{APPROVAL_STYLES[confirmStatus].label}</b>?
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={async () => { await saveApproval(confirmStatus); setConfirmStatus(null); }} disabled={saving}
+                      style={{ background: APPROVAL_STYLES[confirmStatus].bg, color: APPROVAL_STYLES[confirmStatus].color, border: `1px solid ${APPROVAL_STYLES[confirmStatus].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
+                      Confirmar
+                    </button>
+                    <button onClick={() => setConfirmStatus(null)}
+                      style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                  {currentPost.approval_status === "agendado" ? (
+                    <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                      🗓 Post agendado pelo Make — será publicado no horário definido.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Admin pode voltar pra pendente se reprovado, alteracao ou aprovado */}
+                      {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao" || currentPost.approval_status === "aprovado") && (
+                        <button onClick={() => setConfirmStatus("pendente")} style={{
+                          padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                          fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                          background: APPROVAL_STYLES["pendente"].bg, color: APPROVAL_STYLES["pendente"].color,
+                        }}>
+                          ◷ Voltar para Pendente
+                        </button>
+                      )}
+                      {(["aprovado", "reprovado", "alteracao"] as const).map(status => (
+                        <button key={status} onClick={() => setConfirmStatus(status)} disabled={saving} style={{
+                          padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                          fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                          background: APPROVAL_STYLES[status].bg, color: APPROVAL_STYLES[status].color,
+                          opacity: currentPost.approval_status === status ? 1 : 0.6,
+                          outline: currentPost.approval_status === status ? `2px solid ${APPROVAL_STYLES[status].color}` : "none",
+                          transition: "all .15s",
+                        }}>
+                          {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )
             )}
           </div>
 
@@ -538,34 +581,57 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             </div>
           </div>}
 
-          {!readonly && <div style={{ marginBottom: 20 }}>
-            <div style={labelStyle}>Plataformas</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {([
-                { value: "instagram", label: "Instagram", icon: "📸" },
-                { value: "linkedin",  label: "LinkedIn",  icon: "💼" },
-                { value: "tiktok",    label: "TikTok",    icon: "🎵" },
-              ] as const).map(({ value, label, icon }) => {
-                const isSelected = (currentPost.platforms ?? []).includes(value);
-                return (
-                  <button key={value} onClick={() => {
-                    const current = currentPost.platforms ?? [];
-                    void save({ platforms: isSelected ? current.filter(v => v !== value) : [...current, value] });
-                  }} style={{
+          {!readonly ? (
+            <div style={{ marginBottom: 20 }}>
+              <div style={labelStyle}>Plataformas</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {([
+                  { value: "instagram", label: "Instagram", icon: "📸" },
+                  { value: "linkedin",  label: "LinkedIn",  icon: "💼" },
+                  { value: "tiktok",    label: "TikTok",    icon: "🎵" },
+                ] as const).map(({ value, label, icon }) => {
+                  const isSelected = (currentPost.platforms ?? []).includes(value);
+                  return (
+                    <button key={value} onClick={() => {
+                      const current = currentPost.platforms ?? [];
+                      void save({ platforms: isSelected ? current.filter(v => v !== value) : [...current, value] });
+                    }} style={{
+                      display: "flex", alignItems: "center", gap: 5,
+                      padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".75rem", fontWeight: 600,
+                      background: isSelected ? `${caseData.color}22` : "var(--ws-surface2)",
+                      color: isSelected ? caseData.color : "var(--ws-text3)",
+                      outline: isSelected ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
+                      transition: "all .15s",
+                    }}>
+                      <span>{icon}</span> {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (currentPost.platforms ?? []).length > 0 ? (
+            <div style={{ marginBottom: 20 }}>
+              <div style={labelStyle}>Plataformas</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {([
+                  { value: "instagram", label: "Instagram", icon: "📸" },
+                  { value: "linkedin",  label: "LinkedIn",  icon: "💼" },
+                  { value: "tiktok",    label: "TikTok",    icon: "🎵" },
+                ] as const).filter(({ value }) => (currentPost.platforms ?? []).includes(value)).map(({ value, label, icon }) => (
+                  <div key={value} style={{
                     display: "flex", alignItems: "center", gap: 5,
-                    padding: "5px 12px", borderRadius: 20, border: "none", cursor: "pointer",
+                    padding: "5px 12px", borderRadius: 20,
                     fontFamily: "inherit", fontSize: ".75rem", fontWeight: 600,
-                    background: isSelected ? `${caseData.color}22` : "var(--ws-surface2)",
-                    color: isSelected ? caseData.color : "var(--ws-text3)",
-                    outline: isSelected ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
-                    transition: "all .15s",
+                    background: `${caseData.color}22`, color: caseData.color,
+                    outline: `2px solid ${caseData.color}`,
                   }}>
                     <span>{icon}</span> {label}
-                  </button>
-                );
-              })}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>}
+          ) : null}
 
           {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Data de agendamento</div>
