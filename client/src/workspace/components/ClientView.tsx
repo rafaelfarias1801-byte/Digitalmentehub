@@ -2,15 +2,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
-import type { Case } from "../cases/types";
-import { SUB_TABS } from "../cases/constants";
-import { CasesGlobalStyle } from "../cases/styles";
-import TabCalendario from "../cases/tabs/TabCalendario";
-import TabConteudo from "../cases/tabs/TabConteudo";
-import TabFinanceiro from "../cases/tabs/TabFinanceiro";
-import TabDocumentos from "../cases/tabs/TabDocumentos";
-import TabNotas from "../cases/tabs/TabNotas";
-import { useIsMobile } from "../../hooks/useIsMobile";
+import type { Case } from "./cases/types";
+import { SUB_TABS } from "./cases/constants";
+import { CasesGlobalStyle } from "./cases/styles";
+import TabCalendario from "./cases/tabs/TabCalendario";
+import TabConteudo from "./cases/tabs/TabConteudo";
+import TabFinanceiro from "./cases/tabs/TabFinanceiro";
+import TabDocumentos from "./cases/tabs/TabDocumentos";
+import TabNotas from "./cases/tabs/TabNotas";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface Props {
   profile: Profile;
