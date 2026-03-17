@@ -437,7 +437,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: ".8rem", fontFamily: "inherit" }}>
                 +
               </button>
-            </div>
+            </div>}
           </div>
 
           {/* ── Comentários ── */}
