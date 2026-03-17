@@ -598,14 +598,14 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               <option value="reels">Reels (9:16 · 1080×1920)</option>
               <option value="carousel">Carrossel (1:1 · 1080×1080)</option>
             </select>
-          </div>
+          </div>}
 
           <div style={{ padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, fontSize: ".73rem", color: "var(--ws-text3)", lineHeight: 1.6 }}>
             {currentPost.media_type === "feed" && "📐 1080 × 1350 px — Feed"}
             {currentPost.media_type === "stories" && "📐 1080 × 1920 px — Stories"}
             {currentPost.media_type === "reels" && "📐 1080 × 1920 px — Reels"}
             {currentPost.media_type === "carousel" && "📐 1080 × 1080 px — Carrossel"}
-          </div>}
+          </div>
 
           {allSlides.length > 1 && (
             <div style={{ marginTop: 20, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, fontSize: ".73rem", color: "var(--ws-text3)", lineHeight: 1.8 }}>
