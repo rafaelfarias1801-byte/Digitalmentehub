@@ -298,11 +298,17 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                     <MediaThumb url={post.media_url} alt={post.title || post.slug || "Post"} mediaType={post.media_type} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)" }}>
+                    <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      {post.label_color && (
+                        <span style={{
+                          display: "inline-block", width: 10, height: 10, borderRadius: "50%",
+                          background: post.label_color, flexShrink: 0,
+                        }} />
+                      )}
                       {post.slug || post.title || "Post"}
                       {extraCount > 0 && (
                         <span style={{
-                          marginLeft: 8, fontSize: ".62rem", fontFamily: "Poppins",
+                          fontSize: ".62rem", fontFamily: "Poppins",
                           background: "var(--ws-surface2)", color: "var(--ws-text3)",
                           padding: "1px 6px", borderRadius: 4,
                         }}>🎠 {extraCount + 1} slides</span>
@@ -478,6 +484,38 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
                 setForm(p => ({ ...p, extra_info: encodeExtraUrls(extraUrls, userText) }));
               }}
               style={{ minHeight: 60, resize: "vertical", marginBottom: 20 }} />
+
+            <label className="ws-label" style={{ marginBottom: 6 }}>Etiqueta</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+              {["#E91E8C", "#FF5722", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0", "#9E9E9E"].map(color => (
+                <button key={color} onClick={() => setForm(p => ({ ...p, label_color: p.label_color === color ? "" : color }))}
+                  style={{
+                    width: 24, height: 24, borderRadius: "50%", background: color, border: "none",
+                    cursor: "pointer", flexShrink: 0,
+                    outline: form.label_color === color ? `3px solid ${color}` : "2px solid transparent",
+                    outlineOffset: 2, transition: "outline .15s",
+                  }} />
+              ))}
+              {/* Picker customizado */}
+              <label title="Cor personalizada" style={{ position: "relative", width: 24, height: 24, borderRadius: "50%", cursor: "pointer", flexShrink: 0, overflow: "hidden",
+                background: form.label_color && !["#E91E8C","#FF5722","#FFC107","#4CAF50","#2196F3","#9C27B0","#9E9E9E"].includes(form.label_color)
+                  ? form.label_color : "var(--ws-border2)",
+                outline: form.label_color && !["#E91E8C","#FF5722","#FFC107","#4CAF50","#2196F3","#9C27B0","#9E9E9E"].includes(form.label_color)
+                  ? `3px solid ${form.label_color}` : "2px solid var(--ws-border2)",
+                outlineOffset: 2, display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ fontSize: ".7rem", color: "var(--ws-text3)", pointerEvents: "none" }}>+</span>
+                <input type="color" value={form.label_color || "#000000"}
+                  onChange={e => setForm(p => ({ ...p, label_color: e.target.value }))}
+                  style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
+              </label>
+              {form.label_color && (
+                <button onClick={() => setForm(p => ({ ...p, label_color: "" }))}
+                  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins" }}>
+                  limpar
+                </button>
+              )}
+            </div>
 
             <div style={{ display: "flex", gap: 10 }}>
               <button className="ws-btn" onClick={() => void save()} disabled={saving || uploading} style={{ flex: 1 }}>
