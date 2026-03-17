@@ -1,4 +1,4 @@
-﻿import type { Profile } from "../../../lib/supabaseClient";
+import type { Profile } from "../../../lib/supabaseClient";
 
 export interface Case {
   id: string;
@@ -12,6 +12,12 @@ export interface Case {
   phone?: string;
   since?: string;
   notes?: string;
+  // Redes Sociais
+  instagram_username?: string;
+  instagram_page_id?: string;
+  facebook_page_id?: string;
+  tiktok_username?: string;
+  linkedin_url?: string;
 }
 
 export interface CheckItem {

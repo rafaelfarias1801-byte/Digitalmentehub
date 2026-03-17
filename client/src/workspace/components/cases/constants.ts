@@ -1,4 +1,4 @@
-﻿import type { Case, NoteLabel, Post } from "./types";
+import type { Case, NoteLabel, Post } from "./types";
 
 export const COLORS = [
   "#e91e8c",
@@ -31,6 +31,11 @@ export const EMPTY_CASE: Omit<Case, "id"> = {
   phone: "",
   since: "",
   notes: "",
+  instagram_username: "",
+  instagram_page_id: "",
+  facebook_page_id: "",
+  tiktok_username: "",
+  linkedin_url: "",
 };
 
 export const STATUS_STYLES: Record<Case["status"], string> = {
