@@ -471,10 +471,6 @@ export default function TabConteudo({ caseData, profile }: TabConteudoProps) {
               onChange={e => setForm(p => ({ ...p, caption: e.target.value }))}
               style={{ minHeight: 80, resize: "vertical", marginBottom: 12 }} />
 
-            <label className="ws-label">Hashtags</label>
-            <input className="ws-input" value={form.hashtags} placeholder="#marca #instagram..."
-              onChange={e => setForm(p => ({ ...p, hashtags: e.target.value }))} style={{ marginBottom: 12 }} />
-
             <label className="ws-label">Informações extras</label>
             <textarea className="ws-input" value={stripMediaTag(form.extra_info)}
               placeholder="Briefing, referências, observações..."
