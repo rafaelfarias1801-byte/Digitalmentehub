@@ -1,5 +1,6 @@
 // client/src/workspace/components/cases/modals/SendAccessModal.tsx
 import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { modalBoxStyle, modalTitleStyle, overlayStyle } from "../styles";
 import type { Case } from "../types";
 
@@ -9,6 +10,13 @@ interface Props {
 }
 
 type UserRole = "cliente" | "admin";
+
+// Cliente admin — só usado neste modal por admins autenticados
+const supabaseAdmin = createClient(
+  "https://nznyzjvtmqfcjkogkfju.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bnl6anZ0bXFmY2prb2drZmp1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzM1MDMxMCwiZXhwIjoyMDg4OTI2MzEwfQ.jBrZRB2VtYDuZD9u5leNxXQ3mWgiDAl2a65mwnV1AbQ",
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
 
 export default function SendAccessModal({ caseData, onClose }: Props) {
   const [email, setEmail]       = useState(caseData.client_email || "");
@@ -28,28 +36,32 @@ export default function SendAccessModal({ caseData, onClose }: Props) {
     setLoading(true);
 
     try {
-      const SUPABASE_URL = "https://nznyzjvtmqfcjkogkfju.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bnl6anZ0bXFmY2prb2drZmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTAzMTAsImV4cCI6MjA4ODkyNjMxMH0.NLf83n9WS3v-e0u_H3WvHGvEgOq1xMgpCP1m7C8LFIY";
-      const res = await fetch(
-        `${SUPABASE_URL}/functions/v1/create-user`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-            name: name.trim(),
-            role,
-            case_id: role === "cliente" ? caseData.id : null,
-          }),
-        }
-      );
+      // 1. Criar usuário no Auth
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: email.trim(),
+        password,
+        email_confirm: true,
+      });
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Erro ao criar usuário.");
+      if (authError) throw new Error(authError.message);
+
+      const userId = authData.user.id;
+      const initials = name.trim().split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
+
+      // 2. Criar perfil
+      const { error: profileError } = await supabaseAdmin.from("profiles").upsert({
+        id: userId,
+        email: email.trim(),
+        name: name.trim(),
+        role,
+        initials,
+        case_id: role === "cliente" ? caseData.id : null,
+        must_change_password: true,
+        created_at: new Date().toISOString(),
+      });
+
+      if (profileError) throw new Error(profileError.message);
+
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "Erro desconhecido.");
@@ -81,7 +93,6 @@ export default function SendAccessModal({ caseData, onClose }: Props) {
       <div style={{ ...modalBoxStyle, width: 440 }}>
         <div style={modalTitleStyle}>👤 Criar acesso ao workspace</div>
 
-        {/* Role selector */}
         <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
           {(["cliente", "admin"] as UserRole[]).map(r => (
             <button key={r} onClick={() => setRole(r)} style={{

@@ -13,20 +13,30 @@ serve(async (req) => {
   }
 
   try {
+    // Parse body safely
+    let body: any = {};
+    try {
+      const text = await req.text();
+      if (text) body = JSON.parse(text);
+    } catch {
+      return new Response(JSON.stringify({ error: "Body inválido." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { email, password, name, role, case_id } = body;
+
+    if (!email || !password || !name || !role) {
+      return new Response(JSON.stringify({ error: "Campos obrigatórios faltando.", received: body }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
-
-    const body = await req.json();
-    const { email, password, name, role, case_id } = body;
-
-    if (!email || !password || !name || !role) {
-      return new Response(JSON.stringify({ error: "Campos obrigatórios faltando." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     // 1. Criar usuário no Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
