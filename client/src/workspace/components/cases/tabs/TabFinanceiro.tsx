@@ -121,6 +121,20 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
 
     if (data) {
       setPayments((prev) => sortPayments([...prev, data]));
+
+      // Sincroniza com o financeiro global
+      await supabase.from("financial").insert({
+        description: payload.description,
+        type: "recebimento",
+        due_date: payload.due_date || todayLocalISO(),
+        amount: payload.amount,
+        positive: true,
+        status: payload.paid ? "pago" : "pendente",
+        related_name: caseData.name || null,
+        notes: `Lançado automaticamente via case: ${caseData.name}`,
+        created_at: new Date().toISOString(),
+      });
+
       setModal(false);
       setForm(EMPTY_FORM);
     }
@@ -145,6 +159,21 @@ export default function TabFinanceiro({ caseData }: TabFinanceiroProps) {
       setPayments((prev) =>
         sortPayments(prev.map((item) => (item.id === payment.id ? data : item)))
       );
+
+      // Atualiza status no financeiro global se existir entrada correspondente
+      const { data: finEntry } = await supabase
+        .from("financial")
+        .select("id")
+        .eq("description", payment.description)
+        .eq("related_name", caseData.name)
+        .maybeSingle();
+
+      if (finEntry) {
+        await supabase
+          .from("financial")
+          .update({ status: nextPaid ? "pago" : "pendente" })
+          .eq("id", finEntry.id);
+      }
     }
   }
 
