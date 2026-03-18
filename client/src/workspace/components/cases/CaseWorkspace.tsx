@@ -61,7 +61,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
               background: "none", border: "none", color: "var(--ws-accent)",
               cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins",
               letterSpacing: "1px", padding: 0, flexShrink: 0,
-            }}>← CASES</button>
+            }}>← CLIENTES</button>
 
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
               {caseData.logo_url ? (
@@ -154,7 +154,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
           }}
             onMouseEnter={e => { e.currentTarget.style.color = "var(--ws-text)"; }}
             onMouseLeave={e => { e.currentTarget.style.color = "var(--ws-text3)"; }}
-          >← CASES</button>
+          >← CLIENTES</button>
           <button onClick={() => setSidebarOpen(p => !p)} style={{
             background: "none", border: "1px solid var(--ws-border2)", borderRadius: 5,
             color: "var(--ws-text3)", cursor: "pointer", width: 24, height: 24,
@@ -201,9 +201,9 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
         </div>
 
         <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)", display: "flex", flexDirection: "column", gap: 6 }}>
-          <button onClick={onEdit} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>✎ Editar case</button>
+          <button onClick={onEdit} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>✎ Editar cliente</button>
           <button onClick={() => setAccessModal(true)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>👤 Criar acesso ao cliente</button>
-          <button onClick={onDelete} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>× Excluir case</button>
+          <button onClick={onDelete} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>× Excluir cliente</button>
         </div>
       </div>
 

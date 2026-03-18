@@ -60,7 +60,7 @@ export default function CaseModal({
     >
       <div style={{ ...modalBoxStyle, width: 500 }}>
         <div style={modalTitleStyle}>
-          {editing ? "Editar case" : "Novo case"}
+          {editing ? "Editar cliente" : "Novo cliente"}
         </div>
 
         {/* Tabs */}
@@ -412,7 +412,7 @@ export default function CaseModal({
               ? "Salvando..."
               : editing
               ? "Salvar alterações"
-              : "Criar case"}
+              : "Criar cliente"}
           </button>
 
           <button className="ws-btn-ghost" onClick={onClose}>

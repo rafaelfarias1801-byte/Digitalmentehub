@@ -190,7 +190,7 @@ export default function Cases({ profile }: CasesProps) {
       <CasesGlobalStyle />
 
       <div className="ws-page-title">
-        Cases<span className="ws-dot">.</span>
+        Clientes<span className="ws-dot">.</span>
       </div>
 
       <div className="ws-page-sub">
@@ -199,7 +199,7 @@ export default function Cases({ profile }: CasesProps) {
 
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
         <button className="ws-btn" onClick={openAdd}>
-          + Novo Case
+          + Novo Cliente
         </button>
       </div>
 
@@ -306,7 +306,7 @@ export default function Cases({ profile }: CasesProps) {
                 letterSpacing: "1px",
               }}
             >
-              NOVO CASE
+              NOVO CLIENTE
             </div>
           </div>
         </div>
