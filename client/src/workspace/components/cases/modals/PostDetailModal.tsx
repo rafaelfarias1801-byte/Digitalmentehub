@@ -130,7 +130,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         boxShadow: "0 30px 80px #00000070",
         display: "flex",
         flexDirection: "column",
-        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0, overflowX: "hidden" } : {}),
+        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0 } : {}),
       }}>
         {/* Mobile: botão toggle de ações */}
         {isMobile && (
@@ -160,7 +160,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           minHeight: 0,
         }}>
         {/* ── Coluna principal ── */}
-        <div style={{ padding: "20px 18px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", overflowX: "hidden", minWidth: 0 }}>
+        <div style={{ padding: "20px 18px", boxSizing: "border-box", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", minWidth: 0, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 }}>
             <div style={{ flex: 1 }}>
               {currentPost.label_color && (
@@ -183,12 +183,12 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           {allSlides.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               {/* Viewer principal */}
-              <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000", marginBottom: allSlides.length > 1 ? 8 : 0 }}>
+              <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000", marginBottom: allSlides.length > 1 ? 8 : 0, maxWidth: "100%" }}>
                 {isVideoFile(activeSlideUrl) ? (
-                  <video src={activeSlideUrl} controls style={{ width: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
+                  <video src={activeSlideUrl} controls style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
                 ) : (
                   <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`}
-                    style={{ width: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
+                    style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
                 )}
 
                 {/* Botões de navegação sobrepostos */}
@@ -545,7 +545,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         </div>
 
         {/* ── Coluna lateral ── */}
-        <div style={{ padding: isMobile ? "16px 16px 32px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block", overflowX: "hidden" }}>
+        <div style={{ padding: isMobile ? "16px 16px 32px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block", boxSizing: "border-box", width: "100%" }}>
           <div style={labelStyle}>Ações</div>
 
           {!readonly && <div style={{ marginBottom: 20 }}>

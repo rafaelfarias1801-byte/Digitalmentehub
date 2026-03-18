@@ -1972,29 +1972,3 @@ select.ws-field {
   }
 }
 
-/* ── Mobile: previne overflow horizontal em todo o app ── */
-@media (max-width: 768px) {
-  /* O layout inteiro não deve ter scroll horizontal */
-  html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-
-  /* Garante que ws-main não force scroll horizontal */
-  .ws-main {
-    overflow-x: hidden;
-  }
-
-  /* Todo conteúdo dentro do ws-main respeita o container */
-  .ws-main * {
-    box-sizing: border-box;
-    max-width: 100%;
-  }
-
-  /* Exceção: imagens e videos podem ter max-width próprio */
-  .ws-main img,
-  .ws-main video {
-    max-width: 100%;
-    height: auto;
-  }
-}

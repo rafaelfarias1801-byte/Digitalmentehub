@@ -253,7 +253,7 @@ export default function NoteCardModal({
           boxShadow: "0 30px 80px #00000070",
           display: "flex",
           flexDirection: "column",
-          ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", overflowX: "hidden" } : {}),
+          ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
         }}
       >
         {/* Mobile: tabs CONTEÚDO / AÇÕES */}
