@@ -119,7 +119,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const scheduledTimeValue = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
 
   return (
-    <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...overlayStyle, ...(isMobile ? { left: 56 } : {}) }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: "var(--ws-surface)",
         borderRadius: isMobile ? "16px 16px 0 0" : 16,
@@ -130,7 +130,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         boxShadow: "0 30px 80px #00000070",
         display: "flex",
         flexDirection: "column",
-        ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: "auto", margin: 0 } : {}),
+        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0 } : {}),
       }}>
         {/* Mobile: botão toggle de ações */}
         {isMobile && (

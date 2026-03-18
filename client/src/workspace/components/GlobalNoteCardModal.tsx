@@ -194,7 +194,7 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
   };
 
   return (
-    <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...overlayStyle, ...(isMobile ? { left: 56 } : {}) }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: "var(--ws-surface)",
         borderRadius: isMobile ? "16px 16px 0 0" : 16,
@@ -205,7 +205,7 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
         boxShadow: "0 30px 80px #00000070",
         display: "flex",
         flexDirection: "column",
-        ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: "auto" } : {}),
+        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
       }}>
 
         {/* ── Abas mobile ── */}

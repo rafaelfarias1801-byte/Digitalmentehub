@@ -327,7 +327,7 @@ export default function NoteCardModal({
 
   return (
     <div
-      style={overlayStyle}
+      style={{ ...overlayStyle, ...(isMobile ? { left: 56 } : {}) }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -341,7 +341,7 @@ export default function NoteCardModal({
           boxShadow: "0 30px 80px #00000070",
           display: "flex",
           flexDirection: "column",
-          ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: "auto" } : {}),
+          ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
         }}
       >
         {/* Mobile: tabs CONTEÚDO / AÇÕES */}
