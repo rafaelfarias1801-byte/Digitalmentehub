@@ -92,6 +92,7 @@
   height: 100vh;
   overflow: hidden;
   background: var(--ws-bg);
+  position: relative; /* necessário para sidebar completa position:absolute no desktop */
 }
 
 /* ── Sidebar: transição suave entre full e mini ── */
