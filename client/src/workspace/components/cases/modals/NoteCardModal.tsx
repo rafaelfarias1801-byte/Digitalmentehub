@@ -227,6 +227,14 @@ function LabelPicker({ value, onChange, accentColor }: LabelPickerProps) {
   );
 }
 
+function linkify(html: string): string {
+  // Só converte URLs que não estão dentro de uma tag <a> já existente
+  return html.replace(
+    /(?<!href=["'])(?<![">])(https?:\/\/[^\s<"']+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#4b6bff;word-break:break-all;">$1</a>'
+  );
+}
+
 export default function NoteCardModal({
   card,
   caseData,
@@ -534,7 +542,7 @@ export default function NoteCardModal({
                       lineHeight: 1.7,
                     }}
                     dangerouslySetInnerHTML={{
-                      __html: currentCard.description,
+                      __html: linkify(currentCard.description),
                     }}
                   />
                 ) : (
