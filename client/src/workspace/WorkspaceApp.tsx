@@ -116,8 +116,8 @@ export default function WorkspaceApp() {
       <main className="ws-main">
         <CurrentPage
           profile={profile}
-          // No mobile a sidebar já fecha sozinha ao navegar (dentro do Sidebar).
-          // No desktop, fechamos ao abrir um case para dar mais espaço.
+          // No mobile a sidebar fecha sozinha ao navegar (dentro do Sidebar).
+          // No desktop, fecha ao abrir um case para dar mais espaço à tela.
           onCaseOpen={() => { if (!getIsMobile()) setSidebarOpen(false); }}
           onCaseClose={() => { if (!getIsMobile()) setSidebarOpen(true); }}
         />

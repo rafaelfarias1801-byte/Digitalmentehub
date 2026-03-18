@@ -1,5 +1,5 @@
 // client/src/workspace/components/Sidebar.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import type { PageId } from "../WorkspaceApp";
@@ -60,11 +60,14 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
   const [openInternal, setOpenInternal] = useState(!getIsMobile());
   const open = openProp !== undefined ? openProp : openInternal;
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
-  const [isMobile, setIsMobile] = useState(getIsMobile());
+
+  // Ref para evitar closure stale no resize handler
+  const onOpenChangeRef = useRef(onOpenChange);
+  useEffect(() => { onOpenChangeRef.current = onOpenChange; }, [onOpenChange]);
 
   function setOpenAndNotify(val: boolean) {
     setOpenInternal(val);
-    onOpenChange?.(val);
+    onOpenChangeRef.current?.(val);
   }
 
   useEffect(() => {
@@ -73,9 +76,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
 
   useEffect(() => {
     function handleResize() {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) setOpenAndNotify(false);
+      if (window.innerWidth < 768) setOpenAndNotify(false);
       else setOpenAndNotify(true);
     }
     window.addEventListener("resize", handleResize);
@@ -94,9 +95,9 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
   }
 
   const isDark = theme === "dark";
+  const isMobile = getIsMobile();
 
-  // ── Sidebar content (shared between desktop inline and mobile overlay) ──
-  const SidebarContent = () => (
+  const sidebarContent = (
     <>
       <div className="ws-sidebar-top" style={{ position: "relative" }}>
         <button
@@ -192,7 +193,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
 
   return (
     <>
-      {/* ── Overlay escuro (mobile, quando sidebar completa aberta) ── */}
+      {/* Overlay escuro no mobile quando sidebar aberta */}
       {open && isMobile && (
         <div
           onClick={() => setOpenAndNotify(false)}
@@ -201,9 +202,9 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
       )}
 
       {/* ══════════════════════════════════
-          RAIL — sempre no fluxo do layout.
-          Desktop: só aparece quando sidebar fechada.
-          Mobile: SEMPRE visível (nunca some).
+          RAIL — sempre no layout
+          Desktop: só quando sidebar fechada
+          Mobile: SEMPRE visível (nunca some)
       ══════════════════════════════════ */}
       {(!open || isMobile) && (
         <div
@@ -268,11 +269,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
         </div>
       )}
 
-      {/* ══════════════════════════════════
-          SIDEBAR COMPLETA
-          Desktop: position relative, empurra o conteúdo.
-          Mobile: position fixed, overlay por cima da rail.
-      ══════════════════════════════════ */}
+      {/* Sidebar completa — DESKTOP: empurra o conteúdo normalmente */}
       {open && !isMobile && (
         <aside
           className="ws-sidebar"
@@ -284,10 +281,11 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
             overflow: "hidden",
           }}
         >
-          <SidebarContent />
+          {sidebarContent}
         </aside>
       )}
 
+      {/* Sidebar completa — MOBILE: fixed overlay por cima da rail */}
       {open && isMobile && (
         <aside
           className="ws-sidebar"
@@ -301,7 +299,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
             overflow: "hidden",
           }}
         >
-          <SidebarContent />
+          {sidebarContent}
         </aside>
       )}
     </>

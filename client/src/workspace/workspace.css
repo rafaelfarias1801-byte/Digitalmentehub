@@ -1836,7 +1836,8 @@ select.ws-field {
 }
 
 /* ── Drawer lateral (Financeiro, Checklist) ── */
-[data-theme="light"] aside {
+/* Seletor específico para não pegar a sidebar (aside.ws-sidebar) */
+[data-theme="light"] aside:not(.ws-sidebar) {
   background: #ffffff !important;
   border-left-color: var(--ws-border) !important;
 }
