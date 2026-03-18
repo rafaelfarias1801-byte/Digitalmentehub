@@ -141,6 +141,9 @@ export default function RichEditor({
           borderRadius: "6px 6px 0 0",
           border: "1px solid var(--ws-border2)",
           borderBottom: "none",
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
         }}
       >
         {tools.map(([cmd, label], index) => (
