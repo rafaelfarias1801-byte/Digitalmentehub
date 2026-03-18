@@ -108,10 +108,10 @@ export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange
           position: isMobile ? "fixed" : "relative",
           top: 0, left: 0, height: "100%",
           zIndex: 199,
-          // Mobile: slide in/out. Desktop: always visible (mini or full)
-          transform: isMobile && !open ? "translateX(-110%)" : "translateX(0)",
+          // Rail sempre visível (mobile e desktop). Slide só da sidebar completa.
+          transform: "translateX(0)",
           transition: "transform .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1)",
-          boxShadow: open && isMobile ? "4px 0 24px #00000050" : "none",
+          boxShadow: "none",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -121,7 +121,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange
             MINI RAIL (desktop collapsed)
             Só ícones + botão de expandir
         ══════════════════════════════════ */}
-        {!open && !isMobile && (
+        {!open && (
           <div className="ws-sidebar-rail">
             {/* Botão expandir */}
             <button
@@ -187,7 +187,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange
         {/* ══════════════════════════════════
             SIDEBAR COMPLETA
         ══════════════════════════════════ */}
-        {(open || isMobile) && (
+        {open && (
           <>
             {/* ── Topo: brand + fechar ── */}
             <div className="ws-sidebar-top" style={{ position: "relative" }}>
