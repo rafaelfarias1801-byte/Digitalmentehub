@@ -117,6 +117,13 @@ function LabelPicker({ value, onChange }: LabelPickerProps) {
 }
 
 // ── Modal principal ──────────────────────────────────────────────
+function linkify(html: string): string {
+  return html.replace(
+    /(?<!href=["'])(?<![">])(https?:\/\/[^\s<"']+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#4b6bff;word-break:break-all;">$1</a>'
+  );
+}
+
 export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete, profile }: Props) {
   const [currentCard, setCurrentCard] = useState<NoteCard>(card);
   const [editTitle, setEditTitle] = useState(false);
@@ -317,7 +324,7 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
                     <div
                       className="ws-richtext"
                       style={{ fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.7 }}
-                      dangerouslySetInnerHTML={{ __html: currentCard.description }}
+                      dangerouslySetInnerHTML={{ __html: linkify(currentCard.description) }}
                     />
                   ) : (
                     <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>
