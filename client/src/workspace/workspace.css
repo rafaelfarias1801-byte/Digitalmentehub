@@ -1359,27 +1359,26 @@ select.ws-field {
 /* ── Tablet (≤ 768px) ── */
 @media (max-width: 768px) {
 
-  /* Layout principal */
+  /* Layout principal — row: rail lateral, main ocupa o resto */
   .ws-layout {
-    flex-direction: column;
+    flex-direction: row;
     height: 100dvh;
     overflow: hidden;
   }
 
   .ws-main {
     flex: 1;
+    min-width: 0;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    /* Evita que o hambúrguer (38px + 12px top + 12px gap) sobreponha o conteúdo */
     padding-top: 0;
   }
 
-  /* Quando sidebar fechada: empurra o conteúdo para não sobrepor o hambúrguer */
-  /* O hambúrguer é 38px altura + 12px top = 62px total de espaço necessário */
   .ws-main .ws-page {
-    padding-top: 62px;
+    padding-top: 0;
   }
+
   .ws-sidebar {
     width: 280px !important;
     min-width: 280px !important;
