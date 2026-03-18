@@ -123,7 +123,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
       <div style={{
         background: "var(--ws-surface)",
         borderRadius: isMobile ? "16px 16px 0 0" : 16,
-        width: isMobile ? "100%" : "min(860px,95vw)",
+        ...(isMobile ? {} : { width: "min(860px,95vw)" }),
         maxHeight: isMobile ? "94dvh" : "90vh",
         overflowY: "auto",
         border: "1px solid var(--ws-border2)",

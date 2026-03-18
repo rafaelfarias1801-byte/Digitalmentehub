@@ -246,7 +246,7 @@ export default function NoteCardModal({
         style={{
           background: "var(--ws-surface)",
           borderRadius: isMobile ? "16px 16px 0 0" : 16,
-          width: isMobile ? "100%" : "min(780px,95vw)",
+          ...(isMobile ? {} : { width: "min(780px,95vw)" }),
           maxHeight: isMobile ? "94dvh" : "90vh",
           overflowY: "auto",
           border: "1px solid var(--ws-border2)",
