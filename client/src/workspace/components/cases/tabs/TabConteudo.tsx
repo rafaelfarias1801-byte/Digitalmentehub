@@ -6,7 +6,8 @@ import PostDetailModal from "../modals/PostDetailModal";
 import Empty from "../shared/Empty";
 import Loader from "../shared/Loader";
 import MediaThumb from "../shared/MediaThumb";
-import { modalBoxStyle, modalTitleStyle, overlayStyle } from "../styles";
+import { modalBoxStyle, modalTitleStyle, overlayStyle, getOverlayStyle } from "../styles";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 import { normalizeWhatsAppPhone, parseDateAtNoon } from "../utils";
 import type { Case, Post } from "../types";
 
@@ -70,6 +71,7 @@ export function stripMediaTag(extra_info?: string | null): string {
 }
 
 export default function TabConteudo({ caseData, profile, readonly = false }: TabConteudoProps) {
+  const isMobile = useIsMobile();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -349,7 +351,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
       {/* ── Modal novo post ── */}
       {modal && !readonly && (
-        <div style={overlayStyle} onClick={e => e.target === e.currentTarget && closeModal()}>
+        <div style={getOverlayStyle(isMobile)} onClick={e => e.target === e.currentTarget && closeModal()}>
           <div style={{ ...modalBoxStyle, width: 540, maxHeight: "90vh", overflowY: "auto" }}>
             <div style={modalTitleStyle}>Novo post</div>
 
@@ -498,14 +500,14 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
               {["#E91E8C", "#FF5722", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0", "#9E9E9E"].map(color => (
                 <button key={color} onClick={() => setForm(p => ({ ...p, label_color: p.label_color === color ? "" : color }))}
                   style={{
-                    width: 24, height: 24, borderRadius: "50%", background: color, border: "none",
+                    width: 20, height: 20, borderRadius: 4, background: color, border: "none",
                     cursor: "pointer", flexShrink: 0,
                     outline: form.label_color === color ? `3px solid ${color}` : "2px solid transparent",
                     outlineOffset: 2, transition: "outline .15s",
                   }} />
               ))}
               {/* Picker customizado */}
-              <label title="Cor personalizada" style={{ position: "relative", width: 24, height: 24, borderRadius: "50%", cursor: "pointer", flexShrink: 0, overflow: "hidden",
+              <label title="Cor personalizada" style={{ position: "relative", width: 20, height: 20, borderRadius: 4, cursor: "pointer", flexShrink: 0, overflow: "hidden",
                 background: form.label_color && !["#E91E8C","#FF5722","#FFC107","#4CAF50","#2196F3","#9C27B0","#9E9E9E"].includes(form.label_color)
                   ? form.label_color : "var(--ws-border2)",
                 outline: form.label_color && !["#E91E8C","#FF5722","#FFC107","#4CAF50","#2196F3","#9C27B0","#9E9E9E"].includes(form.label_color)

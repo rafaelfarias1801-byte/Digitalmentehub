@@ -61,6 +61,14 @@ export const overlayStyle: CSSProperties = {
   justifyContent: "center",
 };
 
+// Use este em componentes que têm acesso ao isMobile
+export function getOverlayStyle(isMobile: boolean): CSSProperties {
+  return {
+    ...overlayStyle,
+    left: isMobile ? 56 : 0,
+  };
+}
+
 export const modalBoxStyle: CSSProperties = {
   background: "var(--ws-surface)",
   border: "1px solid var(--ws-border2)",

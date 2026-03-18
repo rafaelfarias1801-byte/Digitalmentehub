@@ -3,7 +3,8 @@ import { supabase } from "../../../../lib/supabaseClient";
 import Empty from "../shared/Empty";
 import Loader from "../shared/Loader";
 import PaymentRow from "../shared/PaymentRow";
-import { fmt, modalBoxStyle, modalTitleStyle, overlayStyle } from "../styles";
+import { fmt, modalBoxStyle, modalTitleStyle, overlayStyle, getOverlayStyle } from "../styles";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 import { todayLocalISO } from "../utils";
 import type { Case, Payment } from "../types";
 
@@ -69,6 +70,7 @@ function sortPayments(list: Payment[]) {
 }
 
 export default function TabFinanceiro({ caseData, readonly = false }: TabFinanceiroProps) {
+  const isMobile = useIsMobile();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -362,7 +364,7 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
 
       {modal && !readonly && (
         <div
-          style={overlayStyle}
+          style={getOverlayStyle(isMobile)}
           onClick={(e) => e.target === e.currentTarget && setModal(false)}
         >
           <div style={modalBoxStyle}>

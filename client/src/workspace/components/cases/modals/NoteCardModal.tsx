@@ -2,7 +2,7 @@
 import type { Profile } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { DEFAULT_LABELS } from "../constants";
-import { closeBtnStyle, labelStyle, overlayStyle } from "../styles";
+import { closeBtnStyle, labelStyle, overlayStyle, getOverlayStyle } from "../styles";
 import type { Case, NoteCard, NoteLabel } from "../types";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 
@@ -83,145 +83,57 @@ function LabelPicker({ value, onChange, accentColor }: LabelPickerProps) {
     <div>
       <div style={{ ...labelStyle, marginBottom: 8 }}>Etiqueta</div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      {/* Quadradinhos lado a lado */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
         {labels.map((label, index) => (
           <div
             key={`${label.color}-${index}`}
-            style={{ display: "flex", alignItems: "center", gap: 6 }}
-          >
-            {editIndex === index ? (
-              <>
-                <div
-                  style={{
-                    width: 36,
-                    height: 28,
-                    borderRadius: 4,
-                    background: label.color,
-                    flexShrink: 0,
-                    border:
-                      selectedColor === label.color
-                        ? "3px solid white"
-                        : "3px solid transparent",
-                    boxShadow:
-                      selectedColor === label.color
-                        ? `0 0 0 2px ${label.color}`
-                        : "none",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => selectLabel(label)}
-                />
-
-                <input
-                  autoFocus
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveLabel(index, editName);
-                    if (e.key === "Escape") setEditIndex(null);
-                  }}
-                  placeholder="Nome da etiqueta"
-                  style={{
-                    flex: 1,
-                    background: "var(--ws-surface)",
-                    border: `1px solid ${accentColor}`,
-                    borderRadius: 5,
-                    color: "var(--ws-text)",
-                    padding: "4px 8px",
-                    fontSize: ".78rem",
-                    fontFamily: "inherit",
-                    outline: "none",
-                  }}
-                />
-
-                <button
-                  onClick={() => saveLabel(index, editName)}
-                  style={{
-                    background: accentColor,
-                    border: "none",
-                    borderRadius: 5,
-                    color: "#fff",
-                    padding: "4px 8px",
-                    cursor: "pointer",
-                    fontSize: ".72rem",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  ✓
-                </button>
-              </>
-            ) : (
-              <>
-                <div
-                  onClick={() => selectLabel(label)}
-                  style={{
-                    flex: 1,
-                    height: 28,
-                    borderRadius: 4,
-                    background: label.color,
-                    cursor: "pointer",
-                    border:
-                      selectedColor === label.color
-                        ? "3px solid white"
-                        : "3px solid transparent",
-                    boxShadow:
-                      selectedColor === label.color
-                        ? `0 0 0 2px ${label.color}`
-                        : "none",
-                    transition: "all .15s",
-                    display: "flex",
-                    alignItems: "center",
-                    paddingLeft: label.name ? 8 : 0,
-                    justifyContent: label.name ? "flex-start" : "center",
-                  }}
-                >
-                  {label.name && (
-                    <span
-                      style={{
-                        fontSize: ".72rem",
-                        fontWeight: 700,
-                        color: "#fff",
-                        textShadow: "0 1px 2px #00000050",
-                      }}
-                    >
-                      {label.name}
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => {
-                    setEditIndex(index);
-                    setEditName(label.name);
-                  }}
-                  style={{
-                    background: "none",
-                    border: "1px solid var(--ws-border2)",
-                    borderRadius: 4,
-                    color: "var(--ws-text3)",
-                    cursor: "pointer",
-                    width: 24,
-                    height: 24,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: ".7rem",
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "var(--ws-text)";
-                    e.currentTarget.style.borderColor = "var(--ws-text2)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "var(--ws-text3)";
-                    e.currentTarget.style.borderColor = "var(--ws-border2)";
-                  }}
-                >
-                  ✎
-                </button>
-              </>
-            )}
-          </div>
+            title={label.name || label.color}
+            onClick={() => selectLabel(label)}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 4,
+              background: label.color,
+              cursor: "pointer",
+              flexShrink: 0,
+              border: selectedColor === label.color ? "3px solid white" : "2px solid transparent",
+              boxShadow: selectedColor === label.color ? `0 0 0 2px ${label.color}` : "none",
+              transition: "all .15s",
+            }}
+          />
         ))}
+        {/* Botão adicionar nova cor */}
+        <label
+          title="Nova etiqueta"
+          style={{
+            width: 22, height: 22, borderRadius: 4, cursor: "pointer",
+            background: "var(--ws-surface2)", border: "1px dashed var(--ws-border2)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, position: "relative", overflow: "hidden",
+          }}
+        >
+          <span style={{ fontSize: ".8rem", color: "var(--ws-text3)", pointerEvents: "none" }}>+</span>
+          <input
+            type="color"
+            defaultValue="#E91E8C"
+            onChange={(e) => {
+              const color = e.target.value;
+              const newLabel = { color, name: "" };
+              const newLabels = [...labels, newLabel];
+              onChange(JSON.stringify(newLabels));
+            }}
+            style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }}
+          />
+        </label>
+        {selectedColor && (
+          <button
+            onClick={() => selectLabel({ color: "", name: "" })}
+            style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", fontFamily: "Poppins" }}
+          >
+            limpar
+          </button>
+        )}
       </div>
     </div>
   );
@@ -327,7 +239,7 @@ export default function NoteCardModal({
 
   return (
     <div
-      style={{ ...overlayStyle, ...(isMobile ? { left: 56 } : {}) }}
+      style={getOverlayStyle(isMobile)}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
