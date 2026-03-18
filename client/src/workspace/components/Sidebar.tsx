@@ -15,7 +15,7 @@ interface Props {
 const NAV = [
   { section: "Projetos", items: [
     { id: "dashboard", icon: "⬡", label: "Dashboard" },
-    { id: "checklist", icon: "✓", label: "Checklist" },
+    { id: "checklist", icon: "✓", label: "Tarefas" },
     { id: "agenda",    icon: "▦", label: "Agenda" },
   ]},
   { section: "Gestão", items: [

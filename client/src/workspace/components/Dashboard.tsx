@@ -78,14 +78,16 @@ export default function Dashboard({ profile }: Props) {
       setPostsApproved(monthPosts.filter(p => p.approval_status === "aprovado").length);
 
       const caseMap = Object.fromEntries(cases.map(c => [c.id, c.name]));
+      // Inclui todos os posts com qualquer status de aprovação (inclusive pendente com atividade recente)
       setRecentApprovals(
-        posts.filter(p => p.approval_status && p.approval_status !== "pendente")
-          .sort((a, b) => (b.updated_at ?? "").localeCompare(a.updated_at ?? ""))
+        posts
+          .filter(p => p.approval_status)
+          .sort((a, b) => (b.updated_at ?? b.scheduled_date ?? "").localeCompare(a.updated_at ?? a.scheduled_date ?? ""))
           .slice(0, 5)
           .map(p => ({
             title: p.slug || p.title || "Post",
             caseName: caseMap[p.case_id] ?? "—",
-            status: p.approval_status,
+            status: p.approval_status ?? "pendente",
             date: p.updated_at ? new Date(p.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
           }))
       );

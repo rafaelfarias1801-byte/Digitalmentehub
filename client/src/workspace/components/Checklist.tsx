@@ -185,7 +185,7 @@ export default function Checklist({ profile }: Props) {
     <div className="ws-page">
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 24 }}>
         <div>
-          <div className="ws-page-title">Checklist<span className="ws-dot">.</span></div>
+          <div className="ws-page-title">Tarefas<span className="ws-dot">.</span></div>
           <div className="ws-page-sub">Banco de tarefas da operação</div>
         </div>
         <button className="ws-btn" onClick={openNewTask} disabled={saving}>Nova</button>

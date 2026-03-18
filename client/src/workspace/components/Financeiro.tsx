@@ -515,7 +515,7 @@ function handleCalcKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, minmax(220px, 1fr))",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
           gap: isMobile ? 10 : 14,
           marginBottom: 16,
           width: "100%",

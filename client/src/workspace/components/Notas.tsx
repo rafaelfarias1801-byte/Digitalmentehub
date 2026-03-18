@@ -152,7 +152,7 @@ export default function Notas({ profile }: Props) {
       {loading ? (
         <div style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".8rem" }}>Carregando...</div>
       ) : (
-        <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, alignItems: "flex-start", height: "calc(100vh - 160px)" }}>
+        <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, alignItems: "flex-start", height: "calc(100dvh - 160px)", minHeight: 0 }}>
 
           {columns.map(column => {
             const columnCards = cards.filter(c => c.column_id === column.id);
