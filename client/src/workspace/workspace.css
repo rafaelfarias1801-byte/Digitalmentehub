@@ -1972,19 +1972,29 @@ select.ws-field {
   }
 }
 
-/* ── Mobile: garante que modais não transbordem à direita da rail ── */
+/* ── Mobile: previne overflow horizontal em todo o app ── */
 @media (max-width: 768px) {
-  /* Todo fixed bottom sheet respeita a largura disponível após a rail */
-  [style*="position: fixed"][style*="bottom: 0"],
-  [style*="position:fixed"][style*="bottom:0"] {
-    box-sizing: border-box !important;
-    max-width: calc(100vw - 56px) !important;
-    overflow-x: hidden !important;
+  /* O layout inteiro não deve ter scroll horizontal */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
-  /* Garante que conteúdo interno não force scroll horizontal */
+  /* Garante que ws-main não force scroll horizontal */
+  .ws-main {
+    overflow-x: hidden;
+  }
+
+  /* Todo conteúdo dentro do ws-main respeita o container */
   .ws-main * {
-    max-width: 100%;
     box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  /* Exceção: imagens e videos podem ter max-width próprio */
+  .ws-main img,
+  .ws-main video {
+    max-width: 100%;
+    height: auto;
   }
 }

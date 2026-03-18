@@ -47,7 +47,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
   // ── MOBILE ──────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--ws-bg)" }}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--ws-bg)", overflowX: "hidden", width: "100%" }}>
         <CasesGlobalStyle />
 
         {/* Header fixo mobile */}
@@ -114,7 +114,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
         </div>
 
         {/* Conteúdo */}
-        <div style={{ flex: 1, padding: "16px 14px 32px" }}>
+        <div style={{ flex: 1, padding: "16px 14px 32px", overflowX: "hidden", minWidth: 0 }}>
           <TabContent />
         </div>
       </div>

@@ -545,7 +545,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         </div>
 
         {/* ── Coluna lateral ── */}
-        <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
+        <div style={{ padding: isMobile ? "16px 16px 32px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block", overflowX: "hidden" }}>
           <div style={labelStyle}>Ações</div>
 
           {!readonly && <div style={{ marginBottom: 20 }}>
