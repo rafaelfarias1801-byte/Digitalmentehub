@@ -49,6 +49,7 @@ export default function WorkspaceApp() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState<PageId>(getSavedPage);
+  const [sidebarOpen, setSidebarOpen] = useState(typeof window !== "undefined" && window.innerWidth >= 768);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -102,8 +103,8 @@ export default function WorkspaceApp() {
   const CurrentPage = PAGES[page];
 
   return (
-    <div className="ws-layout">
-      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} />
+    <div className={`ws-layout${sidebarOpen ? "" : " ws-sidebar-collapsed"}`}>
+      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} onOpenChange={setSidebarOpen} />
       <main className="ws-main">
         <CurrentPage profile={profile} />
       </main>

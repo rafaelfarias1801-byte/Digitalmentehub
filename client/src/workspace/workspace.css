@@ -94,6 +94,17 @@
   background: var(--ws-bg);
 }
 
+/* Quando sidebar fechada no desktop: sidebar não ocupa espaço */
+.ws-sidebar-collapsed .ws-sidebar {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.ws-sidebar {
+  transition: width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1);
+}
+
 .ws-main {
   flex: 1;
   overflow-y: auto;

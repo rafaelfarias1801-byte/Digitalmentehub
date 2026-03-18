@@ -8,6 +8,7 @@ interface Props {
   currentPage: PageId;
   onNavigate: (page: PageId) => void;
   profile: Profile;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const NAV = [
@@ -53,10 +54,15 @@ function applyTheme(theme: "dark" | "light") {
   try { localStorage.setItem("ws_theme", theme); } catch {}
 }
 
-export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
+export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange }: Props) {
   const isAdmin = profile.role === "admin";
   const [open, setOpen] = useState(!getIsMobile());
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
+
+  function setOpenAndNotify(val: boolean) {
+    setOpen(val);
+    onOpenChange?.(val);
+  }
 
   // Aplicar tema salvo na montagem
   useEffect(() => {
@@ -66,8 +72,8 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
   // Fechar sidebar ao redimensionar para mobile
   useEffect(() => {
     function handleResize() {
-      if (window.innerWidth < 768) setOpen(false);
-      else setOpen(true);
+      if (window.innerWidth < 768) setOpenAndNotify(false);
+      else setOpenAndNotify(true);
     }
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -75,7 +81,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
 
   function navigate(page: PageId) {
     onNavigate(page);
-    if (getIsMobile()) setOpen(false);
+    if (getIsMobile()) setOpenAndNotify(false);
   }
 
   function toggleTheme() {
@@ -91,7 +97,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
       {/* ── Hambúrguer — só aparece quando sidebar fechada ── */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setOpenAndNotify(true)}
           aria-label="Abrir menu"
           style={{
             position: "fixed",
@@ -124,7 +130,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
       {/* ── Overlay mobile ── */}
       {open && getIsMobile() && (
         <div
-          onClick={() => setOpen(false)}
+          onClick={() => setOpenAndNotify(false)}
           style={{ position: "fixed", inset: 0, background: "#00000060", zIndex: 198 }}
         />
       )}
@@ -145,7 +151,7 @@ export default function Sidebar({ currentPage, onNavigate, profile }: Props) {
         {/* ── Topo: brand + fechar ── */}
         <div className="ws-sidebar-top" style={{ position: "relative" }}>
           <button
-            onClick={() => setOpen(false)}
+            onClick={() => setOpenAndNotify(false)}
             aria-label="Fechar menu"
             style={{
               position: "absolute", top: 10, right: 10,

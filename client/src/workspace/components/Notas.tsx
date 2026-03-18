@@ -23,6 +23,8 @@ export default function Notas({ profile }: Props) {
   const dragCard = useRef<string | null>(null);
   const dragOverCol = useRef<string | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
+  const dragCol = useRef<string | null>(null);
+  const [dragOverColTarget, setDragOverColTarget] = useState<string | null>(null);
 
   // ── Carregar ────────────────────────────────────────────────────
   useEffect(() => {
@@ -111,6 +113,36 @@ export default function Notas({ profile }: Props) {
     await supabase.from("note_cards").update({ column_id: colId, order: newOrder }).eq("id", cardId);
   }
 
+  function onColDragStart(e: React.DragEvent<HTMLDivElement>, colId: string) {
+    dragCol.current = colId;
+    e.dataTransfer.effectAllowed = "move";
+    e.currentTarget.style.opacity = "0.5";
+  }
+  function onColDragEnd(e: React.DragEvent<HTMLDivElement>) {
+    e.currentTarget.style.opacity = "1";
+    dragCol.current = null;
+    setDragOverColTarget(null);
+  }
+  function onColDragOver(e: React.DragEvent<HTMLDivElement>, colId: string) {
+    e.preventDefault();
+    if (dragCol.current && dragCol.current !== colId) setDragOverColTarget(colId);
+  }
+  async function onColDrop(e: React.DragEvent<HTMLDivElement>, targetColId: string) {
+    e.preventDefault();
+    setDragOverColTarget(null);
+    const srcId = dragCol.current;
+    if (!srcId || srcId === targetColId) return;
+    const srcIdx = columns.findIndex(c => c.id === srcId);
+    const tgtIdx = columns.findIndex(c => c.id === targetColId);
+    if (srcIdx === -1 || tgtIdx === -1) return;
+    const reordered = [...columns];
+    const [moved] = reordered.splice(srcIdx, 1);
+    reordered.splice(tgtIdx, 0, moved);
+    const withOrder = reordered.map((c, i) => ({ ...c, order: i }));
+    setColumns(withOrder);
+    await Promise.all(withOrder.map(c => supabase.from("note_columns").update({ order: c.order }).eq("id", c.id)));
+  }
+
   // ── Render ──────────────────────────────────────────────────────
   return (
     <div className="ws-page">
@@ -128,19 +160,24 @@ export default function Notas({ profile }: Props) {
 
             return (
               <div key={column.id}
-                onDragOver={e => onDragOverCol(e, column.id)}
+                onDragOver={e => { onDragOverCol(e, column.id); onColDragOver(e, column.id); }}
                 onDragLeave={onDragLeaveCol}
-                onDrop={e => void onDropCol(e, column.id)}
+                onDrop={e => { void onDropCol(e, column.id); void onColDrop(e, column.id); }}
                 style={{
-                  background: isDragTarget ? `${ACCENT}12` : "var(--ws-surface)",
-                  border: `1px solid ${isDragTarget ? ACCENT : "var(--ws-border)"}`,
+                  background: isDragTarget ? `${ACCENT}12` : dragOverColTarget === column.id ? `${ACCENT}20` : "var(--ws-surface)",
+                  border: `1px solid ${isDragTarget ? ACCENT : dragOverColTarget === column.id ? ACCENT : "var(--ws-border)"}`,
                   borderRadius: 12, padding: "12px 12px 8px", width: 260, flexShrink: 0,
                   transition: "border-color .15s, background .15s",
                   display: "flex", flexDirection: "column", maxHeight: "100%",
                 }}
               >
                 {/* Header da coluna */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div
+                  draggable
+                  onDragStart={e => onColDragStart(e, column.id)}
+                  onDragEnd={onColDragEnd}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, cursor: "grab", userSelect: "none" }}
+                >
                   <div style={{ fontWeight: 600, fontSize: ".88rem", color: "var(--ws-text)" }}>
                     {column.title}
                   </div>
