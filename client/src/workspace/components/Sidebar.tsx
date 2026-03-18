@@ -60,6 +60,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
   const [openInternal, setOpenInternal] = useState(!getIsMobile());
   const open = openProp !== undefined ? openProp : openInternal;
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
+  const [isMobile, setIsMobile] = useState(getIsMobile());
 
   function setOpenAndNotify(val: boolean) {
     setOpenInternal(val);
@@ -72,7 +73,9 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
 
   useEffect(() => {
     function handleResize() {
-      if (window.innerWidth < 768) setOpenAndNotify(false);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setOpenAndNotify(false);
       else setOpenAndNotify(true);
     }
     window.addEventListener("resize", handleResize);
@@ -91,11 +94,105 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
   }
 
   const isDark = theme === "dark";
-  const isMobile = getIsMobile();
+
+  // ── Sidebar content (shared between desktop inline and mobile overlay) ──
+  const SidebarContent = () => (
+    <>
+      <div className="ws-sidebar-top" style={{ position: "relative" }}>
+        <button
+          onClick={() => setOpenAndNotify(false)}
+          aria-label="Fechar menu"
+          style={{
+            position: "absolute", top: 10, right: 10,
+            background: "none", border: "1px solid var(--ws-border2)",
+            borderRadius: 6, width: 26, height: 26,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem",
+            transition: "all .15s", flexShrink: 0,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-text2)"; e.currentTarget.style.color = "var(--ws-text)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </button>
+        <div className="ws-brand">DIG<span className="ws-dot">.</span></div>
+        <div className="ws-brand-sub">Workspace</div>
+        <div className="ws-user-pill">
+          <div className="ws-avatar">{profile.initials}</div>
+          <div>
+            <div className="ws-user-name">{profile.name}</div>
+            <div className="ws-user-role">{profile.role}</div>
+          </div>
+        </div>
+      </div>
+
+      <nav className="ws-nav" style={{ flex: 1, overflowY: "auto" }}>
+        {NAV.map(group => (
+          <div key={group.section}>
+            <div className="ws-nav-section">{group.section}</div>
+            {group.items.map(item => {
+              if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
+              return (
+                <div
+                  key={item.id}
+                  className={`ws-nav-item ${currentPage === item.id ? "active" : ""}`}
+                  onClick={() => navigate(item.id as PageId)}
+                >
+                  <span className="ws-nav-icon">{item.icon}</span>
+                  {item.label}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%", background: "var(--ws-surface2)",
+            border: "1px solid var(--ws-border2)", borderRadius: 10,
+            padding: "10px 14px", cursor: "pointer", transition: "all .15s",
+            color: "var(--ws-text2)", fontFamily: "Poppins, monospace",
+            fontSize: ".62rem", letterSpacing: "1px", textTransform: "uppercase",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "1rem" }}>{isDark ? "🌙" : "☀️"}</span>
+            {isDark ? "Tema escuro" : "Tema claro"}
+          </span>
+          <span style={{
+            width: 36, height: 20, borderRadius: 999,
+            background: isDark ? "var(--ws-surface3)" : "var(--ws-accent)",
+            position: "relative", flexShrink: 0, transition: "background .2s",
+          }}>
+            <span style={{
+              position: "absolute", top: 3, left: isDark ? 3 : 19,
+              width: 14, height: 14, borderRadius: "50%",
+              background: isDark ? "var(--ws-text3)" : "#fff",
+              transition: "left .2s",
+            }} />
+          </span>
+        </button>
+      </div>
+
+      <div className="ws-sidebar-footer">
+        <div className="ws-logout" onClick={() => supabase.auth.signOut()}>
+          ↩ Sair
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <>
-      {/* ── Overlay mobile: aparece quando sidebar completa aberta ── */}
+      {/* ── Overlay escuro (mobile, quando sidebar completa aberta) ── */}
       {open && isMobile && (
         <div
           onClick={() => setOpenAndNotify(false)}
@@ -104,9 +201,9 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
       )}
 
       {/* ══════════════════════════════════
-          RAIL — SEMPRE no fluxo, nunca some
-          Mobile: visível o tempo todo
-          Desktop: visível quando sidebar fechada
+          RAIL — sempre no fluxo do layout.
+          Desktop: só aparece quando sidebar fechada.
+          Mobile: SEMPRE visível (nunca some).
       ══════════════════════════════════ */}
       {(!open || isMobile) && (
         <div
@@ -173,8 +270,8 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
 
       {/* ══════════════════════════════════
           SIDEBAR COMPLETA
-          Desktop: position relative, empurra conteúdo normalmente
-          Mobile: position fixed, overlay sobre a rail
+          Desktop: position relative, empurra o conteúdo.
+          Mobile: position fixed, overlay por cima da rail.
       ══════════════════════════════════ */}
       {open && !isMobile && (
         <aside
@@ -187,99 +284,10 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
             overflow: "hidden",
           }}
         >
-          <div className="ws-sidebar-top" style={{ position: "relative" }}>
-            <button
-              onClick={() => setOpenAndNotify(false)}
-              aria-label="Fechar menu"
-              style={{
-                position: "absolute", top: 10, right: 10,
-                background: "none", border: "1px solid var(--ws-border2)",
-                borderRadius: 6, width: 26, height: 26,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem",
-                transition: "all .15s", flexShrink: 0,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-text2)"; e.currentTarget.style.color = "var(--ws-text)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-            <div className="ws-brand">DIG<span className="ws-dot">.</span></div>
-            <div className="ws-brand-sub">Workspace</div>
-            <div className="ws-user-pill">
-              <div className="ws-avatar">{profile.initials}</div>
-              <div>
-                <div className="ws-user-name">{profile.name}</div>
-                <div className="ws-user-role">{profile.role}</div>
-              </div>
-            </div>
-          </div>
-
-          <nav className="ws-nav" style={{ flex: 1, overflowY: "auto" }}>
-            {NAV.map(group => (
-              <div key={group.section}>
-                <div className="ws-nav-section">{group.section}</div>
-                {group.items.map(item => {
-                  if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`ws-nav-item ${currentPage === item.id ? "active" : ""}`}
-                      onClick={() => navigate(item.id as PageId)}
-                    >
-                      <span className="ws-nav-icon">{item.icon}</span>
-                      {item.label}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
-
-          <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
-            <button
-              onClick={toggleTheme}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", background: "var(--ws-surface2)",
-                border: "1px solid var(--ws-border2)", borderRadius: 10,
-                padding: "10px 14px", cursor: "pointer", transition: "all .15s",
-                color: "var(--ws-text2)", fontFamily: "Poppins, monospace",
-                fontSize: ".62rem", letterSpacing: "1px", textTransform: "uppercase",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
-            >
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: "1rem" }}>{isDark ? "🌙" : "☀️"}</span>
-                {isDark ? "Tema escuro" : "Tema claro"}
-              </span>
-              <span style={{
-                width: 36, height: 20, borderRadius: 999,
-                background: isDark ? "var(--ws-surface3)" : "var(--ws-accent)",
-                position: "relative", flexShrink: 0, transition: "background .2s",
-              }}>
-                <span style={{
-                  position: "absolute", top: 3, left: isDark ? 3 : 19,
-                  width: 14, height: 14, borderRadius: "50%",
-                  background: isDark ? "var(--ws-text3)" : "#fff",
-                  transition: "left .2s",
-                }} />
-              </span>
-            </button>
-          </div>
-
-          <div className="ws-sidebar-footer">
-            <div className="ws-logout" onClick={() => supabase.auth.signOut()}>
-              ↩ Sair
-            </div>
-          </div>
+          <SidebarContent />
         </aside>
       )}
 
-      {/* Sidebar completa MOBILE: fixed overlay por cima da rail */}
       {open && isMobile && (
         <aside
           className="ws-sidebar"
@@ -293,95 +301,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
             overflow: "hidden",
           }}
         >
-          <div className="ws-sidebar-top" style={{ position: "relative" }}>
-            <button
-              onClick={() => setOpenAndNotify(false)}
-              aria-label="Fechar menu"
-              style={{
-                position: "absolute", top: 10, right: 10,
-                background: "none", border: "1px solid var(--ws-border2)",
-                borderRadius: 6, width: 26, height: 26,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem",
-                transition: "all .15s", flexShrink: 0,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-text2)"; e.currentTarget.style.color = "var(--ws-text)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-            <div className="ws-brand">DIG<span className="ws-dot">.</span></div>
-            <div className="ws-brand-sub">Workspace</div>
-            <div className="ws-user-pill">
-              <div className="ws-avatar">{profile.initials}</div>
-              <div>
-                <div className="ws-user-name">{profile.name}</div>
-                <div className="ws-user-role">{profile.role}</div>
-              </div>
-            </div>
-          </div>
-
-          <nav className="ws-nav" style={{ flex: 1, overflowY: "auto" }}>
-            {NAV.map(group => (
-              <div key={group.section}>
-                <div className="ws-nav-section">{group.section}</div>
-                {group.items.map(item => {
-                  if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`ws-nav-item ${currentPage === item.id ? "active" : ""}`}
-                      onClick={() => navigate(item.id as PageId)}
-                    >
-                      <span className="ws-nav-icon">{item.icon}</span>
-                      {item.label}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </nav>
-
-          <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
-            <button
-              onClick={toggleTheme}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", background: "var(--ws-surface2)",
-                border: "1px solid var(--ws-border2)", borderRadius: 10,
-                padding: "10px 14px", cursor: "pointer", transition: "all .15s",
-                color: "var(--ws-text2)", fontFamily: "Poppins, monospace",
-                fontSize: ".62rem", letterSpacing: "1px", textTransform: "uppercase",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
-            >
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: "1rem" }}>{isDark ? "🌙" : "☀️"}</span>
-                {isDark ? "Tema escuro" : "Tema claro"}
-              </span>
-              <span style={{
-                width: 36, height: 20, borderRadius: 999,
-                background: isDark ? "var(--ws-surface3)" : "var(--ws-accent)",
-                position: "relative", flexShrink: 0, transition: "background .2s",
-              }}>
-                <span style={{
-                  position: "absolute", top: 3, left: isDark ? 3 : 19,
-                  width: 14, height: 14, borderRadius: "50%",
-                  background: isDark ? "var(--ws-text3)" : "#fff",
-                  transition: "left .2s",
-                }} />
-              </span>
-            </button>
-          </div>
-
-          <div className="ws-sidebar-footer">
-            <div className="ws-logout" onClick={() => supabase.auth.signOut()}>
-              ↩ Sair
-            </div>
-          </div>
+          <SidebarContent />
         </aside>
       )}
     </>

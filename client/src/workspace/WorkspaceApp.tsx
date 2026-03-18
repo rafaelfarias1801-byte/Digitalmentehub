@@ -45,11 +45,15 @@ function getSavedPage(): PageId {
   return "dashboard";
 }
 
+function getIsMobile() {
+  return typeof window !== "undefined" && window.innerWidth < 768;
+}
+
 export default function WorkspaceApp() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState<PageId>(getSavedPage);
-  const [sidebarOpen, setSidebarOpen] = useState(!( typeof window !== "undefined" && window.innerWidth < 768));
+  const [sidebarOpen, setSidebarOpen] = useState(!getIsMobile());
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -112,8 +116,10 @@ export default function WorkspaceApp() {
       <main className="ws-main">
         <CurrentPage
           profile={profile}
-          onCaseOpen={() => setSidebarOpen(false)}
-          onCaseClose={() => setSidebarOpen(true)}
+          // No mobile a sidebar já fecha sozinha ao navegar (dentro do Sidebar).
+          // No desktop, fechamos ao abrir um case para dar mais espaço.
+          onCaseOpen={() => { if (!getIsMobile()) setSidebarOpen(false); }}
+          onCaseClose={() => { if (!getIsMobile()) setSidebarOpen(true); }}
         />
       </main>
     </div>
