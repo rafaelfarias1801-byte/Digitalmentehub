@@ -93,7 +93,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange
 
   return (
     <>
-      {/* ── Overlay mobile ── */}
+      {/* ── Overlay: aparece quando sidebar completa aberta no mobile ── */}
       {open && isMobile && (
         <div
           onClick={() => setOpenAndNotify(false)}
@@ -101,27 +101,12 @@ export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange
         />
       )}
 
-      {/* ── Painel da sidebar ── */}
-      <aside
-        className={`ws-sidebar${open ? "" : " ws-sidebar-mini"}`}
-        style={{
-          position: isMobile ? "fixed" : "relative",
-          top: 0, left: 0, height: "100%",
-          zIndex: 199,
-          // Rail sempre visível (mobile e desktop). Slide só da sidebar completa.
-          transform: "translateX(0)",
-          transition: "transform .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1)",
-          boxShadow: "none",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        {/* ══════════════════════════════════
-            MINI RAIL (desktop collapsed)
-            Só ícones + botão de expandir
-        ══════════════════════════════════ */}
-        {!open && (
+      {/* ══════════════════════════════════
+          MINI RAIL — sempre no fluxo (não é fixed)
+          Aparece quando sidebar fechada (mobile ou desktop)
+      ══════════════════════════════════ */}
+      {!open && (
+        <div className="ws-sidebar ws-sidebar-mini" style={{ display: "flex", flexDirection: "column", height: "100vh", position: "relative" }}>
           <div className="ws-sidebar-rail">
             {/* Botão expandir */}
             <button
@@ -182,120 +167,133 @@ export default function Sidebar({ currentPage, onNavigate, profile, onOpenChange
               <span style={{ fontSize: ".9rem", color: "var(--ws-text3)" }}>↩</span>
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* ══════════════════════════════════
-            SIDEBAR COMPLETA
-        ══════════════════════════════════ */}
-        {open && (
-          <>
-            {/* ── Topo: brand + fechar ── */}
-            <div className="ws-sidebar-top" style={{ position: "relative" }}>
-              <button
-                onClick={() => setOpenAndNotify(false)}
-                aria-label="Fechar menu"
-                style={{
-                  position: "absolute", top: 10, right: 10,
-                  background: "none", border: "1px solid var(--ws-border2)",
-                  borderRadius: 6, width: 26, height: 26,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem",
-                  transition: "all .15s", flexShrink: 0,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-text2)"; e.currentTarget.style.color = "var(--ws-text)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
-              >
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
+      {/* ══════════════════════════════════
+          SIDEBAR COMPLETA
+          Desktop: relative no fluxo
+          Mobile: fixed overlay
+      ══════════════════════════════════ */}
+      {open && (
+        <aside
+          className="ws-sidebar"
+          style={{
+            position: isMobile ? "fixed" : "relative",
+            top: 0, left: 0, height: "100%",
+            zIndex: 199,
+            boxShadow: isMobile ? "4px 0 24px #00000050" : "none",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          {/* ── Topo: brand + fechar ── */}
+          <div className="ws-sidebar-top" style={{ position: "relative" }}>
+            <button
+              onClick={() => setOpenAndNotify(false)}
+              aria-label="Fechar menu"
+              style={{
+                position: "absolute", top: 10, right: 10,
+                background: "none", border: "1px solid var(--ws-border2)",
+                borderRadius: 6, width: 26, height: 26,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem",
+                transition: "all .15s", flexShrink: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-text2)"; e.currentTarget.style.color = "var(--ws-text)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
+            >
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
 
-              <div className="ws-brand">DIG<span className="ws-dot">.</span></div>
-              <div className="ws-brand-sub">Workspace</div>
+            <div className="ws-brand">DIG<span className="ws-dot">.</span></div>
+            <div className="ws-brand-sub">Workspace</div>
 
-              <div className="ws-user-pill">
-                <div className="ws-avatar">{profile.initials}</div>
-                <div>
-                  <div className="ws-user-name">{profile.name}</div>
-                  <div className="ws-user-role">{profile.role}</div>
-                </div>
+            <div className="ws-user-pill">
+              <div className="ws-avatar">{profile.initials}</div>
+              <div>
+                <div className="ws-user-name">{profile.name}</div>
+                <div className="ws-user-role">{profile.role}</div>
               </div>
             </div>
+          </div>
 
-            {/* ── Navegação ── */}
-            <nav className="ws-nav" style={{ flex: 1, overflowY: "auto" }}>
-              {NAV.map(group => (
-                <div key={group.section}>
-                  <div className="ws-nav-section">{group.section}</div>
-                  {group.items.map(item => {
-                    if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
-                    return (
-                      <div
-                        key={item.id}
-                        className={`ws-nav-item ${currentPage === item.id ? "active" : ""}`}
-                        onClick={() => navigate(item.id as PageId)}
-                      >
-                        <span className="ws-nav-icon">{item.icon}</span>
-                        {item.label}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </nav>
+          {/* ── Navegação ── */}
+          <nav className="ws-nav" style={{ flex: 1, overflowY: "auto" }}>
+            {NAV.map(group => (
+              <div key={group.section}>
+                <div className="ws-nav-section">{group.section}</div>
+                {group.items.map(item => {
+                  if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`ws-nav-item ${currentPage === item.id ? "active" : ""}`}
+                      onClick={() => navigate(item.id as PageId)}
+                    >
+                      <span className="ws-nav-icon">{item.icon}</span>
+                      {item.label}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
 
-            {/* ── Toggle de tema ── */}
-            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
-              <button
-                onClick={toggleTheme}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  background: "var(--ws-surface2)",
-                  border: "1px solid var(--ws-border2)",
-                  borderRadius: 10,
-                  padding: "10px 14px",
-                  cursor: "pointer",
-                  transition: "all .15s",
-                  color: "var(--ws-text2)",
-                  fontFamily: "Poppins, monospace",
-                  fontSize: ".62rem",
-                  letterSpacing: "1px",
-                  textTransform: "uppercase",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: "1rem" }}>{isDark ? "🌙" : "☀️"}</span>
-                  {isDark ? "Tema escuro" : "Tema claro"}
-                </span>
+          {/* ── Toggle de tema ── */}
+          <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
+            <button
+              onClick={toggleTheme}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                background: "var(--ws-surface2)",
+                border: "1px solid var(--ws-border2)",
+                borderRadius: 10,
+                padding: "10px 14px",
+                cursor: "pointer",
+                transition: "all .15s",
+                color: "var(--ws-text2)",
+                fontFamily: "Poppins, monospace",
+                fontSize: ".62rem",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-accent)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "1rem" }}>{isDark ? "🌙" : "☀️"}</span>
+                {isDark ? "Tema escuro" : "Tema claro"}
+              </span>
+              <span style={{
+                width: 36, height: 20, borderRadius: 999,
+                background: isDark ? "var(--ws-surface3)" : "var(--ws-accent)",
+                position: "relative", flexShrink: 0, transition: "background .2s",
+              }}>
                 <span style={{
-                  width: 36, height: 20, borderRadius: 999,
-                  background: isDark ? "var(--ws-surface3)" : "var(--ws-accent)",
-                  position: "relative", flexShrink: 0, transition: "background .2s",
-                }}>
-                  <span style={{
-                    position: "absolute", top: 3, left: isDark ? 3 : 19,
-                    width: 14, height: 14, borderRadius: "50%",
-                    background: isDark ? "var(--ws-text3)" : "#fff",
-                    transition: "left .2s",
-                  }} />
-                </span>
-              </button>
-            </div>
+                  position: "absolute", top: 3, left: isDark ? 3 : 19,
+                  width: 14, height: 14, borderRadius: "50%",
+                  background: isDark ? "var(--ws-text3)" : "#fff",
+                  transition: "left .2s",
+                }} />
+              </span>
+            </button>
+          </div>
 
-            {/* ── Footer: logout ── */}
-            <div className="ws-sidebar-footer">
-              <div className="ws-logout" onClick={() => supabase.auth.signOut()}>
-                ↩ Sair
-              </div>
+          {/* ── Footer: logout ── */}
+          <div className="ws-sidebar-footer">
+            <div className="ws-logout" onClick={() => supabase.auth.signOut()}>
+              ↩ Sair
             </div>
-          </>
-        )}
-      </aside>
+          </div>
+        </aside>
+      )}
     </>
   );
 }

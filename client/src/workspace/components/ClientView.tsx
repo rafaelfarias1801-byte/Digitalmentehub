@@ -84,7 +84,7 @@ export default function ClientView({ profile }: Props) {
   // ── MOBILE — mesmo padrão de rail da sidebar principal ──
   if (isMobile) {
     return (
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "var(--ws-bg)" }}>
+      <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "var(--ws-bg)", position: "relative" }}>
         <CasesGlobalStyle />
 
         {/* Overlay quando sidebar aberta */}
@@ -93,9 +93,9 @@ export default function ClientView({ profile }: Props) {
             style={{ position: "fixed", inset: 0, background: "#00000060", zIndex: 198 }} />
         )}
 
-        {/* Rail lateral — sempre visível */}
+        {/* Rail lateral — no fluxo, nunca sobrepõe */}
         {!sidebarOpen && (
-          <div style={{ width: 56, flexShrink: 0, borderRight: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 10, gap: 2, zIndex: 10 }}>
+          <div style={{ width: 56, flexShrink: 0, borderRight: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 10, gap: 2 }}>
             <button onClick={() => setSidebarOpen(true)} className="ws-rail-expand" title="Abrir menu" style={{ marginBottom: 4 }}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M5 2L10 7L5 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
