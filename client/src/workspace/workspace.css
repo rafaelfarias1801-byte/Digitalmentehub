@@ -94,16 +94,99 @@
   background: var(--ws-bg);
 }
 
-/* Quando sidebar fechada no desktop: sidebar não ocupa espaço */
-.ws-sidebar-collapsed .ws-sidebar {
-  width: 0 !important;
-  min-width: 0 !important;
-  overflow: hidden;
-}
-
+/* ── Sidebar: transição suave entre full e mini ── */
 .ws-sidebar {
   transition: width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1);
 }
+
+/* ── Mini rail (desktop collapsed) ── */
+.ws-sidebar.ws-sidebar-mini {
+  width: 56px !important;
+  min-width: 56px !important;
+  overflow: hidden;
+}
+
+.ws-sidebar-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 56px;
+  height: 100%;
+  padding: 10px 0 0;
+  gap: 2px;
+}
+
+.ws-rail-expand {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--ws-border2);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ws-text3);
+  transition: all .15s;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+.ws-rail-expand:hover {
+  border-color: var(--ws-accent);
+  color: var(--ws-accent);
+  background: var(--ws-accent-glow);
+}
+
+.ws-rail-avatar {
+  margin-bottom: 4px;
+}
+
+.ws-rail-divider {
+  width: 28px;
+  height: 1px;
+  background: var(--ws-border);
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+
+.ws-rail-item {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+  position: relative;
+}
+.ws-rail-item:hover {
+  background: var(--ws-surface2);
+  border-color: var(--ws-border2);
+}
+.ws-rail-item.active {
+  background: var(--ws-accent-glow);
+  border-color: var(--ws-accent);
+}
+.ws-rail-item.active .ws-rail-icon {
+  color: var(--ws-accent);
+}
+
+.ws-rail-icon {
+  font-size: 1rem;
+  color: var(--ws-text3);
+  line-height: 1;
+  transition: color .15s;
+}
+.ws-rail-item:hover .ws-rail-icon {
+  color: var(--ws-text);
+}
+
+/* Tooltip nativo via title — fallback OK.
+   Para tooltip custom, adicione lógica no componente se necessário. */
 
 .ws-main {
   flex: 1;

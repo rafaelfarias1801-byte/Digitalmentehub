@@ -49,7 +49,6 @@ export default function WorkspaceApp() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState<PageId>(getSavedPage);
-  const [sidebarOpen, setSidebarOpen] = useState(typeof window !== "undefined" && window.innerWidth >= 768);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -88,14 +87,12 @@ export default function WorkspaceApp() {
 
   if (!profile) return <LoginPage onLogin={setProfile} />;
 
-  // Primeiro acesso: forçar troca de senha
   if (profile.must_change_password) {
     return (
       <ChangePasswordPage onDone={() => setProfile(p => p ? { ...p, must_change_password: false } : p)} />
     );
   }
 
-  // Cliente: layout dedicado com apenas o case dele
   if (profile.role === "cliente") {
     return <ClientView profile={profile} />;
   }
@@ -103,8 +100,8 @@ export default function WorkspaceApp() {
   const CurrentPage = PAGES[page];
 
   return (
-    <div className={`ws-layout${sidebarOpen ? "" : " ws-sidebar-collapsed"}`}>
-      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} onOpenChange={setSidebarOpen} />
+    <div className="ws-layout">
+      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} />
       <main className="ws-main">
         <CurrentPage profile={profile} />
       </main>
