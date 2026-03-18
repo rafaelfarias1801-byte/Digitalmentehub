@@ -128,7 +128,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
         <div style={{
           width: 36, flexShrink: 0, borderRight: "1px solid var(--ws-border)",
           background: "var(--ws-surface)", display: "flex", flexDirection: "column",
-          alignItems: "center", paddingTop: 10, gap: 8,
+          alignItems: "center", paddingTop: 60, gap: 8,
         }}>
           <button onClick={() => setSidebarOpen(true)} style={{
             background: "none", border: "1px solid var(--ws-border2)", borderRadius: 5,
