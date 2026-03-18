@@ -119,7 +119,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const scheduledTimeValue = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
 
   return (
-    <div style={{ ...overlayStyle, ...(isMobile ? { left: 56 } : {}) }} onClick={e => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...overlayStyle, left: isMobile ? 56 : 0 }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: "var(--ws-surface)",
         borderRadius: isMobile ? "16px 16px 0 0" : 16,
@@ -130,7 +130,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         boxShadow: "0 30px 80px #00000070",
         display: "flex",
         flexDirection: "column",
-        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0 } : {}),
+        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0, overflowX: "hidden" } : {}),
       }}>
         {/* Mobile: botão toggle de ações */}
         {isMobile && (
@@ -160,7 +160,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           minHeight: 0,
         }}>
         {/* ── Coluna principal ── */}
-        <div style={{ padding: "20px 18px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block" }}>
+        <div style={{ padding: "20px 18px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", overflowX: "hidden", minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 }}>
             <div style={{ flex: 1 }}>
               {currentPost.label_color && (

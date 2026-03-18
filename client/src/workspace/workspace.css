@@ -1971,3 +1971,20 @@ select.ws-field {
     padding: 0 !important;
   }
 }
+
+/* ── Mobile: garante que modais não transbordem à direita da rail ── */
+@media (max-width: 768px) {
+  /* Todo fixed bottom sheet respeita a largura disponível após a rail */
+  [style*="position: fixed"][style*="bottom: 0"],
+  [style*="position:fixed"][style*="bottom:0"] {
+    box-sizing: border-box !important;
+    max-width: calc(100vw - 56px) !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Garante que conteúdo interno não force scroll horizontal */
+  .ws-main * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
