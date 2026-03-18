@@ -23,6 +23,7 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [newCardText, setNewCardText] = useState("");
 
+  const LS_OPEN_CARD = `ws_open_note_card_${caseData.id}`;
   const [openCard, setOpenCard] = useState<NoteCard | null>(null);
 
   const dragCard = useRef<string | null>(null);
@@ -52,8 +53,17 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
       ]);
 
       if (mounted) {
+        const loadedCards = cardsRes.data ?? [];
         setColumns(columnsRes.data ?? []);
-        setCards(cardsRes.data ?? []);
+        setCards(loadedCards);
+
+        // Restaura o card que estava aberto antes de sair do app
+        const savedCardId = localStorage.getItem(`ws_open_note_card_${caseData.id}`);
+        if (savedCardId) {
+          const found = loadedCards.find((c) => c.id === savedCardId);
+          if (found) setOpenCard(found);
+        }
+
         setLoading(false);
       }
     }
@@ -128,12 +138,14 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
 
     if (data) {
       setCards((prev) => prev.map((item) => (item.id === card.id ? data : item)));
+      localStorage.setItem(LS_OPEN_CARD, data.id);
       setOpenCard(data);
     }
   }
 
   async function removeCard(id: string) {
     setCards((prev) => prev.filter((card) => card.id !== id));
+    localStorage.removeItem(LS_OPEN_CARD);
     setOpenCard(null);
 
     await supabase.from("note_cards").delete().eq("id", id);
@@ -333,7 +345,10 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
                     draggable
                     onDragStart={(e) => onDragStart(e, card.id)}
                     onDragEnd={onDragEnd}
-                    onClick={() => setOpenCard(card)}
+                    onClick={() => {
+                    localStorage.setItem(LS_OPEN_CARD, card.id);
+                    setOpenCard(card);
+                  }}
                     style={{
                       background: "var(--ws-surface2)",
                       border: "1px solid var(--ws-border)",
@@ -627,7 +642,10 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
         <NoteCardModal
           card={openCard}
           caseData={caseData}
-          onClose={() => setOpenCard(null)}
+          onClose={() => {
+          localStorage.removeItem(LS_OPEN_CARD);
+          setOpenCard(null);
+        }}
           onUpdate={updateCard}
           onDelete={removeCard}
           profile={profile}
