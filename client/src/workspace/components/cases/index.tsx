@@ -9,7 +9,7 @@ import type { Case, CasesProps } from "./types";
 
 const LS_OPEN_CASE = "ws_open_case_id";
 
-export default function Cases({ profile }: CasesProps) {
+export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps & { onCaseOpen?: () => void; onCaseClose?: () => void }) {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [openCase, setOpenCase] = useState<Case | null>(null);
@@ -57,11 +57,13 @@ export default function Cases({ profile }: CasesProps) {
   function selectCase(caseItem: Case) {
     localStorage.setItem(LS_OPEN_CASE, caseItem.id);
     setOpenCase(caseItem);
+    onCaseOpen?.();
   }
 
   function closeCase() {
     localStorage.removeItem(LS_OPEN_CASE);
     setOpenCase(null);
+    onCaseClose?.();
   }
 
   function openAdd() {

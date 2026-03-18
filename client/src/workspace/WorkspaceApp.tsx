@@ -49,6 +49,7 @@ export default function WorkspaceApp() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState<PageId>(getSavedPage);
+  const [sidebarOpen, setSidebarOpen] = useState(!( typeof window !== "undefined" && window.innerWidth < 768));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -101,9 +102,19 @@ export default function WorkspaceApp() {
 
   return (
     <div className="ws-layout">
-      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} />
+      <Sidebar
+        currentPage={page}
+        onNavigate={navigate}
+        profile={profile}
+        open={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+      />
       <main className="ws-main">
-        <CurrentPage profile={profile} />
+        <CurrentPage
+          profile={profile}
+          onCaseOpen={() => setSidebarOpen(false)}
+          onCaseClose={() => setSidebarOpen(true)}
+        />
       </main>
     </div>
   );
