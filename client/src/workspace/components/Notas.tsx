@@ -120,7 +120,7 @@ export default function Notas({ profile }: Props) {
       {loading ? (
         <div style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".8rem" }}>Carregando...</div>
       ) : (
-        <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, alignItems: "flex-start", height: "calc(100vh - 160px)" }}>
 
           {columns.map(column => {
             const columnCards = cards.filter(c => c.column_id === column.id);
@@ -136,6 +136,7 @@ export default function Notas({ profile }: Props) {
                   border: `1px solid ${isDragTarget ? ACCENT : "var(--ws-border)"}`,
                   borderRadius: 12, padding: "12px 12px 8px", width: 260, flexShrink: 0,
                   transition: "border-color .15s, background .15s",
+                  display: "flex", flexDirection: "column", maxHeight: "100%",
                 }}
               >
                 {/* Header da coluna */}
@@ -147,7 +148,7 @@ export default function Notas({ profile }: Props) {
                 </div>
 
                 {/* Cartões */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 8, overflowY: "auto", flex: 1, paddingRight: 2 }}>
                   {columnCards.map(card => {
                     const done = (card.checklist || []).filter(i => i.done).length;
                     const total = (card.checklist || []).length;

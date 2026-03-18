@@ -196,10 +196,11 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
         display: "flex",
         gap: 16,
         overflowX: isMobile ? "visible" : "auto",
-        overflowY: isMobile ? "visible" : "visible",
+        overflowY: "visible",
         flexDirection: isMobile ? "column" : "row",
         paddingBottom: 16,
-        alignItems: "flex-start",
+        alignItems: isMobile ? "stretch" : "flex-start",
+        height: isMobile ? "auto" : "calc(100vh - 160px)",
       }}
     >
       {columns.map((column) => {
@@ -220,6 +221,9 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
               width: isMobile ? "100%" : 260,
               flexShrink: 0,
               transition: "border-color .15s, background .15s",
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: isMobile ? "none" : "100%",
             }}
           >
             <div
@@ -258,7 +262,7 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
               )}
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 8, overflowY: "auto", flex: 1, paddingRight: 2 }}>
               {columnCards.map((card) => {
                 const done = (card.checklist || []).filter((item) => item.done).length;
                 const total = (card.checklist || []).length;
