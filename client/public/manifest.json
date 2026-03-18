@@ -1,6 +1,6 @@
 {
   "name": "Digitalmente HUB",
-  "short_name": "DIG",
+  "short_name": "DIG Workspace",
   "description": "Workspace Digitalmente HUB",
   "start_url": "/workspace",
   "display": "standalone",
