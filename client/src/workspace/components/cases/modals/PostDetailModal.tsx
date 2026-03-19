@@ -501,18 +501,18 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </>
                   )}
                 </div>
-                {/* Admin vê o motivo mas não edita */}
-                {currentPost.rejection_reason && (
-                  <div style={{ marginTop: 8, background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5 }}>
-                    <b style={{ color: "var(--ws-text)" }}>Motivo do cliente:</b> {currentPost.rejection_reason}
-                    {currentPost.rejection_reason_at && (
-                      <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
-                        {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      </div>
-                    )}
+              )
+            )}
+            {/* Admin vê o motivo mas não edita */}
+            {!readonly && currentPost.rejection_reason && (
+              <div style={{ marginTop: 8, background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5 }}>
+                <b style={{ color: "var(--ws-text)" }}>Motivo do cliente:</b> {currentPost.rejection_reason}
+                {currentPost.rejection_reason_at && (
+                  <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
+                    {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </div>
                 )}
-              )
+              </div>
             )}
           </div>
 
