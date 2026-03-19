@@ -33,7 +33,7 @@ const EMPTY_POST: NewPostForm = {
   media_url: "",
   media_type: "feed",
   scheduled_date: "",
-  scheduled_time: "",
+  scheduled_time: "12:00",
   approval_status: "pendente",
   extra_info: "",
   media_urls: [],
@@ -207,17 +207,14 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
       slug: form.slug.trim(),
       title: form.title.trim(),
       caption: form.caption,
-      hashtags: form.hashtags,
+      hashtags: "",
       media_url: coverUrl,
       media_type: form.media_type,
       scheduled_date: scheduledDateTime,
       approval_status: form.approval_status,
       extra_info,
       media_urls: mediaUrls,
-      description: form.description ?? "",
-      checklist: form.checklist ?? [],
       comments: form.comments ?? [],
-      due_date: form.due_date || null,
       label_color: form.label_color ?? "",
       platforms: form.platforms ?? [],
       case_id: caseData.id,
@@ -433,8 +430,12 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
               </div>
               <div>
                 <label className="ws-label">Horário</label>
-                <input className="ws-input" type="time" value={form.scheduled_time ?? "09:00"}
-                  onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))} />
+                <select className="ws-input" value={form.scheduled_time ?? "12:00"}
+                  onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
+                  <option value="12:00">12:00</option>
+                  <option value="15:00">15:00</option>
+                  <option value="18:00">18:00</option>
+                </select>
               </div>
             </div>
 

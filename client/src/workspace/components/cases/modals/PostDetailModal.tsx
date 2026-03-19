@@ -6,8 +6,59 @@ import { closeBtnStyle, labelStyle, overlayStyle } from "../styles";
 import { isVideoFile, normalizeWhatsAppPhone, parseDateAtNoon } from "../utils";
 import type { Case, CheckItem, Comment, Post } from "../types";
 import type { Profile } from "../../../../lib/supabaseClient";
-import { decodeExtraUrls, stripMediaTag } from "../tabs/TabConteudo";
+import { decodeExtraUrls, stripMediaTag, encodeExtraUrls } from "../tabs/TabConteudo";
 import { useIsMobile } from "../../../hooks/useIsMobile";
+
+// Componente interno para Informações extras
+function ExtraInfoSection({ extraInfo, readonly, color, onSave }: {
+  extraInfo?: string | null;
+  readonly: boolean;
+  color: string;
+  onSave: (text: string) => void;
+}) {
+  const text = stripMediaTag(extraInfo);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(text);
+
+  if (!text && readonly) return null;
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ fontFamily: "Poppins", fontSize: ".58rem", letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--ws-text2)", display: "block" }}>
+          Informações extras
+        </div>
+        {!readonly && !editing && (
+          <button onClick={() => { setDraft(text); setEditing(true); }}
+            style={{ background: "none", border: "none", color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
+            ✏ Editar
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div>
+          <textarea className="ws-input" value={draft} onChange={e => setDraft(e.target.value)}
+            placeholder="Briefing, referências, observações..." autoFocus
+            style={{ minHeight: 80, resize: "vertical", fontSize: ".84rem", marginBottom: 8 }} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { onSave(draft); setEditing(false); }}
+              style={{ background: color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+              Salvar
+            </button>
+            <button onClick={() => setEditing(false)}
+              style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+          {text || <span style={{ color: "var(--ws-text3)", fontStyle: "italic" }}>Sem informações extras</span>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface PostDetailModalProps {
   post: Post;
@@ -34,6 +85,13 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState(currentPost.rejection_reason || "");
+  const [rejectionInput, setRejectionInput] = useState("");
+  const [showRejectionInput, setShowRejectionInput] = useState<Post["approval_status"] | null>(null);
+  const [editSlug, setEditSlug] = useState(false);
+  const [slugDraft, setSlugDraft] = useState(currentPost.slug || "");
+  const [editTitle, setEditTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(currentPost.title || "");
   const isMobile = useIsMobile();
 
   // Navegação de slides — usa media_urls se disponível, senão fallback para extra_info
@@ -60,6 +118,16 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   async function saveApproval(status: Post["approval_status"]) {
     setSaving(true);
     await save({ approval_status: status });
+    setSaving(false);
+  }
+
+  async function saveApprovalWithReason(status: Post["approval_status"], reason: string) {
+    setSaving(true);
+    const now = new Date().toISOString();
+    await save({ approval_status: status, rejection_reason: reason, rejection_reason_at: now });
+    setRejectionReason(reason);
+    setShowRejectionInput(null);
+    setRejectionInput("");
     setSaving(false);
   }
 
@@ -166,11 +234,45 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {currentPost.label_color && (
                 <div style={{ width: 40, height: 6, borderRadius: 3, background: currentPost.label_color, marginBottom: 8 }} />
               )}
-              <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)", marginBottom: 4 }}>
-                {currentPost.slug || currentPost.title || "Post"}
-              </div>
-              {currentPost.title && currentPost.slug && (
-                <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", marginBottom: 4 }}>{currentPost.title}</div>
+              {/* Nome no calendário — editável só pelo admin */}
+              {!readonly && editSlug ? (
+                <div style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center" }}>
+                  <input className="ws-input" value={slugDraft} onChange={e => setSlugDraft(e.target.value)}
+                    style={{ fontWeight: 800, fontSize: "1rem", flex: 1 }}
+                    onKeyDown={e => { if (e.key === "Enter") { void save({ slug: slugDraft }); setEditSlug(false); } if (e.key === "Escape") setEditSlug(false); }} autoFocus />
+                  <button onClick={() => { void save({ slug: slugDraft }); setEditSlug(false); }}
+                    style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 12px", cursor: "pointer", fontSize: ".8rem", flexShrink: 0 }}>✓</button>
+                  <button onClick={() => setEditSlug(false)}
+                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".8rem", flexShrink: 0 }}>✕</button>
+                </div>
+              ) : (
+                <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                  {currentPost.slug || currentPost.title || "Post"}
+                  {!readonly && (
+                    <button onClick={() => { setSlugDraft(currentPost.slug || ""); setEditSlug(true); }}
+                      style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", padding: 0 }}>✏</button>
+                  )}
+                </div>
+              )}
+              {/* Título/tema — editável só pelo admin */}
+              {!readonly && editTitle ? (
+                <div style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center" }}>
+                  <input className="ws-input" value={titleDraft} onChange={e => setTitleDraft(e.target.value)}
+                    style={{ fontSize: ".85rem", flex: 1 }}
+                    onKeyDown={e => { if (e.key === "Enter") { void save({ title: titleDraft }); setEditTitle(false); } if (e.key === "Escape") setEditTitle(false); }} autoFocus />
+                  <button onClick={() => { void save({ title: titleDraft }); setEditTitle(false); }}
+                    style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 12px", cursor: "pointer", fontSize: ".8rem", flexShrink: 0 }}>✓</button>
+                  <button onClick={() => setEditTitle(false)}
+                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".8rem", flexShrink: 0 }}>✕</button>
+                </div>
+              ) : (
+                <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                  {currentPost.title || <span style={{ color: "var(--ws-text3)", fontStyle: "italic" }}>Sem tema</span>}
+                  {!readonly && (
+                    <button onClick={() => { setTitleDraft(currentPost.title || ""); setEditTitle(true); }}
+                      style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", padding: 0 }}>✏</button>
+                  )}
+                </div>
               )}
               <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
                 {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
@@ -282,25 +384,68 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </button>
                   </div>
                 </div>
+              ) : showRejectionInput ? (
+                /* Cliente: digitando motivo de reprovação/alteração */
+                <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
+                  <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 8 }}>
+                    {showRejectionInput === "reprovado" ? "✕ Motivo da reprovação:" : "⚠ O que precisa ser alterado?"}
+                  </div>
+                  <textarea className="ws-input" value={rejectionInput} onChange={e => setRejectionInput(e.target.value)}
+                    placeholder="Descreva o motivo..." autoFocus
+                    style={{ minHeight: 80, resize: "vertical", fontSize: ".83rem", marginBottom: 8 }} />
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => void saveApprovalWithReason(showRejectionInput, rejectionInput)} disabled={saving || !rejectionInput.trim()}
+                      style={{ background: APPROVAL_STYLES[showRejectionInput].bg, color: APPROVAL_STYLES[showRejectionInput].color, border: `1px solid ${APPROVAL_STYLES[showRejectionInput].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
+                      Salvar
+                    </button>
+                    <button onClick={() => { setShowRejectionInput(null); setRejectionInput(""); }}
+                      style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {currentPost.approval_status === "agendado" ? (
                     <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                       🗓 Post agendado — será publicado no horário definido.
                     </div>
                   ) : (
-                    (["aprovado", "reprovado", "alteracao"] as const).map(status => (
-                      <button key={status} onClick={() => setConfirmStatus(status)} disabled={saving} style={{
+                    <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                      <button onClick={async () => { await saveApproval("aprovado"); }} disabled={saving} style={{
                         padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                         fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                        background: APPROVAL_STYLES[status].bg, color: APPROVAL_STYLES[status].color,
-                        opacity: currentPost.approval_status === status ? 1 : 0.6,
-                        outline: currentPost.approval_status === status ? `2px solid ${APPROVAL_STYLES[status].color}` : "none",
-                        transition: "all .15s",
-                      }}>
-                        {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
-                      </button>
-                    ))
+                        background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
+                        opacity: currentPost.approval_status === "aprovado" ? 1 : 0.6,
+                        outline: currentPost.approval_status === "aprovado" ? `2px solid ${APPROVAL_STYLES["aprovado"].color}` : "none",
+                      }}>✓ Aprovar</button>
+                      <button onClick={() => setShowRejectionInput("reprovado")} disabled={saving} style={{
+                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                        background: APPROVAL_STYLES["reprovado"].bg, color: APPROVAL_STYLES["reprovado"].color,
+                        opacity: currentPost.approval_status === "reprovado" ? 1 : 0.6,
+                        outline: currentPost.approval_status === "reprovado" ? `2px solid ${APPROVAL_STYLES["reprovado"].color}` : "none",
+                      }}>✕ Reprovar</button>
+                      <button onClick={() => setShowRejectionInput("alteracao")} disabled={saving} style={{
+                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                        background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
+                        opacity: currentPost.approval_status === "alteracao" ? 1 : 0.6,
+                        outline: currentPost.approval_status === "alteracao" ? `2px solid ${APPROVAL_STYLES["alteracao"].color}` : "none",
+                      }}>⚠ Alteração</button>
+                    </div>
+                  )}
+                  {/* Mostra motivo registrado */}
+                  {currentPost.rejection_reason && (
+                    <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5 }}>
+                      <b style={{ color: "var(--ws-text)" }}>Motivo:</b> {currentPost.rejection_reason}
+                      {currentPost.rejection_reason_at && (
+                        <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
+                          {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          {currentPost.rejection_reason !== rejectionReason ? " • editado" : ""}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )
@@ -356,6 +501,17 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </>
                   )}
                 </div>
+                {/* Admin vê o motivo mas não edita */}
+                {currentPost.rejection_reason && (
+                  <div style={{ marginTop: 8, background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5 }}>
+                    <b style={{ color: "var(--ws-text)" }}>Motivo do cliente:</b> {currentPost.rejection_reason}
+                    {currentPost.rejection_reason_at && (
+                      <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
+                        {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    )}
+                  </div>
+                )}
               )
             )}
           </div>
@@ -369,41 +525,6 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               }}>Enviar via WhatsApp</button>
             </div>
           )}
-
-          {/* ── Descrição ── */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={labelStyle}>Descrição</div>
-            {editDesc && !readonly ? (
-              <div>
-                <RichEditor value={currentPost.description || ""} onChange={v => setCurrentPost(p => ({ ...p, description: v }))} placeholder="Descrição detalhada..." />
-                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                  <button onClick={() => { void save({ description: currentPost.description }); setEditDesc(false); }}
-                    style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
-                    Salvar
-                  </button>
-                  <button onClick={() => setEditDesc(false)}
-                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div onClick={() => !readonly && setEditDesc(true)} style={{
-                minHeight: 60, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8,
-                cursor: "pointer", border: "1px solid transparent", transition: "border-color .15s",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "transparent"; }}
-              >
-                {currentPost.description ? (
-                  <div className="ws-richtext" style={{ fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.6 }}
-                    dangerouslySetInnerHTML={{ __html: currentPost.description }} />
-                ) : (
-                  <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Clique para adicionar uma descrição...</div>
-                )}
-              </div>
-            )}
-          </div>
 
           {/* ── Legenda + Hashtags ── */}
           <div style={{ marginBottom: 20 }}>
@@ -444,44 +565,22 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             )}
           </div>
 
-          {/* ── Extra info (sem a tag de URLs) ── */}
-          {stripMediaTag(currentPost.extra_info) && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={labelStyle}>Informações extras</div>
-              <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                {stripMediaTag(currentPost.extra_info)}
-              </div>
-            </div>
+          {/* ── Extra info — sempre visível, editável só pelo admin ── */}
+          {(stripMediaTag(currentPost.extra_info) || !readonly) && (
+            <ExtraInfoSection
+              extraInfo={currentPost.extra_info}
+              readonly={readonly}
+              color={caseData.color}
+              onSave={(text) => {
+                const extraUrls = decodeExtraUrls(currentPost.extra_info);
+                const encoded = extraUrls.length > 0
+                  ? `__media_urls__:${JSON.stringify(extraUrls)}
+${text}`
+                  : text;
+                void save({ extra_info: encoded });
+              }}
+            />
           )}
-
-          {/* ── Checklist ── */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={labelStyle}>
-                Checklist{totalCheck > 0 && <span style={{ marginLeft: 6, color: "var(--ws-text3)" }}>({doneCount}/{totalCheck})</span>}
-              </div>
-            </div>
-            {(currentPost.checklist || []).map(item => (
-              <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: "1px solid var(--ws-border)" }}>
-                <input type="checkbox" checked={item.done} onChange={() => toggleCheck(item.id)}
-                  style={{ width: 15, height: 15, accentColor: caseData.color, cursor: "pointer" }} />
-                <span style={{ flex: 1, fontSize: ".84rem", color: item.done ? "var(--ws-text3)" : "var(--ws-text)", textDecoration: item.done ? "line-through" : "none" }}>
-                  {item.text}
-                </span>
-                {!readonly && <button onClick={() => removeCheck(item.id)}
-                  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem" }}>×</button>}
-              </div>
-            ))}
-            {!readonly && <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-              <input className="ws-input" value={newCheck} onChange={e => setNewCheck(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addCheckItem()} placeholder="Novo item..."
-                style={{ flex: 1, fontSize: ".83rem" }} />
-              <button onClick={addCheckItem}
-                style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: ".8rem", fontFamily: "inherit" }}>
-                +
-              </button>
-            </div>}
-          </div>
 
           {/* ── Comentários ── */}
           <div>
@@ -641,18 +740,16 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 const time = scheduledTimeValue || "09:00";
                 void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
               }} style={{ fontSize: ".8rem", marginBottom: 6 }} />
-            <input type="time" className="ws-input" value={scheduledTimeValue}
+            <select className="ws-input" value={scheduledTimeValue}
               onChange={e => {
                 const newTime = e.target.value;
                 const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
                 void save({ scheduled_date: `${date}T${newTime}:00` });
-              }} style={{ fontSize: ".8rem" }} />
-          </div>}
-
-          {!readonly && <div style={{ marginBottom: 20 }}>
-            <div style={labelStyle}>Data de entrega</div>
-            <input type="date" className="ws-input" value={currentPost.due_date || ""}
-              onChange={e => void save({ due_date: e.target.value })} style={{ fontSize: ".8rem" }} />
+              }} style={{ fontSize: ".8rem" }}>
+              <option value="12:00">12:00</option>
+              <option value="15:00">15:00</option>
+              <option value="18:00">18:00</option>
+            </select>
           </div>}
 
           {!readonly && <div style={{ marginBottom: 20 }}>
