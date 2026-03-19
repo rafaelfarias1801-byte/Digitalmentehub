@@ -1,5 +1,5 @@
 // client/src/workspace/WorkspaceApp.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { Profile } from "../lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
@@ -84,6 +84,9 @@ export default function WorkspaceApp() {
     setPage(newPage);
   }
 
+  const handleCaseOpen  = useCallback(() => { if (!getIsMobile()) setSidebarOpen(false); }, []);
+  const handleCaseClose = useCallback(() => { if (!getIsMobile()) setSidebarOpen(true); }, []);
+
   if (loading) return (
     <div className="ws-loading">
       <div className="ws-loading-dot" />
@@ -104,6 +107,17 @@ export default function WorkspaceApp() {
 
   const CurrentPage = PAGES[page];
 
+  // useMemo garante que o elemento só é recriado quando page ou profile mudam,
+  // não quando sidebarOpen muda — evita o flash/re-mount ao abrir o menu.
+  const pageElement = useMemo(() => (
+    <CurrentPage
+      profile={profile}
+      onCaseOpen={handleCaseOpen}
+      onCaseClose={handleCaseClose}
+    />
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [page, profile]); // handleCaseOpen/Close são estáveis via useCallback
+
   return (
     <div className="ws-layout">
       <Sidebar
@@ -115,13 +129,7 @@ export default function WorkspaceApp() {
         onProfileUpdate={setProfile}
       />
       <main className="ws-main">
-        <CurrentPage
-          profile={profile}
-          // No mobile a sidebar fecha sozinha ao navegar (dentro do Sidebar).
-          // No desktop, fecha ao abrir um case para dar mais espaço à tela.
-          onCaseOpen={() => { if (!getIsMobile()) setSidebarOpen(false); }}
-          onCaseClose={() => { if (!getIsMobile()) setSidebarOpen(true); }}
-        />
+        {pageElement}
       </main>
     </div>
   );
