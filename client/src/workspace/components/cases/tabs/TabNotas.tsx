@@ -19,432 +19,189 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
 
   const [newColTitle, setNewColTitle] = useState("");
   const [addingCol, setAddingCol] = useState(false);
-
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [newCardText, setNewCardText] = useState("");
 
   const LS_OPEN_CARD = `ws_open_note_card_${caseData.id}`;
   const [openCard, setOpenCard] = useState<NoteCard | null>(null);
 
-  const dragCard = useRef<string | null>(null);
-  const dragOverCol = useRef<string | null>(null);
+  // Refs e States para controle visual do Drag & Drop
+  const dragCardId = useRef<string | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
-  const dragCol = useRef<string | null>(null);
-  const [dragOverColTarget, setDragOverColTarget] = useState<string | null>(null);
+  const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     let mounted = true;
-
     async function loadBoard() {
       setLoading(true);
-
       const [columnsRes, cardsRes] = await Promise.all([
-        supabase
-          .from("note_columns")
-          .select("*")
-          .eq("case_id", caseData.id)
-          .order("order"),
-        supabase
-          .from("note_cards")
-          .select("*")
-          .eq("case_id", caseData.id)
-          .order("order"),
+        supabase.from("note_columns").select("*").eq("case_id", caseData.id).order("order"),
+        supabase.from("note_cards").select("*").eq("case_id", caseData.id).order("order"),
       ]);
-
       if (mounted) {
         const loadedCards = cardsRes.data ?? [];
         setColumns(columnsRes.data ?? []);
         setCards(loadedCards);
-
-        // Restaura o card que estava aberto antes de sair do app
-        const savedCardId = localStorage.getItem(`ws_open_note_card_${caseData.id}`);
+        const savedCardId = localStorage.getItem(LS_OPEN_CARD);
         if (savedCardId) {
           const found = loadedCards.find((c) => c.id === savedCardId);
           if (found) setOpenCard(found);
         }
-
         setLoading(false);
       }
     }
-
     void loadBoard();
-
-    return () => {
-      mounted = false;
-    };
-  }, [caseData.id]);
+    return () => { mounted = false; };
+  }, [caseData.id, LS_OPEN_CARD]);
 
   async function addColumn() {
     if (!newColTitle.trim()) return;
-
-    const { data } = await supabase
-      .from("note_columns")
-      .insert({
-        case_id: caseData.id,
-        title: newColTitle.trim(),
-        order: columns.length,
-      })
-      .select()
-      .single();
-
-    if (data) {
-      setColumns((prev) => [...prev, data]);
-    }
-
+    const { data } = await supabase.from("note_columns").insert({
+      case_id: caseData.id,
+      title: newColTitle.trim(),
+      order: columns.length,
+    }).select().single();
+    if (data) setColumns((prev) => [...prev, data]);
     setNewColTitle("");
     setAddingCol(false);
   }
 
   async function removeColumn(id: string) {
-    setColumns((prev) => prev.filter((column) => column.id !== id));
+    if (!window.confirm("Deseja realmente excluir esta lista?")) return;
+    setColumns((prev) => prev.filter((c) => c.id !== id));
     setCards((prev) => prev.filter((card) => card.column_id !== id));
-
     await supabase.from("note_columns").delete().eq("id", id);
   }
 
   async function addCard(columnId: string) {
     if (!newCardText.trim()) return;
-
-    const { data } = await supabase
-      .from("note_cards")
-      .insert({
-        case_id: caseData.id,
-        column_id: columnId,
-        title: newCardText.trim(),
-        description: "",
-        checklist: [],
-        comments: [],
-        order: cards.filter((card) => card.column_id === columnId).length,
-      })
-      .select()
-      .single();
-
-    if (data) {
-      setCards((prev) => [...prev, data]);
-    }
-
+    const colCards = cards.filter(c => c.column_id === columnId);
+    const { data } = await supabase.from("note_cards").insert({
+      case_id: caseData.id,
+      column_id: columnId,
+      title: newCardText.trim(),
+      description: "",
+      checklist: [],
+      comments: [],
+      order: colCards.length,
+    }).select().single();
+    if (data) setCards((prev) => [...prev, data]);
     setNewCardText("");
     setAddingCard(null);
   }
 
   async function updateCard(card: NoteCard) {
-    const { data } = await supabase
-      .from("note_cards")
-      .update(card)
-      .eq("id", card.id)
-      .select()
-      .single();
-
+    const { data } = await supabase.from("note_cards").update(card).eq("id", card.id).select().single();
     if (data) {
       setCards((prev) => prev.map((item) => (item.id === card.id ? data : item)));
-      localStorage.setItem(LS_OPEN_CARD, data.id);
       setOpenCard(data);
     }
   }
 
   async function removeCard(id: string) {
-    setCards((prev) => prev.filter((card) => card.id !== id));
-    localStorage.removeItem(LS_OPEN_CARD);
+    setCards((prev) => prev.filter((c) => c.id !== id));
     setOpenCard(null);
-
+    localStorage.removeItem(LS_OPEN_CARD);
     await supabase.from("note_cards").delete().eq("id", id);
   }
 
-  function onDragStart(e: React.DragEvent<HTMLDivElement>, cardId: string) {
-    dragCard.current = cardId;
+  // ── Drag & Drop Inteligente ──
+  function handleDragStart(e: React.DragEvent, cardId: string) {
+    if (readonly) { e.preventDefault(); return; }
+    dragCardId.current = cardId;
     e.dataTransfer.effectAllowed = "move";
-    e.currentTarget.style.opacity = "0.4";
   }
 
-  function onDragEnd(e: React.DragEvent<HTMLDivElement>) {
-    e.currentTarget.style.opacity = "1";
-    dragCard.current = null;
-    dragOverCol.current = null;
-    setDragOverColId(null);
-  }
-
-  function onDragOverCol(e: React.DragEvent<HTMLDivElement>, colId: string) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    dragOverCol.current = colId;
-    setDragOverColId(colId);
-  }
-
-  function onDragLeaveCol() {
-    setDragOverColId(null);
-  }
-
-  async function onDropCol(e: React.DragEvent<HTMLDivElement>, colId: string) {
-    e.preventDefault();
-    setDragOverColId(null);
-
-    const cardId = dragCard.current;
+  async function handleDrop(targetColId: string, targetCardId?: string) {
+    const cardId = dragCardId.current;
     if (!cardId) return;
 
-    const card = cards.find((item) => item.id === cardId);
-    if (!card || card.column_id === colId) return;
+    const movingCard = cards.find(c => c.id === cardId);
+    if (!movingCard) return;
 
-    const newOrder = cards.filter((item) => item.column_id === colId).length;
-    const updatedCard: NoteCard = {
-      ...card,
-      column_id: colId,
-      order: newOrder,
-    };
-
-    setCards((prev) => prev.map((item) => (item.id === cardId ? updatedCard : item)));
-
-    await supabase
-      .from("note_cards")
-      .update({ column_id: colId, order: newOrder })
-      .eq("id", cardId);
-  }
-
-  function onColDragStart(e: React.DragEvent<HTMLDivElement>, colId: string) {
-    dragCol.current = colId;
-    e.dataTransfer.effectAllowed = "move";
-    e.currentTarget.style.opacity = "0.5";
-  }
-
-  function onColDragEnd(e: React.DragEvent<HTMLDivElement>) {
-    e.currentTarget.style.opacity = "1";
-    dragCol.current = null;
-    setDragOverColTarget(null);
-  }
-
-  function onColDragOver(e: React.DragEvent<HTMLDivElement>, colId: string) {
-    e.preventDefault();
-    if (dragCol.current && dragCol.current !== colId) {
-      setDragOverColTarget(colId);
+    // Prepara a nova lista reordenada
+    let updatedCards = cards.filter(c => c.id !== cardId);
+    const colCards = updatedCards.filter(c => c.column_id === targetColId).sort((a,b) => a.order - b.order);
+    
+    let targetIndex = colCards.length;
+    if (targetCardId) {
+      targetIndex = colCards.findIndex(c => c.id === targetCardId);
     }
+
+    const newCard = { ...movingCard, column_id: targetColId };
+    colCards.splice(targetIndex, 0, newCard);
+
+    // Reatribui as ordens sequenciais
+    const finalColCards = colCards.map((c, i) => ({ ...c, order: i }));
+    const otherCards = updatedCards.filter(c => c.column_id !== targetColId);
+    
+    setCards([...otherCards, ...finalColCards]);
+    setDragOverColId(null);
+    setDragOverCardId(null);
+    dragCardId.current = null;
+
+    // Atualiza o Banco
+    await Promise.all(finalColCards.map(c => 
+      supabase.from("note_cards").update({ column_id: targetColId, order: c.order }).eq("id", c.id)
+    ));
   }
 
-  async function onColDrop(e: React.DragEvent<HTMLDivElement>, targetColId: string) {
-    e.preventDefault();
-    setDragOverColTarget(null);
-    const srcId = dragCol.current;
-    if (!srcId || srcId === targetColId) return;
-
-    const srcIdx = columns.findIndex(c => c.id === srcId);
-    const tgtIdx = columns.findIndex(c => c.id === targetColId);
-    if (srcIdx === -1 || tgtIdx === -1) return;
-
-    const reordered = [...columns];
-    const [moved] = reordered.splice(srcIdx, 1);
-    reordered.splice(tgtIdx, 0, moved);
-    const withOrder = reordered.map((c, i) => ({ ...c, order: i }));
-    setColumns(withOrder);
-
-    await Promise.all(
-      withOrder.map(c => supabase.from("note_columns").update({ order: c.order }).eq("id", c.id))
-    );
-  }
-
-  if (loading) {
-    return <Loader />;
-  }
+  if (loading) return <Loader />;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 16,
-        overflowX: isMobile ? "visible" : "auto",
-        overflowY: "visible",
-        flexDirection: isMobile ? "column" : "row",
-        paddingBottom: 16,
-        alignItems: isMobile ? "stretch" : "flex-start",
-        height: isMobile ? "auto" : "calc(100vh - 160px)",
-      }}
-    >
+    <div style={{
+      display: "flex", gap: 16, overflowX: isMobile ? "visible" : "auto", 
+      flexDirection: isMobile ? "column" : "row", paddingBottom: 16, 
+      alignItems: isMobile ? "stretch" : "flex-start", height: isMobile ? "auto" : "calc(100vh - 160px)",
+    }}>
       {columns.map((column) => {
-        const columnCards = cards.filter((card) => card.column_id === column.id);
-        const isDragTarget = dragOverColId === column.id;
-
+        const columnCards = cards.filter((c) => c.column_id === column.id).sort((a, b) => a.order - b.order);
         return (
           <div
             key={column.id}
-            onDragOver={(e) => { onDragOverCol(e, column.id); onColDragOver(e, column.id); }}
-            onDragLeave={onDragLeaveCol}
-            onDrop={(e) => { void onDropCol(e, column.id); void onColDrop(e, column.id); }}
+            onDragOver={(e) => { e.preventDefault(); setDragOverColId(column.id); }}
+            onDragLeave={() => setDragOverColId(null)}
+            onDrop={() => handleDrop(column.id)}
             style={{
-              background: isDragTarget ? `${caseData.color}12` : dragOverColTarget === column.id ? `${caseData.color}20` : "var(--ws-surface)",
-              border: `1px solid ${isDragTarget ? caseData.color : dragOverColTarget === column.id ? caseData.color : "var(--ws-border)"}`,
-              borderRadius: 12,
-              padding: "12px 12px 8px",
-              width: isMobile ? "100%" : 260,
-              flexShrink: 0,
-              transition: "border-color .15s, background .15s",
-              display: "flex",
-              flexDirection: "column",
-              maxHeight: isMobile ? "none" : "100%",
+              background: dragOverColId === column.id ? `${caseData.color}08` : "var(--ws-surface)",
+              border: `1px solid ${dragOverColId === column.id ? caseData.color : "var(--ws-border)"}`,
+              borderRadius: 12, padding: "12px 12px 8px", width: isMobile ? "100%" : 260, flexShrink: 0,
+              display: "flex", flexDirection: "column", maxHeight: isMobile ? "none" : "100%",
             }}
           >
-            <div
-              draggable
-              onDragStart={(e) => onColDragStart(e, column.id)}
-              onDragEnd={onColDragEnd}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 10,
-                cursor: "grab",
-                userSelect: "none",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "inherit",
-                  fontWeight: 600,
-                  fontSize: ".88rem",
-                  color: "var(--ws-text)",
-                }}
-              >
-                {column.title}
-              </div>
-
-              {!readonly && (
-                <button
-                  onClick={() => void removeColumn(column.id)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--ws-text3)",
-                    cursor: "pointer",
-                    fontSize: ".9rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  ×
-                </button>
-              )}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ fontWeight: 600, fontSize: ".88rem", color: "var(--ws-text)" }}>{column.title}</div>
+              {!readonly && <button onClick={() => removeColumn(column.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer" }}>×</button>}
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 8, overflowY: "auto", flex: 1, paddingRight: 2 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, overflowY: "auto", flex: 1 }}>
               {columnCards.map((card) => {
-                const done = (card.checklist || []).filter((item) => item.done).length;
                 const total = (card.checklist || []).length;
-
-                let labelColor = "";
-                let labelName = "";
-
-                if (card.label_color) {
-                  try {
-                    const parsed = JSON.parse(card.label_color);
-                    labelColor = parsed.color || "";
-                    labelName = parsed.name || "";
-                  } catch {
-                    labelColor = card.label_color;
-                  }
-                }
-
+                const done = (card.checklist || []).filter(i => i.done).length;
                 return (
                   <div
                     key={card.id}
-                    draggable
-                    onDragStart={(e) => onDragStart(e, card.id)}
-                    onDragEnd={onDragEnd}
-                    onClick={() => {
-                    localStorage.setItem(LS_OPEN_CARD, card.id);
-                    setOpenCard(card);
-                  }}
+                    draggable={!readonly}
+                    onDragStart={(e) => handleDragStart(e, card.id)}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverCardId(card.id); }}
+                    onDragLeave={() => setDragOverCardId(null)}
+                    onDrop={(e) => { e.stopPropagation(); handleDrop(column.id, card.id); }}
+                    onClick={() => { localStorage.setItem(LS_OPEN_CARD, card.id); setOpenCard(card); }}
                     style={{
-                      background: "var(--ws-surface2)",
-                      border: "1px solid var(--ws-border)",
-                      borderRadius: 8,
-                      padding: "10px 12px",
-                      cursor: "grab",
-                      transition: "border-color .15s",
-                      userSelect: "none",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = caseData.color;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "var(--ws-border)";
+                      background: "var(--ws-surface2)", 
+                      // Indicador visual de onde o card vai cair:
+                      border: dragOverCardId === card.id ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
+                      borderRadius: 8, padding: "10px 12px", cursor: "pointer", 
+                      opacity: dragCardId.current === card.id ? 0.3 : 1,
+                      transform: dragOverCardId === card.id ? "translateY(-2px)" : "none",
+                      transition: "all 0.1s"
                     }}
                   >
-                    {labelColor && (
-                      <div
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          background: labelColor,
-                          borderRadius: 4,
-                          padding: labelName ? "2px 8px" : "3px 20px",
-                          marginBottom: 6,
-                          fontSize: ".62rem",
-                          fontWeight: 700,
-                          color: "#fff",
-                          textShadow: "0 1px 2px #00000040",
-                          maxWidth: "100%",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {labelName || ""}
-                      </div>
-                    )}
-
-                    <div
-                      style={{
-                        fontSize: ".83rem",
-                        color: "var(--ws-text)",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {card.title}
-                    </div>
-
-                    <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                      {card.due_date && (
-                        <span
-                          style={{
-                            fontSize: ".65rem",
-                            fontFamily: "Poppins",
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            background: "var(--ws-surface3)",
-                            color: "#a0a4cc",
-                          }}
-                        >
-                          📅{" "}
-                          {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </span>
-                      )}
-
-                      {total > 0 && (
-                        <span
-                          style={{
-                            fontSize: ".65rem",
-                            fontFamily: "Poppins",
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            background: done === total ? "#00e67622" : "var(--ws-surface3)",
-                            color: done === total ? "#00e676" : "#a0a4cc",
-                          }}
-                        >
-                          ✓ {done}/{total}
-                        </span>
-                      )}
-
-                      {(card.comments || []).length > 0 && (
-                        <span
-                          style={{
-                            fontSize: ".65rem",
-                            fontFamily: "Poppins",
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            background: "var(--ws-surface3)",
-                            color: "#a0a4cc",
-                          }}
-                        >
-                          💬 {(card.comments || []).length}
-                        </span>
-                      )}
+                    <div style={{ fontSize: ".83rem", color: "var(--ws-text)", lineHeight: 1.5 }}>{card.title}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                      {card.due_date && <span style={{ fontSize: ".65rem", padding: "2px 6px", borderRadius: 4, background: "var(--ws-surface3)", color: "#a0a4cc" }}>📅 {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>}
+                      {total > 0 && <span style={{ fontSize: ".65rem", padding: "2px 6px", borderRadius: 4, background: done === total ? "#00e67622" : "var(--ws-surface3)", color: done === total ? "#00e676" : "#a0a4cc" }}>✓ {done}/{total}</span>}
                     </div>
                   </div>
                 );
@@ -455,200 +212,46 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
               <div style={{ marginTop: 8 }}>
                 <textarea
                   value={newCardText}
-                  onChange={(e) => setNewCardText(e.target.value)}
-                  placeholder="Escreva o cartão..."
-                  autoFocus
-                  style={{
-                    width: "100%",
-                    background: "var(--ws-surface2)",
-                    border: `1px solid ${caseData.color}`,
-                    borderRadius: 8,
-                    color: "var(--ws-text)",
-                    padding: "8px 10px",
-                    fontSize: ".82rem",
-                    resize: "vertical",
-                    minHeight: 72,
-                    fontFamily: "inherit",
-                    boxSizing: "border-box",
+                  onChange={(e) => {
+                    setNewCardText(e.target.value);
+                    e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void addCard(column.id);
-                    }
-                  }}
+                  placeholder="Título do cartão..." autoFocus
+                  style={{ width: "100%", background: "var(--ws-surface2)", border: `1px solid ${caseData.color}`, borderRadius: 8, color: "var(--ws-text)", padding: "8px 10px", fontSize: ".82rem", resize: "none", overflow: "hidden" }}
                 />
-
                 <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                  <button
-                    onClick={() => void addCard(column.id)}
-                    style={{
-                      background: caseData.color,
-                      border: "none",
-                      borderRadius: 6,
-                      color: "#fff",
-                      padding: "5px 12px",
-                      fontSize: ".78rem",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    Adicionar
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setAddingCard(null);
-                      setNewCardText("");
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--ws-text3)",
-                      cursor: "pointer",
-                      fontSize: ".78rem",
-                    }}
-                  >
-                    Cancelar
-                  </button>
+                  <button onClick={() => addCard(column.id)} style={{ background: caseData.color, color: "#fff", borderRadius: 6, padding: "5px 12px", fontSize: ".78rem" }}>Adicionar</button>
+                  <button onClick={() => setAddingCard(null)} style={{ color: "var(--ws-text3)", fontSize: ".78rem" }}>Cancelar</button>
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => {
-                  setAddingCard(column.id);
-                  setNewCardText("");
-                }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--ws-text3)",
-                  cursor: "pointer",
-                  width: "100%",
-                  textAlign: "left",
-                  fontSize: ".78rem",
-                  padding: "8px 4px",
-                  marginTop: 4,
-                  fontFamily: "inherit",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "var(--ws-text)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--ws-text3)";
-                }}
-              >
-                + Adicionar um cartão
-              </button>
+              <button onClick={() => setAddingCard(column.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", width: "100%", textAlign: "left", fontSize: ".78rem", padding: "8px 4px", marginTop: 4 }}>+ Adicionar cartão</button>
             ))}
           </div>
         );
       })}
 
-      {!readonly && <div style={{ width: 240, flexShrink: 0 }}>
-        {addingCol ? (
-          <div
-            style={{
-              background: "var(--ws-surface)",
-              border: "1px solid var(--ws-border)",
-              borderRadius: 12,
-              padding: 12,
-            }}
-          >
-            <input
-              value={newColTitle}
-              onChange={(e) => setNewColTitle(e.target.value)}
-              placeholder="Título da lista"
-              autoFocus
-              className="ws-input"
-              style={{ marginBottom: 8 }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void addColumn();
-                }
-              }}
-            />
-
-            <div style={{ display: "flex", gap: 6 }}>
-              <button
-                onClick={() => void addColumn()}
-                style={{
-                  background: caseData.color,
-                  border: "none",
-                  borderRadius: 6,
-                  color: "#fff",
-                  padding: "5px 12px",
-                  fontSize: ".78rem",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                Adicionar lista
-              </button>
-
-              <button
-                onClick={() => {
-                  setAddingCol(false);
-                  setNewColTitle("");
-                }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--ws-text3)",
-                  cursor: "pointer",
-                  fontSize: ".78rem",
-                }}
-              >
-                ×
-              </button>
+      {!readonly && (
+        <div style={{ width: 240, flexShrink: 0 }}>
+          {addingCol ? (
+            <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 12, padding: 12 }}>
+              <input value={newColTitle} onChange={(e) => setNewColTitle(e.target.value)} placeholder="Título da lista" autoFocus className="ws-input" style={{ marginBottom: 8 }} onKeyDown={(e) => e.key === "Enter" && addColumn()} />
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={addColumn} style={{ background: caseData.color, color: "#fff", borderRadius: 6, padding: "5px 12px", fontSize: ".78rem" }}>Criar lista</button>
+                <button onClick={() => setAddingCol(false)} style={{ color: "var(--ws-text3)", fontSize: ".78rem" }}>×</button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setAddingCol(true)}
-            style={{
-              background: "var(--ws-surface)",
-              border: "1px dashed var(--ws-border2)",
-              borderRadius: 12,
-              padding: "12px 16px",
-              width: "100%",
-              color: "var(--ws-text3)",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: ".82rem",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              transition: "all .15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = caseData.color;
-              e.currentTarget.style.color = caseData.color;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--ws-border2)";
-              e.currentTarget.style.color = "var(--ws-text3)";
-            }}
-          >
-            + Adicionar outra lista
-          </button>
-        )}
-      </div>}
+          ) : (
+            <button onClick={() => setAddingCol(true)} style={{ background: "var(--ws-surface)", border: "1px dashed var(--ws-border2)", borderRadius: 12, padding: "12px 16px", width: "100%", color: "var(--ws-text3)", fontSize: ".82rem", cursor: "pointer" }}>+ Adicionar lista</button>
+          )}
+        </div>
+      )}
 
       {openCard && (
         <NoteCardModal
-          card={openCard}
-          caseData={caseData}
-          onClose={() => {
-          localStorage.removeItem(LS_OPEN_CARD);
-          setOpenCard(null);
-        }}
-          onUpdate={updateCard}
-          onDelete={removeCard}
-          profile={profile}
+          card={openCard} caseData={caseData} profile={profile}
+          onClose={() => { localStorage.removeItem(LS_OPEN_CARD); setOpenCard(null); }}
+          onUpdate={updateCard} onDelete={removeCard}
         />
       )}
     </div>
