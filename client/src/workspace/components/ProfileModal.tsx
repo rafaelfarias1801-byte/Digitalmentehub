@@ -59,26 +59,31 @@ export default function ProfileModal({ profile, onClose, onUpdate }: Props) {
 
   async function uploadAvatar(file: File) {
     setUploading(true);
+    setError("");
     try {
-      const ext = file.name.split(".").pop();
+      // Normaliza o tipo — iPhone pode enviar heic, etc.
+      const contentType = file.type.startsWith("image/") ? file.type : "image/jpeg";
+      const ext = file.name.includes(".") ? file.name.split(".").pop() : "jpg";
       const path = `avatars/${profile.id}/${Date.now()}.${ext}`;
 
       const { data, error: fnError } = await supabase.functions.invoke("get-r2-upload-url", {
-        body: { filename: path, contentType: file.type },
+        body: { filename: path, contentType },
       });
 
-      if (fnError || !data?.signedUrl) throw new Error("Erro ao gerar link de upload.");
+      if (fnError) throw new Error(`Erro na função: ${fnError.message}`);
+      if (!data?.signedUrl) throw new Error("Link de upload não retornado.");
 
       const res = await fetch(data.signedUrl, {
-        method: "PUT", body: file,
-        headers: { "Content-Type": file.type },
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": contentType },
       });
 
-      if (!res.ok) throw new Error("Falha ao enviar imagem.");
+      if (!res.ok) throw new Error(`Falha ao enviar (${res.status}).`);
 
       setAvatarUrl(`${R2_PUBLIC_URL}/${path}`);
-    } catch (err) {
-      setError("Erro ao enviar foto. Tente novamente.");
+    } catch (err: any) {
+      setError(`Erro ao enviar foto: ${err.message}`);
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
