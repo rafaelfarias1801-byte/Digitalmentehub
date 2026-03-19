@@ -230,9 +230,31 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     setSaving(false);
   }
 
-  async function removePost(id: string) {
-    setPosts(prev => prev.filter(p => p.id !== id));
-    await supabase.from("posts").delete().eq("id", id);
+  async function removePost(post: Post) {
+    // 1. Trava de segurança: pede confirmação
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o post "${post.slug || post.title || 'selecionado'}"? Essa ação não pode ser desfeita.`);
+    if (!confirmacao) return; // Se o usuário cancelar, a função para aqui
+
+    const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
+    // 2. Pega todas as URLs de imagem/vídeo amarradas nesse post (capa + carrossel)
+    const allUrls = [post.media_url, ...(post.media_urls || []), ...decodeExtraUrls(post.extra_info)].filter(Boolean);
+
+    // 3. Deleta os arquivos físicos do Cloudflare R2
+    for (const url of allUrls) {
+      if (url && url.startsWith(R2_PUBLIC_URL)) {
+        // Pega só o caminho final (ex: posts/ID/123-0.jpg)
+        const filename = url.replace(`${R2_PUBLIC_URL}/`, "");
+
+        await supabase.functions.invoke('delete-r2-file', {
+          body: { filename }
+        });
+      }
+    }
+
+    // 4. Exclui da tela e do banco de dados (como já era antes)
+    setPosts(prev => prev.filter(p => p.id !== post.id));
+    await supabase.from("posts").delete().eq("id", post.id);
   }
 
   function updatePost(updated: Post) {
@@ -370,8 +392,8 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   <div style={{ background: approval.bg, color: approval.color, borderRadius: 20, padding: "3px 10px", fontSize: ".72rem", fontWeight: 600 }}>
                     {approval.label}
                   </div>
-                  {!readonly && <button onClick={e => { e.stopPropagation(); void removePost(post.id); }}
-                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem" }}>×</button>}
+                  {!readonly && <button onClick={e => { e.stopPropagation(); void removePost(post); }}
+  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", padding: "0 8px" }}>×</button>}
                 </div>
               );
             })}
