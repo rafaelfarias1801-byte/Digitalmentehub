@@ -190,7 +190,10 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
   // ── Salvar ──────────────────────────────────────────────────────
   async function save() {
-    if (!form.slug.trim() && !form.title.trim()) return;
+    if (!form.slug.trim() && !form.title.trim()) {
+      alert("Preencha pelo menos o nome no calendário ou o título do post.");
+      return;
+    }
     setSaving(true);
 
     const coverUrl = mediaUrls[0] ?? "";

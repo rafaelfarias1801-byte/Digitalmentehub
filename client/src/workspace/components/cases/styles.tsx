@@ -65,7 +65,7 @@ export const overlayStyle: CSSProperties = {
 export function getOverlayStyle(isMobile: boolean): CSSProperties {
   return {
     ...overlayStyle,
-    left: isMobile ? 56 : 0,
+    left: 0,
   };
 }
 

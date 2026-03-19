@@ -95,7 +95,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [slugDraft, setSlugDraft] = useState(currentPost.slug || "");
   const [editTitle, setEditTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(currentPost.title || "");
-  const isMobile = useIsMobile();
+  const [fullscreenSlide, setFullscreenSlide] = useState(false);
 
   // Navegação de slides — usa media_urls se disponível, senão fallback para extra_info
   const extraUrls = decodeExtraUrls(currentPost.extra_info);
@@ -198,7 +198,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         borderRadius: isMobile ? 0 : 16,
         ...(isMobile ? {} : { width: "min(860px,95vw)" }),
         maxHeight: isMobile ? "100dvh" : "90vh",
-        overflowY: "auto",
+        overflowY: isMobile ? "hidden" : "auto",
         border: "1px solid var(--ws-border2)",
         boxShadow: "0 30px 80px #00000070",
         display: "flex",
@@ -209,7 +209,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         {isMobile && (
           readonly ? (
             /* Cliente: mostra tipo e plataformas no topo + botão fechar fixo */
-            <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
+            <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: "var(--ws-text2)", textTransform: "uppercase", letterSpacing: "1px" }}>
                   {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
@@ -226,7 +226,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               <button onClick={onClose} style={{ ...closeBtnStyle, flexShrink: 0 }}>×</button>
             </div>
           ) : (
-            <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>
+            <div style={{ position: "sticky", top: 0, zIndex: 10, display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>
               <button onClick={() => setSidebarVisible(false)} style={{
                 flex: 1, padding: "11px 0", background: "none", border: "none",
                 color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
@@ -252,6 +252,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           gridTemplateColumns: isMobile ? undefined : "1fr 280px",
           flex: 1,
           minHeight: 0,
+          overflowY: isMobile ? "auto" : undefined,
         }}>
         {/* ── Coluna principal ── */}
         <div style={{ padding: "20px 18px", boxSizing: "border-box", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", minWidth: 0, width: "100%" }}>
@@ -330,7 +331,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   <video src={activeSlideUrl} controls style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
                 ) : (
                   <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`}
-                    style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
+                    style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "cover", maxHeight: 400, display: "block" }} />
                 )}
 
                 {/* Botões de navegação sobrepostos */}
@@ -362,6 +363,15 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     }}>{slideIdx + 1} / {allSlides.length}</div>
                   </>
                 )}
+
+                {/* Botão expandir — canto inferior direito */}
+                <button onClick={() => setFullscreenSlide(true)} title="Abrir em tela cheia" style={{
+                  position: "absolute", bottom: 8, right: 8,
+                  background: "rgba(0,0,0,.6)", border: "none", borderRadius: "50%",
+                  width: 32, height: 32, color: "#fff", cursor: "pointer",
+                  fontSize: ".75rem", display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all .15s",
+                }}>⤢</button>
               </div>
 
               {/* Thumbnails clicáveis */}
@@ -380,6 +390,60 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Lightbox fullscreen ── */}
+          {fullscreenSlide && (
+            <div onClick={() => setFullscreenSlide(false)} style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "#000",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {/* Botão X fixo no topo */}
+              <button onClick={() => setFullscreenSlide(false)} style={{
+                position: "fixed", top: 16, right: 16, zIndex: 10000,
+                background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%",
+                width: 40, height: 40, color: "#fff", fontSize: "1.2rem",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer",
+              }}>×</button>
+
+              {/* Setas navegação no fullscreen */}
+              {allSlides.length > 1 && (
+                <>
+                  <button onClick={e => { e.stopPropagation(); prevSlide(); }} disabled={slideIdx === 0} style={{
+                    position: "fixed", left: 12, top: "50%", transform: "translateY(-50%)",
+                    background: slideIdx === 0 ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.2)",
+                    border: "none", borderRadius: "50%", width: 44, height: 44,
+                    color: "#fff", cursor: slideIdx === 0 ? "default" : "pointer",
+                    fontSize: "1.3rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 10000,
+                  }}>‹</button>
+                  <button onClick={e => { e.stopPropagation(); nextSlide(); }} disabled={slideIdx === allSlides.length - 1} style={{
+                    position: "fixed", right: 12, top: "50%", transform: "translateY(-50%)",
+                    background: slideIdx === allSlides.length - 1 ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.2)",
+                    border: "none", borderRadius: "50%", width: 44, height: 44,
+                    color: "#fff", cursor: slideIdx === allSlides.length - 1 ? "default" : "pointer",
+                    fontSize: "1.3rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 10000,
+                  }}>›</button>
+                  <div style={{
+                    position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
+                    background: "rgba(255,255,255,.15)", borderRadius: 20, padding: "4px 12px",
+                    color: "#fff", fontSize: ".7rem", fontFamily: "Poppins", zIndex: 10000,
+                  }}>{slideIdx + 1} / {allSlides.length}</div>
+                </>
+              )}
+
+              {/* Mídia */}
+              {isVideoFile(activeSlideUrl) ? (
+                <video src={activeSlideUrl} controls onClick={e => e.stopPropagation()}
+                  style={{ maxWidth: "100vw", maxHeight: "100vh", objectFit: "contain" }} />
+              ) : (
+                <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`} onClick={e => e.stopPropagation()}
+                  style={{ maxWidth: "100vw", maxHeight: "100vh", objectFit: "contain" }} />
               )}
             </div>
           )}
