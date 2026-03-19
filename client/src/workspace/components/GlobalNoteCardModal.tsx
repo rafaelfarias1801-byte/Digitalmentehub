@@ -19,6 +19,9 @@ function LabelPicker({ value, onChange }: { value: string, onChange: (v: string)
     return DEFAULT_LABELS.map(l => ({ ...l }));
   });
 
+  const [isAdding, setIsAdding] = useState(false);
+  const [tempColor, setTempColor] = useState("#E91E8C");
+
   let selectedColor = ""; let selectedName = "";
   if (value) {
     try { const p = JSON.parse(value); selectedColor = p.color || ""; selectedName = p.name || ""; }
@@ -41,6 +44,15 @@ function LabelPicker({ value, onChange }: { value: string, onChange: (v: string)
     onChange(JSON.stringify({ color: selectedColor, name: newName }));
   }
 
+  function confirmNewColor() {
+    if (!labels.find(l => l.color === tempColor)) {
+      const newLabels = [...labels, { color: tempColor, name: "" }];
+      updateLabels(newLabels);
+      onChange(JSON.stringify({ color: tempColor, name: "" }));
+    }
+    setIsAdding(false);
+  }
+
   return (
     <div>
       <div style={{ ...labelStyle, marginBottom: 8 }}>Etiqueta</div>
@@ -53,20 +65,18 @@ function LabelPicker({ value, onChange }: { value: string, onChange: (v: string)
               boxShadow: selectedColor === label.color ? `0 0 0 2px ${label.color}` : "none", transition: "all .15s"
             }} />
         ))}
-        <label title="Nova cor" style={{
-          width: 24, height: 24, borderRadius: 4, cursor: "pointer", background: "var(--ws-surface2)", border: "1px dashed var(--ws-border2)",
-          display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden"
-        }}>
-          <span style={{ fontSize: ".9rem", color: "var(--ws-text3)" }}>+</span>
-          {/* CORREÇÃO AQUI: onBlur */}
-          <input type="color" onBlur={e => {
-            const c = e.target.value;
-            if (!labels.find(l => l.color === c)) {
-              updateLabels([...labels, { color: c, name: "" }]);
-              onChange(JSON.stringify({ color: c, name: "" }));
-            }
-          }} style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
-        </label>
+        
+        {/* INTERFACE DE CONFIRMAÇÃO DE COR */}
+        {isAdding ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, background: "var(--ws-surface2)", padding: "2px", borderRadius: 4, border: "1px solid var(--ws-border2)" }}>
+            <input type="color" value={tempColor} onChange={e => setTempColor(e.target.value)} style={{ width: 22, height: 22, padding: 0, border: "none", cursor: "pointer", background: "none" }} />
+            <button onClick={confirmNewColor} title="Salvar cor" style={{ background: "var(--ws-text)", color: "var(--ws-surface)", border: "none", borderRadius: 3, width: 20, height: 20, cursor: "pointer", fontWeight: "bold", fontSize: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>✓</button>
+            <button onClick={() => setIsAdding(false)} title="Cancelar" style={{ background: "transparent", color: "var(--ws-text3)", border: "none", width: 20, height: 20, cursor: "pointer", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          </div>
+        ) : (
+          <button title="Nova cor" onClick={() => setIsAdding(true)} style={{ width: 24, height: 24, borderRadius: 4, cursor: "pointer", background: "var(--ws-surface2)", border: "1px dashed var(--ws-border2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--ws-text3)", fontSize: "1rem", padding: 0 }}>+</button>
+        )}
+
         {selectedColor && <button onClick={() => onChange("")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", fontFamily: "Poppins" }}>limpar</button>}
       </div>
       {selectedColor && (

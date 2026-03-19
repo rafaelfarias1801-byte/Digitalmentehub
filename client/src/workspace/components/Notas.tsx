@@ -61,7 +61,6 @@ export default function Notas({ profile }: Props) {
     setNewCardText(""); setAddingCard(null);
   }
 
-  // FUNÇÃO CORRIGIDA
   async function toggleCompleted(cardId: string, currentStatus: boolean) {
     const newVal = !currentStatus;
     setCards(prev => prev.map(c => c.id === cardId ? { ...c, completed: newVal } : c));
@@ -150,11 +149,8 @@ export default function Notas({ profile }: Props) {
 
                       {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "2px 8px" : "3px 20px", marginBottom: 6, fontSize: ".62rem", fontWeight: 700, color: "#fff", textShadow: "0 1px 2px #00000040" }}>{labelName}</div>}
 
-                      <div style={{ 
-                        fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22,
-                        textDecoration: card.completed ? 'line-through' : 'none',
-                        opacity: card.completed ? 0.6 : 1
-                      }}>{card.title}</div>
+                      {/* Texto SEM Riscado */}
+                      <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22 }}>{card.title}</div>
 
                       <div style={{ display: "flex", gap: 10, marginTop: 8, alignItems: "center", flexWrap: "wrap" }}>
                         {card.description && <span style={{ fontSize: "1.1rem", color: "var(--ws-text3)", lineHeight: 1 }}>≡</span>}

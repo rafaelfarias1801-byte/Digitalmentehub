@@ -8,20 +8,16 @@ import { closeBtnStyle, labelStyle, getOverlayStyle } from "../styles";
 import type { Case, NoteCard, NoteLabel } from "../types";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 
-interface NoteCardModalProps {
-  card: NoteCard;
-  caseData: Case;
-  onClose: () => void;
-  onUpdate: (card: NoteCard) => void;
-  onDelete: (id: string) => void;
-  profile: Profile;
-}
+interface NoteCardModalProps { card: NoteCard; caseData: Case; onClose: () => void; onUpdate: (card: NoteCard) => void; onDelete: (id: string) => void; profile: Profile; }
 
 function LabelPicker({ value, onChange, accentColor }: { value: string, onChange: (v: string) => void, accentColor: string }) {
   const [labels, setLabels] = useState<NoteLabel[]>(() => {
     try { const stored = localStorage.getItem("dig_labels"); if (stored) return JSON.parse(stored); } catch {}
     return DEFAULT_LABELS.map(l => ({ ...l }));
   });
+
+  const [isAdding, setIsAdding] = useState(false);
+  const [tempColor, setTempColor] = useState("#E91E8C");
 
   let selectedColor = ""; let selectedName = "";
   if (value) {
@@ -45,6 +41,15 @@ function LabelPicker({ value, onChange, accentColor }: { value: string, onChange
     onChange(JSON.stringify({ color: selectedColor, name: newName }));
   }
 
+  function confirmNewColor() {
+    if (!labels.find(l => l.color === tempColor)) {
+      const newLabels = [...labels, { color: tempColor, name: "" }];
+      updateLabels(newLabels);
+      onChange(JSON.stringify({ color: tempColor, name: "" }));
+    }
+    setIsAdding(false);
+  }
+
   return (
     <div>
       <div style={{ ...labelStyle, marginBottom: 8 }}>Etiqueta</div>
@@ -57,20 +62,18 @@ function LabelPicker({ value, onChange, accentColor }: { value: string, onChange
               boxShadow: selectedColor === label.color ? `0 0 0 2px ${label.color}` : "none", transition: "all .15s"
             }} />
         ))}
-        <label title="Nova cor" style={{
-          width: 24, height: 24, borderRadius: 4, cursor: "pointer", background: "var(--ws-surface2)", border: "1px dashed var(--ws-border2)",
-          display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden"
-        }}>
-          <span style={{ fontSize: ".9rem", color: "var(--ws-text3)" }}>+</span>
-          {/* CORREÇÃO AQUI: onBlur em vez de onChange */}
-          <input type="color" onBlur={e => {
-            const c = e.target.value;
-            if (!labels.find(l => l.color === c)) {
-              updateLabels([...labels, { color: c, name: "" }]);
-              onChange(JSON.stringify({ color: c, name: "" }));
-            }
-          }} style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
-        </label>
+        
+        {/* INTERFACE DE CONFIRMAÇÃO DE COR */}
+        {isAdding ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 4, background: "var(--ws-surface2)", padding: "2px", borderRadius: 4, border: "1px solid var(--ws-border2)" }}>
+            <input type="color" value={tempColor} onChange={e => setTempColor(e.target.value)} style={{ width: 22, height: 22, padding: 0, border: "none", cursor: "pointer", background: "none" }} />
+            <button onClick={confirmNewColor} title="Salvar cor" style={{ background: "var(--ws-text)", color: "var(--ws-surface)", border: "none", borderRadius: 3, width: 20, height: 20, cursor: "pointer", fontWeight: "bold", fontSize: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>✓</button>
+            <button onClick={() => setIsAdding(false)} title="Cancelar" style={{ background: "transparent", color: "var(--ws-text3)", border: "none", width: 20, height: 20, cursor: "pointer", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          </div>
+        ) : (
+          <button title="Nova cor" onClick={() => setIsAdding(true)} style={{ width: 24, height: 24, borderRadius: 4, cursor: "pointer", background: "var(--ws-surface2)", border: "1px dashed var(--ws-border2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--ws-text3)", fontSize: "1rem", padding: 0 }}>+</button>
+        )}
+
         {selectedColor && <button onClick={() => onChange("")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", fontFamily: "Poppins" }}>limpar</button>}
       </div>
       {selectedColor && (
@@ -96,7 +99,6 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const isMobile = useIsMobile();
 
-  // CORREÇÃO AQUI: Agora ele envia para o banco de dados (Supabase)
   async function save(updates: Partial<NoteCard>) {
     const merged = { ...currentCard, ...updates };
     setCurrentCard(merged);
@@ -160,11 +162,12 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
 
           <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Descrição</div>
+
             {editDesc ? (
               <div>
                 <RichEditor value={currentCard.description || ""} onChange={(value) => setCurrentCard((prev) => ({ ...prev, description: value }))} placeholder="Adicione uma descrição detalhada..." />
                 <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                  <button onClick={() => { void save({ description: currentCard.description }); setEditDesc(false); }} style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Salvar</button>
+                  <button onClick={() => { save({ description: currentCard.description }); setEditDesc(false); }} style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Salvar</button>
                   <button onClick={() => setEditDesc(false)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Cancelar</button>
                 </div>
               </div>
@@ -245,7 +248,6 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
             <div style={labelStyle}>Data</div>
             <input type="date" className="ws-input" value={currentCard.due_date || ""} onChange={(e) => save({ due_date: e.target.value })} style={{ fontSize: ".8rem", width: "100%", boxSizing: "border-box" }} />
           </div>
-          {/* CORREÇÃO: Usando a nova função handleDelete */}
           <button onClick={handleDelete} style={{ background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", cursor: "pointer", width: "100%", padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8 }}>
             × Excluir cartão
           </button>

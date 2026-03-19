@@ -1,11 +1,11 @@
 ﻿// client/src/workspace/components/cases/tabs/TabNotas.tsx
 import { useEffect, useRef, useState } from "react";
-import type { Profile } from "../../../../lib/supabaseClient";
+import type { Profile } from "../../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import NoteCardModal from "../modals/NoteCardModal";
 import Loader from "../shared/Loader";
 import type { Case, NoteCard, NoteColumn } from "../types";
-import { useIsMobile } from "../../../hooks/useIsMobile";
+import { useIsMobile } from "../../../../hooks/useIsMobile";
 
 interface TabNotasProps { caseData: Case; profile: Profile; readonly?: boolean; }
 
@@ -64,7 +64,6 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
     setNewCardText(""); setAddingCard(null);
   }
 
-  // FUNÇÃO CORRIGIDA PARA NÃO DEPENDER DE REFRESH
   async function toggleCompleted(cardId: string, currentStatus: boolean) {
     const newVal = !currentStatus;
     setCards(prev => prev.map(c => c.id === cardId ? { ...c, completed: newVal } : c));
@@ -116,7 +115,6 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
                     onClick={() => { localStorage.setItem(LS_OPEN_CARD, card.id); setOpenCard(card); }}
                     style={{ background: "var(--ws-surface2)", border: dragOverCardId === card.id ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)", borderRadius: 8, padding: "10px 12px", cursor: "pointer", position: "relative", opacity: dragCardId.current === card.id ? 0.3 : 1 }}>
                     
-                    {/* Botão Checkmark Permanente COM TRAVA DE CLIQUE EFICIENTE */}
                     <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleCompleted(card.id, !!card.completed); }} 
                          style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", border: `2px solid ${card.completed ? '#00e676' : 'var(--ws-border2)'}`, background: card.completed ? '#00e676' : 'transparent', display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s", zIndex: 10 }}>
                       {card.completed && <span style={{ color: "#fff", fontSize: "11px", fontWeight: 900 }}>✓</span>}
@@ -124,9 +122,9 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
 
                     {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "2px 8px" : "3px 20px", marginBottom: 6, fontSize: ".62rem", fontWeight: 700, color: "#fff", textShadow: "0 1px 2px #00000040" }}>{labelName}</div>}
 
-                    <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22, textDecoration: card.completed ? 'line-through' : 'none', opacity: card.completed ? 0.6 : 1 }}>{card.title}</div>
+                    {/* Texto SEM Riscado */}
+                    <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22 }}>{card.title}</div>
                     
-                    {/* Indicadores Visuais */}
                     <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
                       {card.description && <span title="Tem descrição" style={{ fontSize: "1.1rem", color: "var(--ws-text3)", lineHeight: 1 }}>≡</span>}
                       {card.due_date && <span style={{ fontSize: ".62rem", padding: "2px 5px", background: "var(--ws-surface3)", borderRadius: 4, color: "var(--ws-text2)" }}>📅 {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>}
