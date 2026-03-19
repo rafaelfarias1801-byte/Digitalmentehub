@@ -38,8 +38,14 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
       {activeTab === "calendario" && <TabCalendario caseData={caseData} profile={profile} />}
       {activeTab === "conteudo" && <TabConteudo caseData={caseData} profile={profile} />}
       {activeTab === "financeiro" && <TabFinanceiro caseData={caseData} />}
-      {activeTab === "contratos" && <TabDocumentos caseData={caseData} type="contrato" />}
-      {activeTab === "documentos" && <TabDocumentos caseData={caseData} type="documento" />}
+      
+      {/* ── COFRE E DRIVE AQUI ── */}
+      {/* "contratos" agora carrega o Cofre de Documentos (Upload restrito) */}
+      {activeTab === "contratos" && <TabDocumentos caseData={caseData} type="documento" readonly={profile?.role !== 'admin'} canUpload={false} />}
+      
+      {/* "documentos" agora carrega o Drive de Arquivos (Upload liberado) */}
+      {activeTab === "documentos" && <TabDocumentos caseData={caseData} type="arquivo" readonly={profile?.role !== 'admin'} canUpload={true} />}
+      
       {activeTab === "notas" && <TabNotas caseData={caseData} profile={profile} />}
     </>
   );

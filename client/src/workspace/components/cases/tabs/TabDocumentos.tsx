@@ -7,7 +7,7 @@ import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface TabDocumentosProps {
   caseData: Case;
-  type: "contrato" | "documento";
+  type: "documento" | "arquivo";
   readonly?: boolean;
   canUpload?: boolean;
 }
@@ -24,7 +24,9 @@ export default function TabDocumentos({
   const fileRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
-  const docType = type === "contrato" ? "contrato" : "outro";
+  // Agora separamos no banco como "documento" (oficiais) ou "arquivo" (drive livre)
+  const docType = type === "documento" ? "documento" : "arquivo";
+  const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
 
   useEffect(() => {
     let mounted = true;
@@ -51,58 +53,87 @@ export default function TabDocumentos({
     };
   }, [caseData.id, docType]);
 
+  // ── Upload direto para o Cloudflare R2 ──
   async function upload(file: File) {
     setUploading(true);
 
     const ext = file.name.split(".").pop();
     const path = `docs/${caseData.id}/${Date.now()}.${ext}`;
 
-    const { error } = await supabase.storage
-      .from("assets")
-      .upload(path, file, { upsert: true });
+    try {
+      const { data, error } = await supabase.functions.invoke('get-r2-upload-url', {
+        body: { filename: path, contentType: file.type }
+      });
 
-    if (!error) {
-      const { data: publicData } = supabase.storage
-        .from("assets")
-        .getPublicUrl(path);
+      if (error || !data?.signedUrl) {
+        throw new Error("Erro ao gerar link de upload seguro.");
+      }
 
-      const { data } = await supabase
+      const uploadRes = await fetch(data.signedUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!uploadRes.ok) throw new Error("Falha ao salvar no R2");
+
+      const publicUrl = `${R2_PUBLIC_URL}/${path}`;
+
+      const { data: docData } = await supabase
         .from("documents")
         .insert({
           case_id: caseData.id,
           name: file.name,
-          file_url: publicData.publicUrl,
+          file_url: publicUrl,
           doc_type: docType,
           uploaded_at: new Date().toISOString(),
         })
         .select()
         .single();
 
-      if (data) {
-        setDocs((prev) => [...prev, data]);
+      if (docData) {
+        setDocs((prev) => [...prev, docData]);
       }
+
+    } catch (err) {
+      console.error("Erro no upload:", err);
+      alert(`Erro ao enviar o ${type}. Tente novamente.`);
     }
 
     setUploading(false);
-
     if (fileRef.current) {
       fileRef.current.value = "";
     }
   }
 
-  async function removeDocument(id: string) {
-    setDocs((prev) => prev.filter((item) => item.id !== id));
-    await supabase.from("documents").delete().eq("id", id);
+  // ── Exclusão do banco e do Cloudflare R2 ──
+  async function removeDocument(doc: CaseDocument) {
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o ${type} "${doc.name}"? Essa ação não pode ser desfeita.`);
+    if (!confirmacao) return;
+
+    if (doc.file_url && doc.file_url.startsWith(R2_PUBLIC_URL)) {
+      const filename = doc.file_url.replace(`${R2_PUBLIC_URL}/`, "");
+      await supabase.functions.invoke('delete-r2-file', {
+        body: { filename }
+      });
+    }
+
+    setDocs((prev) => prev.filter((item) => item.id !== doc.id));
+    await supabase.from("documents").delete().eq("id", doc.id);
   }
 
   function getIcon(name: string) {
     if (name.toLowerCase().endsWith(".pdf")) return "📄";
     if (/\.(png|jpg|jpeg|webp)$/i.test(name)) return "🖼";
+    if (/\.(mp4|mov|webm)$/i.test(name)) return "🎥";
     return "📃";
   }
 
   return (
     <div>
+      {/* O botão só aparece se for Admin (!readonly) OU se a aba permitir upload (canUpload) */}
       {(!readonly || canUpload) && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
           <button
@@ -112,13 +143,13 @@ export default function TabDocumentos({
           >
             {uploading
               ? "Enviando..."
-              : `+ Enviar ${type === "contrato" ? "contrato" : "documento"}`}
+              : `+ Enviar ${type}`}
           </button>
 
           <input
             ref={fileRef}
             type="file"
-            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
+            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.mp4,.mov"
             style={{ display: "none" }}
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -132,9 +163,7 @@ export default function TabDocumentos({
         <Loader />
       ) : docs.length === 0 ? (
         <Empty
-          label={`Nenhum ${
-            type === "contrato" ? "contrato" : "documento"
-          } enviado ainda.`}
+          label={`Nenhum ${type} enviado ainda.`}
         />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -164,12 +193,12 @@ export default function TabDocumentos({
                   </div>
                 </div>
 
+                {/* Botão X de apagar (Só Admin pode apagar, não importa a aba) */}
                 {!isMobile && !readonly && (
-                  <button onClick={() => void removeDocument(doc.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
+                  <button onClick={() => void removeDocument(doc)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
                 )}
               </div>
 
-              {/* Ações — linha separada no mobile para garantir visibilidade */}
               <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }}>
                 <a
                   href={doc.file_url}
@@ -192,7 +221,7 @@ export default function TabDocumentos({
                   Abrir
                 </a>
                 {isMobile && !readonly && (
-                  <button onClick={() => void removeDocument(doc.id)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
+                  <button onClick={() => void removeDocument(doc)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
                     Excluir
                   </button>
                 )}

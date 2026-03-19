@@ -84,8 +84,8 @@ export const SUB_TABS = [
   { id: "calendario", label: "Calendário", icon: "📅" },
   { id: "conteudo", label: "Conteúdo", icon: "📋" },
   { id: "financeiro", label: "Financeiro", icon: "💰" },
-  { id: "contratos", label: "Contratos", icon: "📄" },
-  { id: "documentos", label: "Documentos", icon: "🗂" },
+  { id: "contratos", label: "Documentos", icon: "📑" },
+  { id: "documentos", label: "Arquivos", icon: "📁" },
   { id: "notas", label: "Notas", icon: "🗒" },
 ] as const;
 
