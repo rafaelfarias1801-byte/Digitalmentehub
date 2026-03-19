@@ -131,7 +131,11 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
         .select()
         .single();
 
-      if (!error && data) {
+      // 👇 SE O SUPABASE RECLAMAR, ELE VAI GRITAR NA TELA AGORA!
+      if (error) {
+        alert("Erro do Supabase ao atualizar: " + error.message);
+        console.error("Erro completo:", error);
+      } else if (data) {
         setCases((prev) =>
           prev.map((item) => (item.id === editing.id ? data : item))
         );
@@ -147,13 +151,20 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
         .select()
         .single();
 
-      if (!error && data) {
+      if (error) {
+        alert("Erro do Supabase ao criar: " + error.message);
+        console.error("Erro completo:", error);
+      } else if (data) {
         setCases((prev) => [...prev, data]);
       }
     }
 
     setSaving(false);
-    setModal(false);
+    
+    // Só fecha o modal se não deu erro (para você não perder o que digitou)
+    if (!editing || (editing && openCase?.id === editing.id)) {
+       setModal(false);
+    }
   }
 
   async function remove(id: string) {
