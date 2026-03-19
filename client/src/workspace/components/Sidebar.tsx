@@ -12,6 +12,7 @@ interface Props {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onProfileUpdate?: (profile: Profile) => void;
+  controlRef?: React.MutableRefObject<{ setOpen: (v: boolean) => void } | null>;
 }
 
 const NAV = [
@@ -57,19 +58,22 @@ function applyTheme(theme: "dark" | "light") {
   try { localStorage.setItem("ws_theme", theme); } catch {}
 }
 
-export default function Sidebar({ currentPage, onNavigate, profile, open: openProp, onOpenChange, onProfileUpdate }: Props) {
+export default function Sidebar({ currentPage, onNavigate, profile, open: openProp, onOpenChange, onProfileUpdate, controlRef }: Props) {
   const isAdmin = profile.role === "admin";
   const [openInternal, setOpenInternal] = useState(!getIsMobile());
   const open = openProp !== undefined ? openProp : openInternal;
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
 
-  // Ref para evitar closure stale no resize handler
-  const onOpenChangeRef = useRef(onOpenChange);
-  useEffect(() => { onOpenChangeRef.current = onOpenChange; }, [onOpenChange]);
+  // Expõe setOpen para o pai via ref (sem causar re-render no pai)
+  useEffect(() => {
+    if (controlRef) {
+      controlRef.current = { setOpen: setOpenInternal };
+    }
+  }, [controlRef]);
 
   function setOpenAndNotify(val: boolean) {
     setOpenInternal(val);
-    onOpenChangeRef.current?.(val);
+    onOpenChange?.(val);
   }
 
   useEffect(() => {
