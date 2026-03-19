@@ -1,11 +1,11 @@
 ﻿// client/src/workspace/components/cases/tabs/TabNotas.tsx
 import { useEffect, useRef, useState } from "react";
-import type { Profile } from "../../../../../lib/supabaseClient";
+import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import NoteCardModal from "../modals/NoteCardModal";
 import Loader from "../shared/Loader";
 import type { Case, NoteCard, NoteColumn } from "../types";
-import { useIsMobile } from "../../../../hooks/useIsMobile";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface TabNotasProps { caseData: Case; profile: Profile; readonly?: boolean; }
 
@@ -39,14 +39,12 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
     void load();
   }, [caseData.id]);
 
-  // Função do Botão de Concluir (Mobile friendly)
   async function toggleCompleted(card: NoteCard) {
     const newVal = !card.completed;
     setCards(prev => prev.map(c => c.id === card.id ? { ...c, completed: newVal } : c));
     await supabase.from("note_cards").update({ completed: newVal }).eq("id", card.id);
   }
 
-  // Lógica de Reordenação e Troca de Lista
   async function handleDrop(targetColId: string, targetCardId?: string) {
     const cardId = dragCardId.current; if (!cardId) return;
     const movingCard = cards.find(c => c.id === cardId); if (!movingCard) return;
@@ -83,14 +81,12 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
                   onClick={() => { localStorage.setItem(LS_OPEN_CARD, card.id); setOpenCard(card); }}
                   style={{ background: "var(--ws-surface2)", border: dragOverCardId === card.id ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)", borderRadius: 8, padding: "10px 12px", cursor: "pointer", position: "relative", opacity: dragCardId.current === card.id ? 0.3 : 1 }}>
                   
-                  {/* Botão Checkmark Permanente (Trello style) */}
                   <div onClick={(e) => { e.stopPropagation(); void toggleCompleted(card); }} style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, borderRadius: "50%", border: `2px solid ${card.completed ? '#00e676' : 'var(--ws-border2)'}`, background: card.completed ? '#00e676' : 'transparent', display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s" }}>
                     {card.completed && <span style={{ color: "#fff", fontSize: "10px", fontWeight: 900 }}>✓</span>}
                   </div>
 
                   <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 20, textDecoration: card.completed ? 'line-through' : 'none', opacity: card.completed ? 0.6 : 1 }}>{card.title}</div>
                   
-                  {/* Indicadores Visuais */}
                   <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
                     {card.description && <span title="Tem descrição" style={{ fontSize: "1.1rem", color: "var(--ws-text3)", lineHeight: 1 }}>≡</span>}
                     {card.due_date && <span style={{ fontSize: ".62rem", padding: "2px 5px", background: "var(--ws-surface3)", borderRadius: 4, color: "var(--ws-text2)" }}>📅 {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>}
@@ -101,7 +97,6 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
               ))}
             </div>
 
-            {/* Adicionar Cartão com Auto-Expand */}
             {!readonly && (addingCard === column.id ? (
               <div style={{ marginTop: 8 }}>
                 <textarea value={newCardText} autoFocus onChange={e => { setNewCardText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
