@@ -9,8 +9,6 @@ import type { NoteCard, NoteLabel, CheckItem, Comment } from "./cases/types";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 const ACCENT = "#e91e8c";
-
-// Chave separada das etiquetas das cases
 const LABELS_KEY = "dig_global_labels";
 
 interface Props {
@@ -21,7 +19,7 @@ interface Props {
   profile: Profile;
 }
 
-// ── LabelPicker com chave própria ────────────────────────────────
+// ── LabelPicker ────────────────────────────────
 interface LabelPickerProps {
   value: string;
   onChange: (value: string) => void;
@@ -69,7 +67,7 @@ function LabelPicker({ value, onChange }: LabelPickerProps) {
               <>
                 <div onClick={() => selectLabel(label)} style={{
                   width: 36, height: 28, borderRadius: 4, background: label.color, flexShrink: 0, cursor: "pointer",
-                  border: selectedColor === label.color ? "3px solid white" : "3px solid transparent",
+                  border: selectedColor === label.color ? "3px solid white" : "2px solid transparent",
                   boxShadow: selectedColor === label.color ? `0 0 0 2px ${label.color}` : "none",
                 }} />
                 <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
@@ -88,7 +86,7 @@ function LabelPicker({ value, onChange }: LabelPickerProps) {
               <>
                 <div onClick={() => selectLabel(label)} style={{
                   flex: 1, height: 28, borderRadius: 4, background: label.color, cursor: "pointer",
-                  border: selectedColor === label.color ? "3px solid white" : "3px solid transparent",
+                  border: selectedColor === label.color ? "3px solid white" : "2px solid transparent",
                   boxShadow: selectedColor === label.color ? `0 0 0 2px ${label.color}` : "none",
                   transition: "all .15s", display: "flex", alignItems: "center",
                   paddingLeft: label.name ? 8 : 0, justifyContent: label.name ? "flex-start" : "center",
@@ -103,10 +101,7 @@ function LabelPicker({ value, onChange }: LabelPickerProps) {
                   background: "none", border: "1px solid var(--ws-border2)", borderRadius: 4,
                   color: "var(--ws-text3)", cursor: "pointer", width: 24, height: 24,
                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".7rem", flexShrink: 0,
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "var(--ws-text)"; e.currentTarget.style.borderColor = "var(--ws-text2)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "var(--ws-text3)"; e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
-                >✎</button>
+                }}>✎</button>
               </>
             )}
           </div>
@@ -116,7 +111,7 @@ function LabelPicker({ value, onChange }: LabelPickerProps) {
   );
 }
 
-// ── Modal principal ──────────────────────────────────────────────
+// ── Utilitários ────────────────────────────────
 function linkify(html: string): string {
   return html.replace(
     /(?<!href=["'])(?<![">])(https?:\/\/[^\s<"']+)/g,
@@ -124,6 +119,7 @@ function linkify(html: string): string {
   );
 }
 
+// ── Componente Principal ──────────────────────
 export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete, profile }: Props) {
   const [currentCard, setCurrentCard] = useState<NoteCard>(card);
   const [editTitle, setEditTitle] = useState(false);
@@ -140,6 +136,11 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
     const { data } = await supabase
       .from("note_cards").update(merged).eq("id", merged.id).select().single();
     if (data) { onUpdate(data); setCurrentCard(data); }
+  }
+
+  async function toggleCompleted() {
+    const newVal = !currentCard.completed;
+    void save({ completed: newVal });
   }
 
   function addCheckItem() {
@@ -175,289 +176,128 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
   const done = (currentCard.checklist || []).filter(i => i.done).length;
   const total = (currentCard.checklist || []).length;
 
-  let labelColor = "";
-  let labelName = "";
+  let labelColor = ""; let labelName = "";
   if (currentCard.label_color) {
     try {
       const p = JSON.parse(currentCard.label_color);
-      labelColor = p.color || "";
-      labelName = p.name || "";
+      labelColor = p.color || ""; labelName = p.name || "";
     } catch { labelColor = currentCard.label_color; }
   }
 
   const titleStyle: React.CSSProperties = {
     fontFamily: "Poppins, system-ui, sans-serif",
-    fontWeight: 700,
-    fontSize: "1.15rem",
-    color: "var(--ws-text)",
-    lineHeight: 1.3,
+    fontWeight: 700, fontSize: "1.15rem", color: "var(--ws-text)", lineHeight: 1.3,
   };
 
   return (
     <div style={{ ...overlayStyle, ...(isMobile ? { left: 56 } : {}) }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background: "var(--ws-surface)",
-        borderRadius: isMobile ? "16px 16px 0 0" : 16,
-        width: isMobile ? "100%" : "min(780px, 95vw)",
-        maxHeight: isMobile ? "94dvh" : "90vh",
-        overflowY: isMobile ? undefined : "auto",
-        border: "1px solid var(--ws-border2)",
-        boxShadow: "0 30px 80px #00000070",
-        display: "flex",
-        flexDirection: "column",
+        background: "var(--ws-surface)", borderRadius: isMobile ? "16px 16px 0 0" : 16,
+        width: isMobile ? "100%" : "min(780px, 95vw)", maxHeight: isMobile ? "94dvh" : "90vh",
+        overflowY: isMobile ? undefined : "auto", border: "1px solid var(--ws-border2)",
+        boxShadow: "0 30px 80px #00000070", display: "flex", flexDirection: "column",
         ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
       }}>
 
-        {/* ── Abas mobile ── */}
         {isMobile && (
-          <div style={{
-            display: "flex", borderBottom: "1px solid var(--ws-border)",
-            background: "var(--ws-surface2)", flexShrink: 0,
-          }}>
-            <button onClick={() => setSidebarVisible(false)} style={{
-              flex: 1, padding: "11px 0", background: "none", border: "none",
-              color: !sidebarVisible ? ACCENT : "var(--ws-text3)",
-              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
-              borderBottom: !sidebarVisible ? `2px solid ${ACCENT}` : "2px solid transparent",
-              cursor: "pointer",
-            }}>CONTEÚDO</button>
-            <button onClick={() => setSidebarVisible(true)} style={{
-              flex: 1, padding: "11px 0", background: "none", border: "none",
-              color: sidebarVisible ? ACCENT : "var(--ws-text3)",
-              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
-              borderBottom: sidebarVisible ? `2px solid ${ACCENT}` : "2px solid transparent",
-              cursor: "pointer",
-            }}>AÇÕES</button>
+          <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>
+            <button onClick={() => setSidebarVisible(false)} style={{ flex: 1, padding: "11px 0", background: "none", border: "none", color: !sidebarVisible ? ACCENT : "var(--ws-text3)", borderBottom: !sidebarVisible ? `2px solid ${ACCENT}` : "2px solid transparent" }}>CONTEÚDO</button>
+            <button onClick={() => setSidebarVisible(true)} style={{ flex: 1, padding: "11px 0", background: "none", border: "none", color: sidebarVisible ? ACCENT : "var(--ws-text3)", borderBottom: sidebarVisible ? `2px solid ${ACCENT}` : "2px solid transparent" }}>AÇÕES</button>
           </div>
         )}
 
-        {/* ── Grid principal ── */}
-        <div style={{
-          display: isMobile ? "block" : "grid",
-          gridTemplateColumns: isMobile ? undefined : "1fr 240px",
-          flex: 1, minHeight: 0,
-        }}>
+        <div style={{ display: isMobile ? "block" : "grid", gridTemplateColumns: isMobile ? undefined : "1fr 240px", flex: 1, minHeight: 0 }}>
+          <div style={{ padding: isMobile ? "16px" : "28px 24px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", overflowY: isMobile ? "auto" : undefined }}>
+            
+            {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "2px 10px" : "3px 24px", marginBottom: 12, fontSize: ".65rem", fontWeight: 700, color: "#fff", textShadow: "0 1px 2px #00000040" }}>{labelName}</div>}
 
-          {/* ── Coluna principal ── */}
-          <div style={{
-            padding: isMobile ? "16px" : "28px 24px",
-            borderRight: isMobile ? "none" : "1px solid var(--ws-border)",
-            display: isMobile && sidebarVisible ? "none" : "block",
-            overflowY: isMobile ? "auto" : undefined,
-            maxHeight: isMobile ? "calc(94dvh - 44px)" : undefined,
-          }}>
-
-            {/* Etiqueta */}
-            {labelColor && (
-              <div style={{
-                display: "inline-flex", alignItems: "center", background: labelColor,
-                borderRadius: 4, padding: labelName ? "2px 10px" : "3px 24px",
-                marginBottom: 12, fontSize: ".65rem", fontWeight: 700, color: "#fff",
-                textShadow: "0 1px 2px #00000040",
-              }}>{labelName}</div>
-            )}
-
-            {/* Título */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 }}>
               <div style={{ flex: 1 }}>
                 {editTitle ? (
                   <div>
-                    <input value={titleValue} onChange={e => setTitleValue(e.target.value)}
-                      onKeyDown={e => { if (e.key === "Enter") saveTitle(); if (e.key === "Escape") setEditTitle(false); }}
-                      autoFocus style={{
-                        width: "100%", background: "transparent",
-                        border: `1px solid ${ACCENT}`, borderRadius: 6,
-                        color: "var(--ws-text)", padding: "6px 10px",
-                        ...titleStyle, outline: "none", boxSizing: "border-box",
-                      }} />
-                    <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                      <button onClick={saveTitle} style={{
-                        background: ACCENT, border: "none", borderRadius: 6, color: "#fff",
-                        padding: "4px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem",
-                      }}>Salvar</button>
-                      <button onClick={() => setEditTitle(false)} style={{
-                        background: "none", border: "none", color: "var(--ws-text3)",
-                        cursor: "pointer", fontSize: ".78rem",
-                      }}>Cancelar</button>
-                    </div>
+                    <input value={titleValue} onChange={e => setTitleValue(e.target.value)} onKeyDown={e => e.key === "Enter" && saveTitle()} autoFocus style={{ width: "100%", background: "transparent", border: `1px solid ${ACCENT}`, borderRadius: 6, color: "var(--ws-text)", padding: "6px 10px", ...titleStyle, outline: "none" }} />
                   </div>
                 ) : (
-                  <div onClick={() => setEditTitle(true)} style={{ ...titleStyle, cursor: "pointer" }}>
-                    {currentCard.title}
-                  </div>
+                  <div onClick={() => setEditTitle(true)} style={{ ...titleStyle, cursor: "pointer", textDecoration: currentCard.completed ? 'line-through' : 'none' }}>{currentCard.title}</div>
                 )}
               </div>
               <button onClick={onClose} style={closeBtnStyle}>×</button>
             </div>
 
-            {/* Descrição */}
             <div style={{ marginBottom: 20 }}>
               <div style={labelStyle}>Descrição</div>
               {editDesc ? (
                 <div>
-                  <RichEditor
-                    value={currentCard.description || ""}
-                    onChange={v => setCurrentCard(p => ({ ...p, description: v }))}
-                    placeholder="Adicione uma descrição..."
-                  />
+                  <RichEditor value={currentCard.description || ""} onChange={v => setCurrentCard(p => ({ ...p, description: v }))} />
                   <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <button onClick={() => { void save({ description: currentCard.description }); setEditDesc(false); }}
-                      style={{
-                        background: ACCENT, border: "none", borderRadius: 6, color: "#fff",
-                        padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem",
-                      }}>Salvar</button>
-                    <button onClick={() => setEditDesc(false)} style={{
-                      background: "none", border: "none", color: "var(--ws-text3)",
-                      cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem",
-                    }}>Cancelar</button>
+                    <button onClick={() => { void save({ description: currentCard.description }); setEditDesc(false); }} style={{ background: ACCENT, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer" }}>Salvar</button>
+                    <button onClick={() => setEditDesc(false)} style={{ color: "var(--ws-text3)" }}>Cancelar</button>
                   </div>
                 </div>
               ) : (
-                <div onClick={() => setEditDesc(true)} style={{
-                  minHeight: 56, padding: "10px 12px", background: "var(--ws-surface2)",
-                  borderRadius: 8, cursor: "pointer", border: "1px solid transparent", transition: "border-color .15s",
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "transparent"; }}
-                >
-                  {currentCard.description ? (
-                    <div
-                      className="ws-richtext"
-                      style={{ fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.7 }}
-                      dangerouslySetInnerHTML={{ __html: linkify(currentCard.description) }}
-                    />
-                  ) : (
-                    <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>
-                      Clique para adicionar descrição...
-                    </div>
-                  )}
+                <div onClick={() => setEditDesc(true)} style={{ minHeight: 56, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, cursor: "pointer" }}>
+                  {currentCard.description ? <div className="ws-richtext" dangerouslySetInnerHTML={{ __html: linkify(currentCard.description) }} /> : <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Clique para adicionar descrição...</div>}
                 </div>
               )}
             </div>
 
-            {/* Checklist */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <div style={labelStyle}>
-                  Checklist{total > 0 && <span style={{ color: "var(--ws-text3)", marginLeft: 6 }}>({done}/{total})</span>}
-                </div>
-              </div>
-              {total > 0 && (
-                <div style={{ height: 4, background: "var(--ws-border)", borderRadius: 2, marginBottom: 10, overflow: "hidden" }}>
-                  <div style={{
-                    height: "100%", borderRadius: 2, background: ACCENT,
-                    width: `${(done / total) * 100}%`, transition: "width .3s",
-                  }} />
-                </div>
-              )}
+              <div style={labelStyle}>Checklist {total > 0 && `(${done}/${total})`}</div>
+              {total > 0 && <div style={{ height: 4, background: "var(--ws-border)", borderRadius: 2, marginBottom: 10, overflow: "hidden" }}><div style={{ height: "100%", background: ACCENT, width: `${(done / total) * 100}%`, transition: "width .3s" }} /></div>}
               {(currentCard.checklist || []).map(item => (
                 <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <input type="checkbox" checked={item.done} onChange={() => toggleCheck(item.id)}
-                    style={{ width: 15, height: 15, cursor: "pointer", accentColor: ACCENT }} />
-                  <span style={{
-                    fontSize: ".84rem", color: "var(--ws-text)", flex: 1,
-                    textDecoration: item.done ? "line-through" : "none",
-                    opacity: item.done ? 0.5 : 1,
-                  }}>{item.text}</span>
-                  <button onClick={() => removeCheck(item.id)} style={{
-                    background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem",
-                  }}>×</button>
+                  <input type="checkbox" checked={item.done} onChange={() => toggleCheck(item.id)} style={{ width: 15, height: 15, cursor: "pointer", accentColor: ACCENT }} />
+                  <span style={{ fontSize: ".84rem", color: "var(--ws-text)", flex: 1, textDecoration: item.done ? "line-through" : "none", opacity: item.done ? 0.5 : 1 }}>{item.text}</span>
+                  <button onClick={() => removeCheck(item.id)} style={{ color: "var(--ws-text3)" }}>×</button>
                 </div>
               ))}
               <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                <input className="ws-input" value={newCheck} placeholder="Adicionar item..."
-                  onChange={e => setNewCheck(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && addCheckItem()}
-                  style={{ flex: 1, padding: "6px 10px", fontSize: ".8rem" }} />
-                <button onClick={addCheckItem} style={{
-                  background: ACCENT, border: "none", borderRadius: 8, color: "#fff",
-                  padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem",
-                }}>+</button>
+                <input className="ws-input" value={newCheck} placeholder="Adicionar item..." onChange={e => setNewCheck(e.target.value)} onKeyDown={e => e.key === "Enter" && addCheckItem()} style={{ flex: 1 }} />
+                <button onClick={addCheckItem} style={{ background: ACCENT, color: "#fff", borderRadius: 8, padding: "6px 12px" }}>+</button>
               </div>
             </div>
 
-            {/* Comentários */}
             <div>
               <div style={labelStyle}>Comentários</div>
               {(currentCard.comments || []).map(comment => (
                 <div key={comment.id} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-                  <div style={{
-                    width: 30, height: 30, borderRadius: "50%", background: ACCENT,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0,
-                  }}>
-                    {comment.author.slice(0, 1).toUpperCase()}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: ".78rem", color: "var(--ws-text2)", marginBottom: 3 }}>
-                      <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
-                      <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
-                        {new Date(comment.created_at).toLocaleString("pt-BR", {
-                          day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <div style={{
-                      background: "var(--ws-surface2)", borderRadius: 8,
-                      padding: "8px 12px", fontSize: ".83rem", color: "var(--ws-text)",
-                    }}>{comment.text}</div>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>{comment.author.slice(0, 1).toUpperCase()}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: ".78rem", color: "var(--ws-text2)", marginBottom: 3 }}><b>{comment.author}</b> <span style={{ color: "var(--ws-text3)", fontSize: ".65rem" }}>{new Date(comment.created_at).toLocaleString("pt-BR")}</span></div>
+                    <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", fontSize: ".83rem" }}>{comment.text}</div>
                   </div>
                 </div>
               ))}
-
               <div style={{ display: "flex", gap: 8 }}>
-                <div style={{
-                  width: 30, height: 30, borderRadius: "50%", background: ACCENT,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0,
-                }}>
-                  {(profile.name || "V").slice(0, 1).toUpperCase()}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <textarea className="ws-input" value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
-                    placeholder="Escrever um comentário..."
-                    style={{ minHeight: 64, resize: "vertical", fontSize: ".83rem", marginBottom: 6 }} />
-                  <button onClick={addComment} style={{
-                    background: ACCENT, border: "none", borderRadius: 8, color: "#fff",
-                    padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem",
-                  }}>Comentar</button>
-                </div>
+                <textarea className="ws-input" value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Escrever um comentário..." style={{ minHeight: 64 }} />
+                <button onClick={addComment} style={{ background: ACCENT, color: "#fff", borderRadius: 8, padding: "6px 14px", marginTop: 6 }}>Comentar</button>
               </div>
             </div>
           </div>
 
-          {/* ── Coluna lateral ── */}
-          <div style={{
-            padding: isMobile ? "16px" : "28px 18px",
-            display: isMobile && !sidebarVisible ? "none" : "block",
-            overflowY: isMobile ? "auto" : undefined,
-            maxHeight: isMobile ? "calc(94dvh - 44px)" : undefined,
-          }}>
+          <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
             <div style={labelStyle}>Ações</div>
+            <button onClick={toggleCompleted} style={{
+              background: currentCard.completed ? "#00e676" : "var(--ws-surface2)",
+              border: `1px solid ${currentCard.completed ? "#00e676" : "var(--ws-border2)"}`,
+              borderRadius: 8, color: currentCard.completed ? "#fff" : "var(--ws-text)",
+              width: "100%", padding: "10px 0", fontSize: ".8rem", cursor: "pointer", marginBottom: 12, fontWeight: 600
+            }}>
+              {currentCard.completed ? "✓ Concluído" : "Marcar como concluído"}
+            </button>
 
             <div style={{ marginBottom: 20 }}>
-              <LabelPicker
-                value={currentCard.label_color || ""}
-                onChange={v => void save({ label_color: v })}
-              />
+              <LabelPicker value={currentCard.label_color || ""} onChange={v => void save({ label_color: v })} />
             </div>
 
             <div style={{ marginBottom: 20 }}>
               <div style={labelStyle}>Data</div>
-              <input type="date" className="ws-input" value={currentCard.due_date || ""}
-                onChange={e => void save({ due_date: e.target.value })}
-                style={{ fontSize: ".8rem" }} />
+              <input type="date" className="ws-input" value={currentCard.due_date || ""} onChange={e => void save({ due_date: e.target.value })} />
             </div>
 
-            <button onClick={() => onDelete(currentCard.id)} style={{
-              background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8,
-              color: "var(--ws-accent)", cursor: "pointer", width: "100%",
-              padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8,
-            }}>× Excluir cartão</button>
+            <button onClick={() => onDelete(currentCard.id)} style={{ border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", width: "100%", padding: "8px 0" }}>× Excluir cartão</button>
           </div>
-
-        </div>{/* fecha grid */}
+        </div>
       </div>
     </div>
   );

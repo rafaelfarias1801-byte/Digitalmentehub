@@ -57,6 +57,7 @@ export default function Dashboard({ profile }: Props) {
       const lastDay = new Date(yyyy, now.getMonth() + 1, 0).getDate();
       const monthEnd = `${yyyy}-${mm}-${String(lastDay).padStart(2, "0")}`;
       
+      // Filtro de 7 dias pra frente
       const in7Days = new Date(now);
       in7Days.setDate(in7Days.getDate() + 7);
       const in7DaysStr = `${in7Days.getFullYear()}-${String(in7Days.getMonth() + 1).padStart(2, "0")}-${String(in7Days.getDate()).padStart(2, "0")}`;
@@ -88,16 +89,21 @@ export default function Dashboard({ profile }: Props) {
       setCaseNames(cases.map(c => c.name));
 
       const unpaidTotal = payments.filter(p => !p.paid);
+      
+      // Card Estatístico: Apenas deste mês
       const unpaidThisMonth = unpaidTotal.filter(p => p.due_date && p.due_date >= monthStart && p.due_date <= monthEnd);
       setTotalReceber(unpaidThisMonth.reduce((s, p) => s + Number(p.amount), 0));
+      
       const vencidos = unpaidTotal.filter(p => p.due_date && p.due_date < todayStr);
       setTotalVencido(vencidos.reduce((s, p) => s + Number(p.amount), 0));
+      
       const aVencerBreve = unpaidTotal.filter(p => p.due_date && p.due_date >= todayStr && p.due_date <= in7DaysStr);
       setUpcomingSum(aVencerBreve.reduce((s, p) => s + Number(p.amount), 0));
 
+      // Aba Atividades Financeiro: Atrasados + Próximos 7 dias
       setUpcomingFinance(
         unpaidTotal
-          .filter(p => p.due_date)
+          .filter(p => p.due_date && p.due_date <= in7DaysStr) // AQUI O AJUSTE: Limite de 7 dias
           .sort((a, b) => a.due_date.localeCompare(b.due_date))
           .slice(0, 5) 
           .map(p => ({
@@ -276,7 +282,7 @@ export default function Dashboard({ profile }: Props) {
         <div className="ws-card">
           <div className="ws-card-title">Atividades Financeiro <span className="ws-badge" style={{ background: "#ffd60022", color: "#ffd600" }}>faturas</span></div>
           {upcomingFinance.length === 0
-            ? <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Tudo limpo! Nenhuma cobrança pendente. 🎉</div>
+            ? <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Tudo limpo! Nenhuma cobrança pendente para os próximos 7 dias. 🎉</div>
             : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {upcomingFinance.map(f => (
                 <div key={f.id} style={{
