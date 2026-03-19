@@ -1,6 +1,7 @@
 ﻿// client/src/workspace/components/cases/modals/NoteCardModal.tsx
 import { useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
+import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { DEFAULT_LABELS } from "../constants";
 import { closeBtnStyle, labelStyle, getOverlayStyle } from "../styles";
@@ -61,7 +62,8 @@ function LabelPicker({ value, onChange, accentColor }: { value: string, onChange
           display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden"
         }}>
           <span style={{ fontSize: ".9rem", color: "var(--ws-text3)" }}>+</span>
-          <input type="color" onChange={e => {
+          {/* CORREÇÃO AQUI: onBlur em vez de onChange */}
+          <input type="color" onBlur={e => {
             const c = e.target.value;
             if (!labels.find(l => l.color === c)) {
               updateLabels([...labels, { color: c, name: "" }]);
@@ -71,7 +73,6 @@ function LabelPicker({ value, onChange, accentColor }: { value: string, onChange
         </label>
         {selectedColor && <button onClick={() => onChange("")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", fontFamily: "Poppins" }}>limpar</button>}
       </div>
-      {/* Campo para editar o nome da etiqueta selecionada */}
       {selectedColor && (
         <div style={{ marginTop: 10 }}>
           <input className="ws-input" value={selectedName} onChange={e => handleNameChange(e.target.value)} placeholder="Digite o nome desta etiqueta..." style={{ width: "100%", fontSize: ".8rem", padding: "6px 10px" }} />
@@ -95,18 +96,27 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const isMobile = useIsMobile();
 
-  function save(updates: Partial<NoteCard>) {
+  // CORREÇÃO AQUI: Agora ele envia para o banco de dados (Supabase)
+  async function save(updates: Partial<NoteCard>) {
     const merged = { ...currentCard, ...updates };
     setCurrentCard(merged);
-    onUpdate(merged);
+    const { data } = await supabase.from("note_cards").update(merged).eq("id", merged.id).select().single();
+    if (data) { onUpdate(data); setCurrentCard(data); }
   }
 
-  function toggleCompleted() { save({ completed: !currentCard.completed }); }
-  function addCheckItem() { if (!newCheck.trim()) return; save({ checklist: [...(currentCard.checklist || []), { id: Date.now().toString(), text: newCheck.trim(), done: false }] }); setNewCheck(""); }
-  function toggleCheck(id: string) { save({ checklist: (currentCard.checklist || []).map(i => i.id === id ? { ...i, done: !i.done } : i) }); }
-  function removeCheck(id: string) { save({ checklist: (currentCard.checklist || []).filter(i => i.id !== id) }); }
-  function addComment() { if (!newComment.trim()) return; save({ comments: [...(currentCard.comments || []), { id: Date.now().toString(), author: profile.name || "Você", text: newComment.trim(), created_at: new Date().toISOString() }] }); setNewComment(""); }
-  function removeComment(id: string) { if (!window.confirm("Apagar este comentário?")) return; save({ comments: (currentCard.comments || []).filter(c => c.id !== id) }); }
+  async function handleDelete() {
+    if (!window.confirm("Deseja excluir este cartão definitivamente?")) return;
+    await supabase.from("note_cards").delete().eq("id", currentCard.id);
+    onDelete(currentCard.id);
+    onClose();
+  }
+
+  function toggleCompleted() { void save({ completed: !currentCard.completed }); }
+  function addCheckItem() { if (!newCheck.trim()) return; void save({ checklist: [...(currentCard.checklist || []), { id: Date.now().toString(), text: newCheck.trim(), done: false }] }); setNewCheck(""); }
+  function toggleCheck(id: string) { void save({ checklist: (currentCard.checklist || []).map(i => i.id === id ? { ...i, done: !i.done } : i) }); }
+  function removeCheck(id: string) { void save({ checklist: (currentCard.checklist || []).filter(i => i.id !== id) }); }
+  function addComment() { if (!newComment.trim()) return; void save({ comments: [...(currentCard.comments || []), { id: Date.now().toString(), author: profile.name || "Você", text: newComment.trim(), created_at: new Date().toISOString() }] }); setNewComment(""); }
+  function removeComment(id: string) { if (!window.confirm("Apagar este comentário?")) return; void save({ comments: (currentCard.comments || []).filter(c => c.id !== id) }); }
 
   let labelColor = ""; let labelName = "";
   if (currentCard.label_color) { try { const p = JSON.parse(currentCard.label_color); labelColor = p.color || ""; labelName = p.name || ""; } catch { labelColor = currentCard.label_color; } }
@@ -140,7 +150,7 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
                   <button onClick={() => { save({ title: titleValue }); setEditTitle(false); }} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "0 12px", cursor: "pointer" }}>✓</button>
                 </div>
               ) : (
-                <div onClick={() => { setEditTitle(true); setTitleValue(currentCard.title); }} style={{ fontFamily: "inherit", fontWeight: 600, fontSize: "1.05rem", color: "var(--ws-text)", cursor: "pointer", padding: "4px 6px", borderRadius: 6, border: "1px solid transparent", transition: "border-color .15s", textDecoration: currentCard.completed ? 'line-through' : 'none' }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
+                <div onClick={() => { setEditTitle(true); setTitleValue(currentCard.title); }} style={{ fontFamily: "inherit", fontWeight: 600, fontSize: "1.05rem", color: "var(--ws-text)", cursor: "pointer", padding: "4px 6px", borderRadius: 6, border: "1px solid transparent", transition: "border-color .15s" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
                   {currentCard.title}
                 </div>
               )}
@@ -154,13 +164,17 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
               <div>
                 <RichEditor value={currentCard.description || ""} onChange={(value) => setCurrentCard((prev) => ({ ...prev, description: value }))} placeholder="Adicione uma descrição detalhada..." />
                 <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                  <button onClick={() => { save({ description: currentCard.description }); setEditDesc(false); }} style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Salvar</button>
+                  <button onClick={() => { void save({ description: currentCard.description }); setEditDesc(false); }} style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Salvar</button>
                   <button onClick={() => setEditDesc(false)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Cancelar</button>
                 </div>
               </div>
             ) : (
               <div onClick={() => setEditDesc(true)} style={{ minHeight: 60, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, cursor: "pointer", border: "1px solid transparent", transition: "border-color .15s" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
-                {currentCard.description ? ( <div className="ws-richtext" style={{ fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: linkify(currentCard.description) }} /> ) : ( <div style={{ fontSize: ".82rem", color: "var(--ws-text3)" }}>Clique para adicionar uma descrição...</div> )}
+                {currentCard.description ? (
+                  <div className="ws-richtext" dangerouslySetInnerHTML={{ __html: linkify(currentCard.description) }} />
+                ) : (
+                  <div style={{ fontSize: ".82rem", color: "var(--ws-text3)" }}>Clique para adicionar uma descrição...</div>
+                )}
               </div>
             )}
           </div>
@@ -175,9 +189,9 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
                 <button onClick={() => removeCheck(item.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem" }}>×</button>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 6, marginTop: 6, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
               <input className="ws-input" value={newCheck} placeholder="Adicionar item..." onChange={(e) => setNewCheck(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCheckItem()} style={{ flex: 1, padding: "6px 10px", fontSize: ".8rem" }} />
-              <button onClick={addCheckItem} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontFamily: "inherit", fontSize: "1.2rem", flexShrink: 0 }}>+</button>
+              <button onClick={addCheckItem} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>+</button>
             </div>
           </div>
 
@@ -185,10 +199,17 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
             <div style={labelStyle}>Comentários e atividade</div>
             {(currentCard.comments || []).map((comment) => (
               <div key={comment.id} style={{ display: "flex", gap: 10, marginBottom: 14, position: "relative" }}>
-                <div style={{ width: 30, height: 30, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>{comment.author.slice(0, 1).toUpperCase()}</div>
+                <div style={{ width: 30, height: 30, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>
+                  {comment.author.slice(0, 1).toUpperCase()}
+                </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 3 }}>
-                    <div style={{ fontSize: ".78rem", color: "var(--ws-text2)" }}><b style={{ color: "var(--ws-text)" }}>{comment.author}</b> <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>{new Date(comment.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>
+                    <div style={{ fontSize: ".78rem", color: "var(--ws-text2)" }}>
+                      <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
+                      <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
+                        {new Date(comment.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
                     <button onClick={() => removeComment(comment.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.1rem", lineHeight: 1, padding: "0 4px" }} title="Apagar comentário">×</button>
                   </div>
                   <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", fontSize: ".83rem", color: "var(--ws-text)" }}>{comment.text}</div>
@@ -196,10 +217,12 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
               </div>
             ))}
             <div style={{ display: "flex", gap: 8 }}>
-              <div style={{ width: 30, height: 30, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>{(profile.name || "V").slice(0, 1).toUpperCase()}</div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                <textarea className="ws-input" value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Escrever um comentário..." style={{ minHeight: 64, resize: "vertical", fontSize: ".83rem", width: "100%", boxSizing: "border-box" }} />
-                <button onClick={addComment} style={{ alignSelf: "flex-start", background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Comentar</button>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>
+                {(profile.name || "V").slice(0, 1).toUpperCase()}
+              </div>
+              <div style={{ flex: 1 }}>
+                <textarea className="ws-input" value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Escrever um comentário..." style={{ minHeight: 64, resize: "vertical", fontSize: ".83rem", marginBottom: 6, width: "100%", boxSizing: "border-box" }} />
+                <button onClick={addComment} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>Comentar</button>
               </div>
             </div>
           </div>
@@ -208,8 +231,10 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
         <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
           <div style={labelStyle}>Ações</div>
           <button onClick={toggleCompleted} style={{
-              background: currentCard.completed ? "#00e676" : "var(--ws-surface2)", border: `1px solid ${currentCard.completed ? "#00e676" : "var(--ws-border2)"}`,
-              borderRadius: 8, color: currentCard.completed ? "#fff" : "var(--ws-text)", width: "100%", padding: "10px 0", fontSize: ".8rem", cursor: "pointer", marginBottom: 12, fontWeight: 600
+              background: currentCard.completed ? "#00e676" : "var(--ws-surface2)",
+              border: `1px solid ${currentCard.completed ? "#00e676" : "var(--ws-border2)"}`,
+              borderRadius: 8, color: currentCard.completed ? "#fff" : "var(--ws-text)",
+              width: "100%", padding: "10px 0", fontSize: ".8rem", cursor: "pointer", marginBottom: 12, fontWeight: 600
             }}>
               {currentCard.completed ? "✓ Concluído" : "Marcar como concluído"}
           </button>
@@ -220,11 +245,12 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
             <div style={labelStyle}>Data</div>
             <input type="date" className="ws-input" value={currentCard.due_date || ""} onChange={(e) => save({ due_date: e.target.value })} style={{ fontSize: ".8rem", width: "100%", boxSizing: "border-box" }} />
           </div>
-          <button onClick={() => onDelete(currentCard.id)} style={{ background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", cursor: "pointer", width: "100%", padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8 }}>
+          {/* CORREÇÃO: Usando a nova função handleDelete */}
+          <button onClick={handleDelete} style={{ background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", cursor: "pointer", width: "100%", padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8 }}>
             × Excluir cartão
           </button>
         </div>
-        </div>
+        </div>{/* fecha grid */}
       </div>
     </div>
   );

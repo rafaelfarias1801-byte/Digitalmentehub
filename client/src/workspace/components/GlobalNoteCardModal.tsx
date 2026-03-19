@@ -58,7 +58,8 @@ function LabelPicker({ value, onChange }: { value: string, onChange: (v: string)
           display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden"
         }}>
           <span style={{ fontSize: ".9rem", color: "var(--ws-text3)" }}>+</span>
-          <input type="color" onChange={e => {
+          {/* CORREÇÃO AQUI: onBlur */}
+          <input type="color" onBlur={e => {
             const c = e.target.value;
             if (!labels.find(l => l.color === c)) {
               updateLabels([...labels, { color: c, name: "" }]);
@@ -70,7 +71,7 @@ function LabelPicker({ value, onChange }: { value: string, onChange: (v: string)
       </div>
       {selectedColor && (
         <div style={{ marginTop: 10 }}>
-          <input className="ws-input" value={selectedName} onChange={e => handleNameChange(e.target.value)} placeholder="Digite o nome desta etiqueta..." style={{ width: "100%", fontSize: ".8rem", padding: "6px 10px" }} />
+          <input className="ws-input" value={selectedName} onChange={e => handleNameChange(e.target.value)} placeholder="Digite o nome desta etiqueta..." style={{ width: "100%", fontSize: ".8rem", padding: "6px 10px", boxSizing: "border-box" }} />
         </div>
       )}
     </div>
@@ -94,6 +95,13 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
     setCurrentCard(merged);
     const { data } = await supabase.from("note_cards").update(merged).eq("id", merged.id).select().single();
     if (data) { onUpdate(data); setCurrentCard(data); }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm("Deseja excluir este cartão definitivamente?")) return;
+    await supabase.from("note_cards").delete().eq("id", currentCard.id);
+    onDelete(currentCard.id);
+    onClose();
   }
 
   function toggleCompleted() { void save({ completed: !currentCard.completed }); }
@@ -143,7 +151,7 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
                     </div>
                   </div>
                 ) : (
-                  <div onClick={() => setEditTitle(true)} style={{ ...titleStyle, cursor: "pointer", textDecoration: currentCard.completed ? 'line-through' : 'none' }}>{currentCard.title}</div>
+                  <div onClick={() => setEditTitle(true)} style={{ ...titleStyle, cursor: "pointer" }}>{currentCard.title}</div>
                 )}
               </div>
               <button onClick={onClose} style={closeBtnStyle}>×</button>
@@ -211,10 +219,10 @@ export default function GlobalNoteCardModal({ card, onClose, onUpdate, onDelete,
             <button onClick={toggleCompleted} style={{ background: currentCard.completed ? "#00e676" : "var(--ws-surface2)", border: `1px solid ${currentCard.completed ? "#00e676" : "var(--ws-border2)"}`, borderRadius: 8, color: currentCard.completed ? "#fff" : "var(--ws-text)", width: "100%", padding: "10px 0", fontSize: ".8rem", cursor: "pointer", marginBottom: 12, fontWeight: 600 }}>{currentCard.completed ? "✓ Concluído" : "Marcar como concluído"}</button>
             <div style={{ marginBottom: 20 }}><LabelPicker value={currentCard.label_color || ""} onChange={v => void save({ label_color: v })} /></div>
             <div style={{ marginBottom: 20 }}><div style={labelStyle}>Data</div><input type="date" className="ws-input" value={currentCard.due_date || ""} onChange={e => void save({ due_date: e.target.value })} style={{ fontSize: ".8rem", width: "100%", boxSizing: "border-box" }} /></div>
-            <button onClick={() => onDelete(currentCard.id)} style={{ background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", cursor: "pointer", width: "100%", padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8 }}>× Excluir cartão</button>
+            <button onClick={handleDelete} style={{ background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", cursor: "pointer", width: "100%", padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8 }}>× Excluir cartão</button>
           </div>
 
-        </div>
+        </div>{/* fecha grid */}
       </div>
     </div>
   );
