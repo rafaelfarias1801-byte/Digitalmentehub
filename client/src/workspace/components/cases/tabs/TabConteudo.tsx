@@ -108,21 +108,51 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     setActiveMonth(keys.includes(now) ? now : keys[0] || "sem-data");
   }, [posts, activeMonth]);
 
-  // ── Upload múltiplo ─────────────────────────────────────────────
+  // ── Upload múltiplo (Cloudflare R2) ─────────────────────────────
   async function uploadFiles(files: FileList) {
     setUploading(true);
     const uploaded: string[] = [];
+    
+    // Nossa nova URL Pública do R2!
+    const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
     for (let i = 0; i < files.length; i++) {
       setUploadProgress(`Enviando ${i + 1} de ${files.length}...`);
       const file = files[i];
       const ext = file.name.split(".").pop();
-      const path = `posts/${caseData.id}/${Date.now()}-${i}.${ext}`;
-      const { error } = await supabase.storage.from("assets").upload(path, file, { upsert: true });
-      if (!error) {
-        const { data } = supabase.storage.from("assets").getPublicUrl(path);
-        uploaded.push(data.publicUrl);
+      const filename = `posts/${caseData.id}/${Date.now()}-${i}.${ext}`;
+
+      try {
+        // 1. Pede a URL temporária para a Edge Function
+        const { data, error } = await supabase.functions.invoke('get-r2-upload-url', {
+          body: { filename, contentType: file.type }
+        });
+
+        if (error || !data?.signedUrl) {
+          console.error("Erro na Edge Function:", error);
+          throw new Error("Erro ao gerar link de upload seguro.");
+        }
+
+        // 2. Faz o upload direto pro Cloudflare R2
+        const uploadRes = await fetch(data.signedUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (!uploadRes.ok) throw new Error("Falha ao salvar no R2");
+
+        // 3. Salva a URL pública final
+        uploaded.push(`${R2_PUBLIC_URL}/${filename}`);
+
+      } catch (err) {
+        console.error("Erro no arquivo", file.name, err);
+        alert(`Erro ao enviar o arquivo ${file.name}. Tente novamente.`);
       }
     }
+    
     setMediaUrls(prev => [...prev, ...uploaded]);
     setUploading(false);
     setUploadProgress("");
