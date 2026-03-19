@@ -1,11 +1,11 @@
 ﻿// client/src/workspace/components/cases/tabs/TabNotas.tsx
 import { useEffect, useRef, useState } from "react";
-import type { Profile } from "../../../../../lib/supabaseClient";
+import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import NoteCardModal from "../modals/NoteCardModal";
 import Loader from "../shared/Loader";
 import type { Case, NoteCard, NoteColumn } from "../types";
-import { useIsMobile } from "../../../../hooks/useIsMobile";
+import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface TabNotasProps { caseData: Case; profile: Profile; readonly?: boolean; }
 
@@ -122,7 +122,6 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
 
                     {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "2px 8px" : "3px 20px", marginBottom: 6, fontSize: ".62rem", fontWeight: 700, color: "#fff", textShadow: "0 1px 2px #00000040" }}>{labelName}</div>}
 
-                    {/* Texto SEM Riscado */}
                     <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22 }}>{card.title}</div>
                     
                     <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
