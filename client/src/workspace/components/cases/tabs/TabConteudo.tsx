@@ -210,7 +210,6 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
       slug: form.slug.trim(),
       title: form.title.trim(),
       caption: form.caption,
-      hashtags: "",
       media_url: coverUrl,
       media_type: form.media_type,
       scheduled_date: scheduledDateTime,
