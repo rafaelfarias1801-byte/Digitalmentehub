@@ -170,7 +170,7 @@ export default function TabDocumentos({
           label={`Nenhum ${type === "arquivo" ? "arquivo" : type === "contrato" ? "contrato" : "documento"} enviado ainda.`}
         />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 12 }}>
           {docs.map((doc) => (
             <div
               key={doc.id}
@@ -180,42 +180,44 @@ export default function TabDocumentos({
                 borderRadius: 10,
                 overflow: "hidden",
                 cursor: isImage(doc.name) ? "pointer" : "default",
+                display: "flex",
+                flexDirection: "column",
               }}
               onClick={() => isImage(doc.name) && setPreviewDoc(doc)}
             >
               {/* Thumbnail para imagens */}
-              {isImage(doc.name) && (
-                <div style={{ width: "100%", height: 160, overflow: "hidden", background: "#000" }}>
+              {isImage(doc.name) ? (
+                <div style={{ width: "100%", aspectRatio: "4/3", overflow: "hidden", background: "#000" }}>
                   <img src={doc.file_url} alt={doc.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              ) : (
+                <div style={{ width: "100%", aspectRatio: "4/3", background: "var(--ws-surface2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "2.5rem" }}>{getIcon(doc.name)}</span>
                 </div>
               )}
 
-              <div style={{ padding: "12px 16px", display: "flex", alignItems: isMobile ? "flex-start" : "center", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
-                  <div style={{ fontSize: "1.8rem", flexShrink: 0 }}>{getIcon(doc.name)}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: ".87rem", color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                      {doc.name}
-                    </div>
-                    <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
-                      {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
-                    </div>
-                  </div>
-                  {!isMobile && !readonly && (
-                    <button onClick={e => { e.stopPropagation(); void removeDocument(doc); }} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
-                  )}
+              <div style={{ padding: "10px 12px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ fontWeight: 600, fontSize: ".82rem", color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                  {doc.name}
                 </div>
-                <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }} onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
+                  {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                </div>
+                <div style={{ display: "flex", gap: 6, marginTop: 4 }} onClick={e => e.stopPropagation()}>
                   <a href={doc.file_url} target="_blank" rel="noreferrer" style={{
-                    flex: isMobile ? 1 : undefined, background: caseData.color, border: "none",
-                    borderRadius: 8, color: "#fff", padding: "10px 20px", fontSize: ".8rem",
+                    flex: 1, background: caseData.color, border: "none",
+                    borderRadius: 6, color: "#fff", padding: "7px 10px", fontSize: ".75rem",
                     fontWeight: 700, textDecoration: "none", textAlign: "center", display: "block",
                   }}>
                     Abrir
                   </a>
-                  {isMobile && !readonly && (
-                    <button onClick={() => void removeDocument(doc)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
-                      Excluir
+                  {!readonly && (
+                    <button onClick={() => void removeDocument(doc)} style={{
+                      background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)",
+                      borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer",
+                      padding: "7px 10px", fontSize: ".75rem",
+                    }}>
+                      ×
                     </button>
                   )}
                 </div>

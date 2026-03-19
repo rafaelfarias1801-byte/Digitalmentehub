@@ -329,10 +329,10 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {/* Viewer principal */}
               <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000", marginBottom: allSlides.length > 1 ? 8 : 0, maxWidth: "100%" }}>
                 {isVideoFile(activeSlideUrl) ? (
-                  <video src={activeSlideUrl} controls style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 400, display: "block" }} />
+                  <video src={activeSlideUrl} controls style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 420, display: "block" }} />
                 ) : (
                   <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`}
-                    style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "cover", maxHeight: 400, display: "block" }} />
+                    style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 420, display: "block" }} />
                 )}
 
                 {/* Botões de navegação sobrepostos */}

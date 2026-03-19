@@ -139,7 +139,7 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
 
             return (
               <div key={idx} style={{
-                minHeight: isMobile ? 54 : 96,
+                minHeight: isMobile ? 54 : 140,
                 borderRight: (idx + 1) % 7 === 0 ? "none" : "1px solid var(--ws-border)",
                 borderBottom: "1px solid var(--ws-border)",
                 padding: isMobile ? "3px 2px" : "5px 4px",
@@ -164,21 +164,45 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
                       {dayPosts.slice(0, maxShow).map(post => {
                         const cfg = TYPE_CFG[post.media_type] ?? TYPE_CFG.feed;
                         const label = post.slug || post.title || typeLabel(post.media_type);
-                        return (
+                        const thumbUrl = post.media_url || (post.media_urls && post.media_urls[0]);
+                        return isMobile ? (
                           <button key={post.id} onClick={() => setSelected(post)} style={{
                             display: "block", width: "100%", textAlign: "left",
                             background: cfg.bg, borderLeft: `2px solid ${cfg.border}`,
-                            border: "none", borderRadius: 3, padding: isMobile ? "1px 3px" : "2px 5px",
-                            cursor: "pointer", fontSize: isMobile ? ".5rem" : ".62rem",
+                            border: "none", borderRadius: 3, padding: "1px 3px",
+                            cursor: "pointer", fontSize: ".5rem",
                             color: cfg.text, fontFamily: "Poppins", lineHeight: 1.4,
                             overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
                           }}>
-                            {!isMobile && post.scheduled_date && (
-                              <span style={{ opacity: 0.7, marginRight: 3 }}>
-                                {new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                              </span>
+                            {label.slice(0, 10)}
+                          </button>
+                        ) : (
+                          <button key={post.id} onClick={() => setSelected(post)} style={{
+                            display: "block", width: "100%", textAlign: "left",
+                            background: cfg.bg, borderLeft: `2px solid ${cfg.border}`,
+                            border: "none", borderRadius: 4,
+                            cursor: "pointer", overflow: "hidden", padding: 0,
+                          }}>
+                            {/* Linha de horário + nome */}
+                            <div style={{
+                              display: "flex", alignItems: "center", gap: 4,
+                              padding: "2px 5px",
+                              fontSize: ".58rem", color: cfg.text, fontFamily: "Poppins",
+                              overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
+                            }}>
+                              {post.scheduled_date && (
+                                <span style={{ opacity: 0.7, flexShrink: 0 }}>
+                                  {new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                              )}
+                              <span style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>{label}</span>
+                            </div>
+                            {/* Thumbnail */}
+                            {thumbUrl && (
+                              <div style={{ width: "100%", aspectRatio: "1/1", background: "#000", overflow: "hidden" }}>
+                                <img src={thumbUrl} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              </div>
                             )}
-                            {isMobile ? label.slice(0, 10) : label}
                           </button>
                         );
                       })}
