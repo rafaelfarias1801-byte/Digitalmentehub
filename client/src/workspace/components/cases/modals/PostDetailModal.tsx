@@ -131,6 +131,8 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     setRejectionReason(reason);
     setShowRejectionInput(null);
     setRejectionInput("");
+    setEditingReason(false);
+    setEditReasonInput("");
     setSaving(false);
   }
 
@@ -203,24 +205,41 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         flexDirection: "column",
         ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0 } : {}),
       }}>
-        {/* Mobile: botão toggle de ações */}
+        {/* Mobile: tabs para admin / info de tipo+plataforma para cliente */}
         {isMobile && (
-          <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)" }}>
-            <button onClick={() => setSidebarVisible(false)} style={{
-              flex: 1, padding: "11px 0", background: "none", border: "none",
-              color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
-              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
-              borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
-              cursor: "pointer",
-            }}>CONTEÚDO</button>
-            <button onClick={() => setSidebarVisible(true)} style={{
-              flex: 1, padding: "11px 0", background: "none", border: "none",
-              color: sidebarVisible ? caseData.color : "var(--ws-text3)",
-              fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
-              borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
-              cursor: "pointer",
-            }}>AÇÕES</button>
-          </div>
+          readonly ? (
+            /* Cliente: mostra tipo e plataformas no topo, sem aba de ações */
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: "var(--ws-text2)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
+              </span>
+              {(currentPost.platforms ?? []).length > 0 && (
+                <>
+                  <span style={{ color: "var(--ws-border2)" }}>·</span>
+                  <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>
+                    {(currentPost.platforms ?? []).map(p => p === "instagram" ? "Instagram" : p === "linkedin" ? "LinkedIn" : "TikTok").join(" · ")}
+                  </span>
+                </>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)" }}>
+              <button onClick={() => setSidebarVisible(false)} style={{
+                flex: 1, padding: "11px 0", background: "none", border: "none",
+                color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
+                fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
+                borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
+                cursor: "pointer",
+              }}>CONTEÚDO</button>
+              <button onClick={() => setSidebarVisible(true)} style={{
+                flex: 1, padding: "11px 0", background: "none", border: "none",
+                color: sidebarVisible ? caseData.color : "var(--ws-text3)",
+                fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px",
+                borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
+                cursor: "pointer",
+              }}>AÇÕES</button>
+            </div>
+          )
         )}
 
         {/* Conteúdo desktop: grid 2 colunas | mobile: só uma coluna visível */}
@@ -279,6 +298,20 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               )}
               <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
                 {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
+              </div>
+              {/* Tipo + Plataformas — linha compacta abaixo da data */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: caseData.color, textTransform: "uppercase", letterSpacing: ".5px" }}>
+                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
+                </span>
+                {(currentPost.platforms ?? []).length > 0 && (
+                  <>
+                    <span style={{ color: "var(--ws-border2)", fontSize: ".65rem" }}>·</span>
+                    <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>
+                      {(currentPost.platforms ?? []).map((p: string) => p === "instagram" ? "📸 Instagram" : p === "linkedin" ? "💼 LinkedIn" : "🎵 TikTok").join("  ")}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <button onClick={onClose} style={closeBtnStyle}>×</button>

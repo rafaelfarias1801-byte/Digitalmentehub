@@ -196,7 +196,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
       </div>
 
       {selected && (
-        <PostDetailModal post={selected} caseData={caseData} onClose={() => setSelected(null)} onUpdate={updatePost} profile={profile} />
+        <PostDetailModal post={selected} caseData={caseData} onClose={() => setSelected(null)} onUpdate={updatePost} profile={profile} readonly={profile.role === "cliente"} />
       )}
     </div>
   );
