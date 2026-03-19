@@ -72,6 +72,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
     setModal(true);
   }
 
+  // AQUI ESTAVA O PROBLEMA! AGORA ELE PUXA TUDO DO BANCO.
   function openEdit(caseItem: Case) {
     setEditing(caseItem);
     setForm({
@@ -85,6 +86,12 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
       phone: caseItem.phone ?? "",
       since: caseItem.since ?? "",
       notes: caseItem.notes ?? "",
+      client_email: caseItem.client_email ?? "",
+      instagram_username: caseItem.instagram_username ?? "",
+      instagram_page_id: caseItem.instagram_page_id ?? "",
+      facebook_page_id: caseItem.facebook_page_id ?? "",
+      tiktok_username: caseItem.tiktok_username ?? "",
+      linkedin_url: caseItem.linkedin_url ?? "",
     });
     setModal(true);
   }
