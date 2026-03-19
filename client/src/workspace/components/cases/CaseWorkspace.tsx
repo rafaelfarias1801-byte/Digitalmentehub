@@ -33,7 +33,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
 
   const activeTabData = SUB_TABS.find((t) => t.id === activeTab);
 
-  const TabContent = () => (
+  const renderTabContent = () => (
     <>
       {activeTab === "calendario" && <TabCalendario caseData={caseData} profile={profile} />}
       {activeTab === "conteudo" && <TabConteudo caseData={caseData} profile={profile} />}
@@ -121,7 +121,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
 
         {/* Conteúdo */}
         <div style={{ flex: 1, padding: "16px 14px 32px", minWidth: 0 }}>
-          <TabContent />
+          {renderTabContent()}
         </div>
       </div>
     );
@@ -222,7 +222,7 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
             </div>
             <div style={{ color: "var(--ws-text3)", fontSize: ".8rem", fontFamily: "Poppins", marginTop: 2 }}>{caseData.name}</div>
           </div>
-          <TabContent />
+          {renderTabContent()}
         </div>
       </div>
       {accessModal && (
