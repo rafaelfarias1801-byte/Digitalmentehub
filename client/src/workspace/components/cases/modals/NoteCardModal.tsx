@@ -96,8 +96,11 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   const [editDesc, setEditDesc] = useState(false);
   const [newCheck, setNewCheck] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const isMobile = useIsMobile();
+  const isClient = profile.role === "cliente";
 
   async function save(updates: Partial<NoteCard>) {
     const merged = { ...currentCard, ...updates };
@@ -119,6 +122,13 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   function removeCheck(id: string) { void save({ checklist: (currentCard.checklist || []).filter(i => i.id !== id) }); }
   function addComment() { if (!newComment.trim()) return; void save({ comments: [...(currentCard.comments || []), { id: Date.now().toString(), author: profile.name || "Você", text: newComment.trim(), created_at: new Date().toISOString() }] }); setNewComment(""); }
   function removeComment(id: string) { if (!window.confirm("Apagar este comentário?")) return; void save({ comments: (currentCard.comments || []).filter(c => c.id !== id) }); }
+  function startEditComment(comment: { id: string; text: string }) { setEditingCommentId(comment.id); setEditingCommentText(comment.text); }
+  function saveEditComment(id: string) {
+    if (!editingCommentText.trim()) return;
+    void save({ comments: (currentCard.comments || []).map(c => c.id === id ? { ...c, text: editingCommentText.trim(), edited_at: new Date().toISOString() } : c) });
+    setEditingCommentId(null); setEditingCommentText("");
+  }
+  function isOwnComment(author: string) { return (author || "").trim() === (profile.name || "").trim(); }
 
   let labelColor = ""; let labelName = "";
   if (currentCard.label_color) { try { const p = JSON.parse(currentCard.label_color); labelColor = p.color || ""; labelName = p.name || ""; } catch { labelColor = currentCard.label_color; } }
@@ -131,9 +141,10 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
       <div style={{
           background: "var(--ws-surface)", borderRadius: isMobile ? "16px 16px 0 0" : 16, ...(isMobile ? {} : { width: "min(780px,95vw)" }),
           maxHeight: isMobile ? "94dvh" : "90vh", overflowY: "auto", border: "1px solid var(--ws-border2)", boxShadow: "0 30px 80px #00000070",
-          display: "flex", flexDirection: "column", ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
+          display: "flex", flexDirection: "column", color: "var(--ws-text)",
+          ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
         }}>
-        {isMobile && (
+        {isMobile && !isClient && (
           <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>
             <button onClick={() => setSidebarVisible(false)} style={{ flex: 1, padding: "11px 0", background: "none", border: "none", color: !sidebarVisible ? caseData.color : "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px", borderBottom: !sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent", cursor: "pointer" }}>CONTEÚDO</button>
             <button onClick={() => setSidebarVisible(true)} style={{ flex: 1, padding: "11px 0", background: "none", border: "none", color: sidebarVisible ? caseData.color : "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem", letterSpacing: "1px", borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent", cursor: "pointer" }}>AÇÕES</button>
@@ -152,7 +163,7 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
                   <button onClick={() => { save({ title: titleValue }); setEditTitle(false); }} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "0 12px", cursor: "pointer" }}>✓</button>
                 </div>
               ) : (
-                <div onClick={() => { setEditTitle(true); setTitleValue(currentCard.title); }} style={{ fontFamily: "inherit", fontWeight: 600, fontSize: "1.05rem", color: "var(--ws-text)", cursor: "pointer", padding: "4px 6px", borderRadius: 6, border: "1px solid transparent", transition: "border-color .15s" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
+                <div onClick={() => { if (!isClient) { setEditTitle(true); setTitleValue(currentCard.title); } }} style={{ fontFamily: "inherit", fontWeight: 600, fontSize: "1.05rem", color: "var(--ws-text)", cursor: isClient ? "default" : "pointer", padding: "4px 6px", borderRadius: 6, border: "1px solid transparent", transition: "border-color .15s" }} onMouseEnter={(e) => { if (!isClient) e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
                   {currentCard.title}
                 </div>
               )}
@@ -172,11 +183,11 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
                 </div>
               </div>
             ) : (
-              <div onClick={() => setEditDesc(true)} style={{ minHeight: 60, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, cursor: "pointer", border: "1px solid transparent", transition: "border-color .15s" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
+              <div onClick={() => { if (!isClient) setEditDesc(true); }} style={{ minHeight: 60, padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, cursor: isClient ? "default" : "pointer", border: "1px solid transparent", transition: "border-color .15s" }} onMouseEnter={(e) => { if (!isClient) e.currentTarget.style.borderColor = "var(--ws-border2)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "transparent"; }}>
                 {currentCard.description ? (
                   <div className="ws-richtext" dangerouslySetInnerHTML={{ __html: linkify(currentCard.description) }} />
                 ) : (
-                  <div style={{ fontSize: ".82rem", color: "var(--ws-text3)" }}>Clique para adicionar uma descrição...</div>
+                  <div style={{ fontSize: ".82rem", color: "var(--ws-text3)" }}>{isClient ? "Sem descrição." : "Clique para adicionar uma descrição..."}</div>
                 )}
               </div>
             )}
@@ -189,19 +200,31 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
               <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <input type="checkbox" checked={item.done} onChange={() => toggleCheck(item.id)} style={{ width: 15, height: 15, cursor: "pointer", accentColor: caseData.color }} />
                 <span style={{ fontSize: ".84rem", color: "var(--ws-text)", flex: 1, textDecoration: item.done ? "line-through" : "none", opacity: item.done ? 0.5 : 1 }}>{item.text}</span>
-                <button onClick={() => removeCheck(item.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem" }}>×</button>
+                {!isClient && <button onClick={() => removeCheck(item.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".85rem" }}>×</button>}
               </div>
             ))}
-            <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-              <input className="ws-input" value={newCheck} placeholder="Adicionar item..." onChange={(e) => setNewCheck(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCheckItem()} style={{ flex: 1, padding: "6px 10px", fontSize: ".8rem" }} />
-              <button onClick={addCheckItem} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>+</button>
-            </div>
+            {!isClient && (
+              <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                <input className="ws-input" value={newCheck} placeholder="Adicionar item..." onChange={(e) => setNewCheck(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addCheckItem()} style={{ flex: 1, padding: "6px 10px", fontSize: ".8rem" }} />
+                <button onClick={addCheckItem} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>+</button>
+              </div>
+            )}
+            {isClient && total === 0 && (
+              <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", padding: "8px 0" }}>
+                Ainda não temos itens por aqui.
+              </div>
+            )}
           </div>
 
           <div>
             <div style={labelStyle}>Comentários e atividade</div>
+            {(currentCard.comments || []).length === 0 && (
+              <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", marginBottom: 12 }}>
+                Ainda não há comentários.
+              </div>
+            )}
             {(currentCard.comments || []).map((comment) => (
-              <div key={comment.id} style={{ display: "flex", gap: 10, marginBottom: 14, position: "relative" }}>
+              <div key={comment.id} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>
                   {comment.author.slice(0, 1).toUpperCase()}
                 </div>
@@ -211,11 +234,28 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
                       <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
                       <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
                         {new Date(comment.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                        {(comment as any).edited_at ? " • editado" : ""}
                       </span>
                     </div>
-                    <button onClick={() => removeComment(comment.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.1rem", lineHeight: 1, padding: "0 4px" }} title="Apagar comentário">×</button>
+                    {isOwnComment(comment.author) && editingCommentId !== comment.id && (
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button onClick={() => startEditComment(comment)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>Editar</button>
+                        {!isClient && <button onClick={() => removeComment(comment.id)} style={{ background: "none", border: "none", color: "var(--ws-accent)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>Excluir</button>}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", fontSize: ".83rem", color: "var(--ws-text)" }}>{comment.text}</div>
+                  {editingCommentId === comment.id ? (
+                    <div>
+                      <textarea className="ws-input" value={editingCommentText} onChange={e => setEditingCommentText(e.target.value)}
+                        style={{ minHeight: 64, resize: "vertical", fontSize: ".83rem", marginBottom: 6, width: "100%", boxSizing: "border-box" }} autoFocus />
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => saveEditComment(comment.id)} style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>Salvar</button>
+                        <button onClick={() => { setEditingCommentId(null); setEditingCommentText(""); }} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>Cancelar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", fontSize: ".83rem", color: "var(--ws-text)" }}>{comment.text}</div>
+                  )}
                 </div>
               </div>
             ))}
@@ -231,7 +271,7 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
           </div>
         </div>
 
-        <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
+        {!isClient && <div style={{ padding: isMobile ? "16px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block" }}>
           <div style={labelStyle}>Ações</div>
           <button onClick={toggleCompleted} style={{
               background: currentCard.completed ? "#00e676" : "var(--ws-surface2)",
@@ -251,7 +291,7 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
           <button onClick={handleDelete} style={{ background: "none", border: "1px solid var(--ws-accent)", borderRadius: 8, color: "var(--ws-accent)", cursor: "pointer", width: "100%", padding: "8px 0", fontSize: ".8rem", fontFamily: "inherit", marginTop: 8 }}>
             × Excluir cartão
           </button>
-        </div>
+        </div>}
         </div>{/* fecha grid */}
       </div>
     </div>

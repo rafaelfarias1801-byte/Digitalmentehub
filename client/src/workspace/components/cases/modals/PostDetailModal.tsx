@@ -88,6 +88,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [rejectionReason, setRejectionReason] = useState(currentPost.rejection_reason || "");
   const [rejectionInput, setRejectionInput] = useState("");
   const [showRejectionInput, setShowRejectionInput] = useState<Post["approval_status"] | null>(null);
+  const [editingReason, setEditingReason] = useState(false);
+  const [editReasonInput, setEditReasonInput] = useState("");
+  const [confirmApproval, setConfirmApproval] = useState(false);
   const [editSlug, setEditSlug] = useState(false);
   const [slugDraft, setSlugDraft] = useState(currentPost.slug || "");
   const [editTitle, setEditTitle] = useState(false);
@@ -363,29 +366,34 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               </div>
 
             ) : readonly ? (
-              /* Cliente: pode aprovar/reprovar/alteracao, mas não voltar pra pendente */
+              /* ── CLIENTE ── */
               isLocked ? (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                   🔒 Você já aprovou este post.
                 </div>
-              ) : confirmStatus ? (
+              ) : currentPost.approval_status === "agendado" ? (
+                <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                  🗓 Post agendado — será publicado no horário definido.
+                </div>
+              ) : confirmApproval ? (
+                /* Confirmação de aprovação */
                 <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
                   <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 10 }}>
-                    Confirmar mudança para <b style={{ color: APPROVAL_STYLES[confirmStatus].color }}>{APPROVAL_STYLES[confirmStatus].label}</b>?
+                    Confirmar <b style={{ color: APPROVAL_STYLES["aprovado"].color }}>aprovação</b> deste post?
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={async () => { await saveApproval(confirmStatus); setConfirmStatus(null); }} disabled={saving}
-                      style={{ background: APPROVAL_STYLES[confirmStatus].bg, color: APPROVAL_STYLES[confirmStatus].color, border: `1px solid ${APPROVAL_STYLES[confirmStatus].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
-                      Confirmar
+                    <button onClick={async () => { await saveApproval("aprovado"); setConfirmApproval(false); }} disabled={saving}
+                      style={{ background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color, border: `1px solid ${APPROVAL_STYLES["aprovado"].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
+                      ✓ Confirmar aprovação
                     </button>
-                    <button onClick={() => setConfirmStatus(null)}
+                    <button onClick={() => setConfirmApproval(false)}
                       style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
                       Cancelar
                     </button>
                   </div>
                 </div>
               ) : showRejectionInput ? (
-                /* Cliente: digitando motivo de reprovação/alteração */
+                /* Digitando motivo novo */
                 <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
                   <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 8 }}>
                     {showRejectionInput === "reprovado" ? "✕ Motivo da reprovação:" : "⚠ O que precisa ser alterado?"}
@@ -404,45 +412,62 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </button>
                   </div>
                 </div>
+              ) : editingReason ? (
+                /* Editando motivo já salvo */
+                <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
+                  <div style={{ fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 8 }}>Editar motivo:</div>
+                  <textarea className="ws-input" value={editReasonInput} onChange={e => setEditReasonInput(e.target.value)}
+                    autoFocus style={{ minHeight: 80, resize: "vertical", fontSize: ".83rem", marginBottom: 8 }} />
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => void saveApprovalWithReason(currentPost.approval_status, editReasonInput)} disabled={saving || !editReasonInput.trim()}
+                      style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
+                      Salvar
+                    </button>
+                    <button onClick={() => setEditingReason(false)}
+                      style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {currentPost.approval_status === "agendado" ? (
-                    <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
-                      🗓 Post agendado — será publicado no horário definido.
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                      <button onClick={async () => { await saveApproval("aprovado"); }} disabled={saving} style={{
-                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                        background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
-                        opacity: currentPost.approval_status === "aprovado" ? 1 : 0.6,
-                        outline: currentPost.approval_status === "aprovado" ? `2px solid ${APPROVAL_STYLES["aprovado"].color}` : "none",
-                      }}>✓ Aprovar</button>
-                      <button onClick={() => setShowRejectionInput("reprovado")} disabled={saving} style={{
-                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                        background: APPROVAL_STYLES["reprovado"].bg, color: APPROVAL_STYLES["reprovado"].color,
-                        opacity: currentPost.approval_status === "reprovado" ? 1 : 0.6,
-                        outline: currentPost.approval_status === "reprovado" ? `2px solid ${APPROVAL_STYLES["reprovado"].color}` : "none",
-                      }}>✕ Reprovar</button>
-                      <button onClick={() => setShowRejectionInput("alteracao")} disabled={saving} style={{
-                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                        background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
-                        opacity: currentPost.approval_status === "alteracao" ? 1 : 0.6,
-                        outline: currentPost.approval_status === "alteracao" ? `2px solid ${APPROVAL_STYLES["alteracao"].color}` : "none",
-                      }}>⚠ Alteração</button>
-                    </div>
-                  )}
-                  {/* Mostra motivo registrado */}
+                  <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                    <button onClick={() => setConfirmApproval(true)} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
+                      opacity: currentPost.approval_status === "aprovado" ? 1 : 0.6,
+                      outline: currentPost.approval_status === "aprovado" ? `2px solid ${APPROVAL_STYLES["aprovado"].color}` : "none",
+                    }}>✓ Aprovar</button>
+                    <button onClick={() => setShowRejectionInput("reprovado")} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["reprovado"].bg, color: APPROVAL_STYLES["reprovado"].color,
+                      opacity: currentPost.approval_status === "reprovado" ? 1 : 0.6,
+                      outline: currentPost.approval_status === "reprovado" ? `2px solid ${APPROVAL_STYLES["reprovado"].color}` : "none",
+                    }}>✕ Reprovar</button>
+                    <button onClick={() => setShowRejectionInput("alteracao")} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
+                      opacity: currentPost.approval_status === "alteracao" ? 1 : 0.6,
+                      outline: currentPost.approval_status === "alteracao" ? `2px solid ${APPROVAL_STYLES["alteracao"].color}` : "none",
+                    }}>⚠ Alteração</button>
+                  </div>
+                  {/* Motivo salvo — pode editar */}
                   {currentPost.rejection_reason && (
                     <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5 }}>
-                      <b style={{ color: "var(--ws-text)" }}>Motivo:</b> {currentPost.rejection_reason}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                        <div><b style={{ color: "var(--ws-text)" }}>Motivo:</b> {currentPost.rejection_reason}</div>
+                        <button onClick={() => { setEditReasonInput(currentPost.rejection_reason || ""); setEditingReason(true); }}
+                          style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit", fontWeight: 600, flexShrink: 0 }}>
+                          ✏ Editar
+                        </button>
+                      </div>
                       {currentPost.rejection_reason_at && (
                         <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
                           {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          {currentPost.rejection_reason !== rejectionReason ? " • editado" : ""}
+                          {" • editado"}
                         </div>
                       )}
                     </div>
