@@ -4,7 +4,8 @@ import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import GlobalNoteCardModal from "./GlobalNoteCardModal";
 import type { NoteCard, NoteColumn } from "./cases/types";
-import Loader from "./shared/Loader";
+// 👇 CAMINHO CORRIGIDO AQUI:
+import Loader from "./cases/shared/Loader";
 
 const ACCENT = "#e91e8c";
 
