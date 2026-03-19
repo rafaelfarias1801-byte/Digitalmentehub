@@ -84,7 +84,6 @@ export default function TaskDrawer({
           right: 0,
           width: 470,
           maxWidth: "96vw",
-          height: "100vh",
           height: "100dvh",
           background: "var(--ws-surface)",
           borderLeft: "1px solid var(--ws-border)",

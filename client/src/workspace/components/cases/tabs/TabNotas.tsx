@@ -1,7 +1,7 @@
 ﻿// client/src/workspace/components/cases/tabs/TabNotas.tsx
 import { useEffect, useRef, useState } from "react";
 import type { Profile } from "../../../../../lib/supabaseClient";
-import { supabase } from "../../../../../lib/supabaseClient";
+import { supabase } from "../../../../lib/supabaseClient";
 import NoteCardModal from "../modals/NoteCardModal";
 import Loader from "../shared/Loader";
 import type { Case, NoteCard, NoteColumn } from "../types";

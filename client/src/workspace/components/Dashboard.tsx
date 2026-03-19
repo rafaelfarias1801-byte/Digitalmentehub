@@ -200,7 +200,7 @@ export default function Dashboard({ profile }: Props) {
         <div className="ws-card">
           <div className="ws-card-title">
             Tarefas abertas
-            {tasksPending > 0 && <span className="ws-badge" style={{ background: tasksOverdue > 0 ? "#ff5c7a22" : undefined, color: tasksOverdue > 0 ? "#ff5c7a" : undefined }}>{tasksPending}</span>}
+            {tasksPending > 0 && <span className="ws-badge" style={{ background: tasksOverdue > 0 ? "#ff5c7a22" : undefined, color: tasksOverdue > 0 ? "#ff5c7a" : undefined }}>{tasksPending}</span>
           </div>
           <div className="ws-tasks">
             {recentTasks.length === 0
