@@ -35,7 +35,7 @@ export default function Dashboard({ profile }: Props) {
   
   const [totalReceber, setTotalReceber] = useState(0);
   const [totalVencido, setTotalVencido] = useState(0);
-  const [upcomingSum, setUpcomingSum] = useState(0); // Para os próximos 7 dias
+  const [upcomingSum, setUpcomingSum] = useState(0); 
   
   const [postsThisMonth, setPostsThisMonth] = useState(0);
   const [postsApproved, setPostsApproved] = useState(0);
@@ -77,7 +77,6 @@ export default function Dashboard({ profile }: Props) {
 
       const caseMap = Object.fromEntries(cases.map(c => [c.id, c.name]));
 
-      // Tarefas
       const pending = tasks.filter(t => t.status !== "concluido" && !t.done);
       const overdue = pending.filter(t => t.due_date && t.due_date < todayStr);
       setTasksPending(pending.length);
@@ -85,11 +84,9 @@ export default function Dashboard({ profile }: Props) {
       setTasksDone(tasks.filter(t => t.status === "concluido" || t.done).length);
       setRecentTasks(pending.slice(0, 4).map(t => ({ id: t.id, title: t.title ?? t.text ?? "", tag: t.tag ?? "dig", related_name: t.related_name ?? null })));
 
-      // Clientes
       setCasesCount(cases.length);
       setCaseNames(cases.map(c => c.name));
 
-      // Financeiro 
       const unpaidTotal = payments.filter(p => !p.paid);
       const unpaidThisMonth = unpaidTotal.filter(p => p.due_date && p.due_date >= monthStart && p.due_date <= monthEnd);
       setTotalReceber(unpaidThisMonth.reduce((s, p) => s + Number(p.amount), 0));
@@ -113,7 +110,6 @@ export default function Dashboard({ profile }: Props) {
           }))
       );
 
-      // Conteúdo 
       const monthPosts = posts.filter(p => p.scheduled_date && p.scheduled_date >= monthStart && p.scheduled_date <= monthEnd);
       setPostsThisMonth(monthPosts.length);
       setPostsApproved(monthPosts.filter(p => p.approval_status?.toLowerCase() === "aprovado").length);
@@ -148,7 +144,6 @@ export default function Dashboard({ profile }: Props) {
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   const firstName = profile?.name?.split(" ")[0] ?? "";
 
-  // ─── ESTILOS COMPACTOS PARA DESKTOP ───
   const compactCardStyle = isMobile ? {} : { padding: "12px 16px", minHeight: "auto" };
   const compactValueStyle = isMobile ? {} : { fontSize: "1.8rem", margin: "2px 0" };
 
@@ -160,13 +155,11 @@ export default function Dashboard({ profile }: Props) {
 
   return (
     <div className="ws-page" style={{ paddingBottom: isMobile ? 80 : 20 }}>
-      {/* Título mais espremido com a data */}
       <div className="ws-page-title" style={{ marginBottom: 2 }}>{greeting}{firstName ? `, ${firstName}` : ""}<span className="ws-dot">.</span></div>
       <div className="ws-page-sub" style={{ marginBottom: 12 }}>
         {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
       </div>
 
-      {/* Stats - Margem reduzida e padding interno menor */}
       <div className="ws-stats" style={{ marginBottom: 12 }}>
         <div className="ws-stat" style={{ "--c": tasksOverdue > 0 ? "#ff5c7a" : "#e91e8c", ...compactCardStyle } as React.CSSProperties}>
           <div className="ws-stat-label">Tarefas abertas</div>
@@ -197,12 +190,11 @@ export default function Dashboard({ profile }: Props) {
         </div>
       </div>
 
-      {/* Linha 1: Tarefas + Aprovações */}
       <div className="ws-cols2" style={{ marginBottom: 12 }}>
         <div className="ws-card">
           <div className="ws-card-title">
             Tarefas abertas
-            {tasksPending > 0 && <span className="ws-badge" style={{ background: tasksOverdue > 0 ? "#ff5c7a22", color: tasksOverdue > 0 ? "#ff5c7a" : undefined }}>{tasksPending}</span>}
+            {tasksPending > 0 && <span className="ws-badge" style={{ background: tasksOverdue > 0 ? "#ff5c7a22" : undefined, color: tasksOverdue > 0 ? "#ff5c7a" : undefined }}>{tasksPending}</span>}
           </div>
           <div className="ws-tasks">
             {recentTasks.length === 0
@@ -249,10 +241,7 @@ export default function Dashboard({ profile }: Props) {
         </div>
       </div>
 
-      {/* Linha 2: Eventos + Financeiro */}
       <div className="ws-cols2">
-        
-        {/* Próximos Eventos */}
         <div className="ws-card">
           <div className="ws-card-title">Próximos eventos <span className="ws-badge">agenda</span></div>
           {nextEvents.length === 0
@@ -284,7 +273,6 @@ export default function Dashboard({ profile }: Props) {
           }
         </div>
 
-        {/* Atividades Financeiro (Novo!) */}
         <div className="ws-card">
           <div className="ws-card-title">Atividades Financeiro <span className="ws-badge" style={{ background: "#ffd60022", color: "#ffd600" }}>faturas</span></div>
           {upcomingFinance.length === 0
@@ -312,7 +300,6 @@ export default function Dashboard({ profile }: Props) {
             </div>
           }
         </div>
-
       </div>
     </div>
   );
