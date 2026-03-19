@@ -21,6 +21,7 @@ export default function TabDocumentos({
   const [docs, setDocs] = useState<CaseDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<CaseDocument | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
@@ -123,6 +124,10 @@ export default function TabDocumentos({
     await supabase.from("documents").delete().eq("id", doc.id);
   }
 
+  function isImage(name: string) {
+    return /\.(png|jpg|jpeg|webp|gif)$/i.test(name);
+  }
+
   function getIcon(name: string) {
     if (name.toLowerCase().endsWith(".pdf")) return "📄";
     if (/\.(png|jpg|jpeg|webp)$/i.test(name)) return "🖼";
@@ -173,60 +178,68 @@ export default function TabDocumentos({
                 background: "var(--ws-surface)",
                 border: "1px solid var(--ws-border)",
                 borderRadius: 10,
-                padding: "14px 18px",
-                display: "flex",
-                alignItems: isMobile ? "flex-start" : "center",
-                gap: 12,
-                flexDirection: isMobile ? "column" : "row",
+                overflow: "hidden",
+                cursor: isImage(doc.name) ? "pointer" : "default",
               }}
+              onClick={() => isImage(doc.name) && setPreviewDoc(doc)}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
-                <div style={{ fontSize: "1.8rem", flexShrink: 0 }}>{getIcon(doc.name)}</div>
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: ".87rem", color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                    {doc.name}
-                  </div>
-                  <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
-                    {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
-                  </div>
+              {/* Thumbnail para imagens */}
+              {isImage(doc.name) && (
+                <div style={{ width: "100%", height: 160, overflow: "hidden", background: "#000" }}>
+                  <img src={doc.file_url} alt={doc.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
+              )}
 
-                {/* Botão X de apagar (Só Admin pode apagar, não importa a aba) */}
-                {!isMobile && !readonly && (
-                  <button onClick={() => void removeDocument(doc)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
-                )}
-              </div>
-
-              <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }}>
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    flex: isMobile ? 1 : undefined,
-                    background: caseData.color,
-                    border: "none",
-                    borderRadius: 8,
-                    color: "#fff",
-                    padding: "10px 20px",
-                    fontSize: ".8rem",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    textAlign: "center",
-                    display: "block",
-                  }}
-                >
-                  Abrir
-                </a>
-                {isMobile && !readonly && (
-                  <button onClick={() => void removeDocument(doc)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
-                    Excluir
-                  </button>
-                )}
+              <div style={{ padding: "12px 16px", display: "flex", alignItems: isMobile ? "flex-start" : "center", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
+                  <div style={{ fontSize: "1.8rem", flexShrink: 0 }}>{getIcon(doc.name)}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: ".87rem", color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                      {doc.name}
+                    </div>
+                    <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
+                      {new Date(doc.uploaded_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                    </div>
+                  </div>
+                  {!isMobile && !readonly && (
+                    <button onClick={e => { e.stopPropagation(); void removeDocument(doc); }} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", flexShrink: 0 }}>×</button>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }} onClick={e => e.stopPropagation()}>
+                  <a href={doc.file_url} target="_blank" rel="noreferrer" style={{
+                    flex: isMobile ? 1 : undefined, background: caseData.color, border: "none",
+                    borderRadius: 8, color: "#fff", padding: "10px 20px", fontSize: ".8rem",
+                    fontWeight: 700, textDecoration: "none", textAlign: "center", display: "block",
+                  }}>
+                    Abrir
+                  </a>
+                  {isMobile && !readonly && (
+                    <button onClick={() => void removeDocument(doc)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "10px 16px", fontSize: ".8rem" }}>
+                      Excluir
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Preview de imagem fullscreen */}
+      {previewDoc && (
+        <div
+          onClick={() => setPreviewDoc(null)}
+          style={{ position: "fixed", inset: 0, background: "#000000ee", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <button onClick={() => setPreviewDoc(null)} style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 36, height: 36, color: "#fff", fontSize: "1.2rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <img
+            src={previewDoc.file_url}
+            alt={previewDoc.name}
+            style={{ maxWidth: "95vw", maxHeight: "90dvh", objectFit: "contain", borderRadius: 8 }}
+            onClick={e => e.stopPropagation()}
+          />
+          <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,.6)", borderRadius: 8, padding: "6px 14px", color: "#fff", fontSize: ".78rem", fontFamily: "Poppins", whiteSpace: "nowrap" }}>
+            {previewDoc.name}
+          </div>
         </div>
       )}
     </div>

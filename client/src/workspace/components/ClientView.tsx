@@ -35,7 +35,7 @@ export default function ClientView({ profile }: Props) {
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("calendario");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
   const isMobile = useIsMobile();
 

@@ -137,12 +137,12 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   const total = (currentCard.checklist || []).length;
 
   return (
-    <div style={getOverlayStyle(isMobile)} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...getOverlayStyle(isMobile), left: 0 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={{
-          background: "var(--ws-surface)", borderRadius: isMobile ? "16px 16px 0 0" : 16, ...(isMobile ? {} : { width: "min(780px,95vw)" }),
-          maxHeight: isMobile ? "94dvh" : "90vh", overflowY: "auto", border: "1px solid var(--ws-border2)", boxShadow: "0 30px 80px #00000070",
+          background: "var(--ws-surface)", borderRadius: isMobile ? 0 : 16, ...(isMobile ? {} : { width: "min(780px,95vw)" }),
+          maxHeight: isMobile ? "100dvh" : "90vh", overflowY: "auto", border: "1px solid var(--ws-border2)", boxShadow: "0 30px 80px #00000070",
           display: "flex", flexDirection: "column", color: "var(--ws-text)",
-          ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto" } : {}),
+          ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: 0 } : {}),
         }}>
         {isMobile && !isClient && (
           <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>

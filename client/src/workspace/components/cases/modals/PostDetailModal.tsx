@@ -192,18 +192,18 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const scheduledTimeValue = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
 
   return (
-    <div style={{ ...overlayStyle, left: isMobile ? 56 : 0 }} onClick={e => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...overlayStyle, left: 0 }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         background: "var(--ws-surface)",
-        borderRadius: isMobile ? "16px 16px 0 0" : 16,
+        borderRadius: isMobile ? 0 : 16,
         ...(isMobile ? {} : { width: "min(860px,95vw)" }),
-        maxHeight: isMobile ? "94dvh" : "90vh",
+        maxHeight: isMobile ? "100dvh" : "90vh",
         overflowY: "auto",
         border: "1px solid var(--ws-border2)",
         boxShadow: "0 30px 80px #00000070",
         display: "flex",
         flexDirection: "column",
-        ...(isMobile ? { position: "fixed", bottom: 0, left: 56, right: 0, top: "auto", margin: 0 } : {}),
+        ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: 0, margin: 0 } : {}),
       }}>
         {/* Mobile: tabs para admin / info de tipo+plataforma para cliente */}
         {isMobile && (
