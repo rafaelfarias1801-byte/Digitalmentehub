@@ -1,11 +1,11 @@
 ﻿// client/src/workspace/components/cases/tabs/TabNotas.tsx
 import { useEffect, useRef, useState } from "react";
-import type { Profile } from "../../../../lib/supabaseClient";
+import type { Profile } from "../../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import NoteCardModal from "../modals/NoteCardModal";
 import Loader from "../shared/Loader";
 import type { Case, NoteCard, NoteColumn } from "../types";
-import { useIsMobile } from "../../../hooks/useIsMobile";
+import { useIsMobile } from "../../../../hooks/useIsMobile";
 
 interface TabNotasProps { caseData: Case; profile: Profile; readonly?: boolean; }
 
@@ -39,10 +39,36 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
     void load();
   }, [caseData.id]);
 
-  async function toggleCompleted(card: NoteCard) {
-    const newVal = !card.completed;
-    setCards(prev => prev.map(c => c.id === card.id ? { ...c, completed: newVal } : c));
-    await supabase.from("note_cards").update({ completed: newVal }).eq("id", card.id);
+  async function addColumn() {
+    if (!newColTitle.trim()) return;
+    const { data } = await supabase.from("note_columns").insert({ case_id: caseData.id, title: newColTitle.trim(), order: columns.length }).select().single();
+    if (data) setColumns((prev) => [...prev, data]);
+    setNewColTitle(""); setAddingCol(false);
+  }
+  
+  const [newColTitle, setNewColTitle] = useState("");
+  const [addingCol, setAddingCol] = useState(false);
+
+  async function removeColumn(id: string) {
+    if (!window.confirm("Deseja realmente excluir esta lista?")) return;
+    setColumns((prev) => prev.filter((c) => c.id !== id));
+    setCards((prev) => prev.filter((card) => card.column_id !== id));
+    await supabase.from("note_columns").delete().eq("id", id);
+  }
+
+  async function addCard(columnId: string) {
+    if (!newCardText.trim()) return;
+    const colCards = cards.filter(c => c.column_id === columnId);
+    const { data } = await supabase.from("note_cards").insert({ case_id: caseData.id, column_id: columnId, title: newCardText.trim(), description: "", checklist: [], comments: [], order: colCards.length }).select().single();
+    if (data) setCards((prev) => [...prev, data]);
+    setNewCardText(""); setAddingCard(null);
+  }
+
+  // FUNÇÃO CORRIGIDA PARA NÃO DEPENDER DE REFRESH
+  async function toggleCompleted(cardId: string, currentStatus: boolean) {
+    const newVal = !currentStatus;
+    setCards(prev => prev.map(c => c.id === cardId ? { ...c, completed: newVal } : c));
+    await supabase.from("note_cards").update({ completed: newVal }).eq("id", cardId);
   }
 
   async function handleDrop(targetColId: string, targetCardId?: string) {
@@ -73,28 +99,43 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
           <div key={column.id} onDragOver={e => { e.preventDefault(); setDragOverColId(column.id); }} onDrop={() => handleDrop(column.id)}
             style={{ background: dragOverColId === column.id ? `${caseData.color}08` : "var(--ws-surface)", border: `1px solid ${dragOverColId === column.id ? caseData.color : "var(--ws-border)"}`, borderRadius: 12, padding: "12px 12px 8px", width: isMobile ? "100%" : 260, flexShrink: 0, display: "flex", flexDirection: "column" }}>
             
-            <div style={{ fontWeight: 600, fontSize: ".88rem", marginBottom: 10, color: "var(--ws-text)" }}>{column.title}</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ fontWeight: 600, fontSize: ".88rem", color: "var(--ws-text)" }}>{column.title}</div>
+              {!readonly && <button onClick={() => removeColumn(column.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.1rem", lineHeight: 1 }}>×</button>}
+            </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8, overflowY: "auto", flex: 1 }}>
-              {columnCards.map(card => (
-                <div key={card.id} draggable={!readonly} onDragStart={() => { dragCardId.current = card.id; }} onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOverCardId(card.id); }} onDrop={e => { e.stopPropagation(); handleDrop(column.id, card.id); }}
-                  onClick={() => { localStorage.setItem(LS_OPEN_CARD, card.id); setOpenCard(card); }}
-                  style={{ background: "var(--ws-surface2)", border: dragOverCardId === card.id ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)", borderRadius: 8, padding: "10px 12px", cursor: "pointer", position: "relative", opacity: dragCardId.current === card.id ? 0.3 : 1 }}>
-                  
-                  <div onClick={(e) => { e.stopPropagation(); void toggleCompleted(card); }} style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, borderRadius: "50%", border: `2px solid ${card.completed ? '#00e676' : 'var(--ws-border2)'}`, background: card.completed ? '#00e676' : 'transparent', display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s" }}>
-                    {card.completed && <span style={{ color: "#fff", fontSize: "10px", fontWeight: 900 }}>✓</span>}
-                  </div>
+              {columnCards.map(card => {
+                const total = (card.checklist || []).length;
+                const done = (card.checklist || []).filter(i => i.done).length;
+                let labelColor = ""; let labelName = "";
+                if (card.label_color) { try { const p = JSON.parse(card.label_color); labelColor = p.color || ""; labelName = p.name || ""; } catch { labelColor = card.label_color; } }
 
-                  <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 20, textDecoration: card.completed ? 'line-through' : 'none', opacity: card.completed ? 0.6 : 1 }}>{card.title}</div>
-                  
-                  <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
-                    {card.description && <span title="Tem descrição" style={{ fontSize: "1.1rem", color: "var(--ws-text3)", lineHeight: 1 }}>≡</span>}
-                    {card.due_date && <span style={{ fontSize: ".62rem", padding: "2px 5px", background: "var(--ws-surface3)", borderRadius: 4, color: "var(--ws-text2)" }}>📅 {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>}
-                    {(card.checklist?.length ?? 0) > 0 && <span style={{ fontSize: ".65rem", color: card.checklist?.every(i => i.done) ? "#00e676" : "#a0a4cc" }}>✓ {card.checklist?.filter(i => i.done).length}/{card.checklist?.length}</span>}
-                    {(card.comments?.length ?? 0) > 0 && <span style={{ fontSize: ".75rem", color: "var(--ws-text3)" }}>💬 {card.comments?.length}</span>}
+                return (
+                  <div key={card.id} draggable={!readonly} onDragStart={() => { dragCardId.current = card.id; }} onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOverCardId(card.id); }} onDrop={e => { e.stopPropagation(); handleDrop(column.id, card.id); }}
+                    onClick={() => { localStorage.setItem(LS_OPEN_CARD, card.id); setOpenCard(card); }}
+                    style={{ background: "var(--ws-surface2)", border: dragOverCardId === card.id ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)", borderRadius: 8, padding: "10px 12px", cursor: "pointer", position: "relative", opacity: dragCardId.current === card.id ? 0.3 : 1 }}>
+                    
+                    {/* Botão Checkmark Permanente COM TRAVA DE CLIQUE EFICIENTE */}
+                    <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleCompleted(card.id, !!card.completed); }} 
+                         style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", border: `2px solid ${card.completed ? '#00e676' : 'var(--ws-border2)'}`, background: card.completed ? '#00e676' : 'transparent', display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s", zIndex: 10 }}>
+                      {card.completed && <span style={{ color: "#fff", fontSize: "11px", fontWeight: 900 }}>✓</span>}
+                    </div>
+
+                    {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "2px 8px" : "3px 20px", marginBottom: 6, fontSize: ".62rem", fontWeight: 700, color: "#fff", textShadow: "0 1px 2px #00000040" }}>{labelName}</div>}
+
+                    <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22, textDecoration: card.completed ? 'line-through' : 'none', opacity: card.completed ? 0.6 : 1 }}>{card.title}</div>
+                    
+                    {/* Indicadores Visuais */}
+                    <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+                      {card.description && <span title="Tem descrição" style={{ fontSize: "1.1rem", color: "var(--ws-text3)", lineHeight: 1 }}>≡</span>}
+                      {card.due_date && <span style={{ fontSize: ".62rem", padding: "2px 5px", background: "var(--ws-surface3)", borderRadius: 4, color: "var(--ws-text2)" }}>📅 {new Date(`${card.due_date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>}
+                      {total > 0 && <span style={{ fontSize: ".65rem", color: done === total ? "#00e676" : "#a0a4cc" }}>✓ {done}/{total}</span>}
+                      {(card.comments?.length ?? 0) > 0 && <span style={{ fontSize: ".75rem", color: "var(--ws-text3)" }}>💬 {card.comments?.length}</span>}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {!readonly && (addingCard === column.id ? (
@@ -113,6 +154,23 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
           </div>
         );
       })}
+
+      {!readonly && (
+        <div style={{ width: 240, flexShrink: 0 }}>
+          {addingCol ? (
+            <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 12, padding: 12 }}>
+              <input value={newColTitle} onChange={(e) => setNewColTitle(e.target.value)} placeholder="Título da lista" autoFocus className="ws-input" style={{ marginBottom: 8 }} onKeyDown={(e) => e.key === "Enter" && addColumn()} />
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={addColumn} style={{ background: caseData.color, color: "#fff", borderRadius: 6, padding: "5px 12px", fontSize: ".78rem", border: "none", cursor: "pointer" }}>Criar lista</button>
+                <button onClick={() => setAddingCol(false)} style={{ background: "none", border: "none", color: "var(--ws-text3)", fontSize: ".78rem", cursor: "pointer" }}>×</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setAddingCol(true)} style={{ background: "var(--ws-surface)", border: "1px dashed var(--ws-border2)", borderRadius: 12, padding: "12px 16px", width: "100%", color: "var(--ws-text3)", fontSize: ".82rem", cursor: "pointer" }}>+ Adicionar lista</button>
+          )}
+        </div>
+      )}
+
       {openCard && <NoteCardModal card={openCard} caseData={caseData} profile={profile} onClose={() => { localStorage.removeItem(LS_OPEN_CARD); setOpenCard(null); }} onUpdate={c => setCards(prev => prev.map(item => item.id === c.id ? c : item))} onDelete={id => setCards(prev => prev.filter(c => c.id !== id))} />}
     </div>
   );
