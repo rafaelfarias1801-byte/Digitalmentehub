@@ -96,6 +96,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const [editTitle, setEditTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(currentPost.title || "");
   const [fullscreenSlide, setFullscreenSlide] = useState(false);
+  const isMobile = useIsMobile();
 
   // Navegação de slides — usa media_urls se disponível, senão fallback para extra_info
   const extraUrls = decodeExtraUrls(currentPost.extra_info);
