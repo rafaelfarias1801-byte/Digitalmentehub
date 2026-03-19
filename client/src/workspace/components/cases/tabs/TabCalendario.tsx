@@ -11,6 +11,7 @@ import { useIsMobile } from "../../../hooks/useIsMobile";
 interface TabCalendarioProps {
   caseData: Case;
   profile: Profile;
+  readonly?: boolean;
 }
 
 const TYPE_CFG: Record<string, { bg: string; text: string; border: string }> = {
@@ -26,7 +27,7 @@ function typeLabel(type: string) {
 
 const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-export default function TabCalendario({ caseData, profile }: TabCalendarioProps) {
+export default function TabCalendario({ caseData, profile, readonly = false }: TabCalendarioProps) {
   const [posts, setPosts]       = useState<Post[]>([]);
   const [month, setMonth]       = useState(new Date().getMonth());
   const [year, setYear]         = useState(new Date().getFullYear());
@@ -196,7 +197,7 @@ export default function TabCalendario({ caseData, profile }: TabCalendarioProps)
       </div>
 
       {selected && (
-        <PostDetailModal post={selected} caseData={caseData} onClose={() => setSelected(null)} onUpdate={updatePost} profile={profile} readonly={profile.role === "cliente"} />
+        <PostDetailModal post={selected} caseData={caseData} onClose={() => setSelected(null)} onUpdate={updatePost} profile={profile} readonly={readonly} />
       )}
     </div>
   );

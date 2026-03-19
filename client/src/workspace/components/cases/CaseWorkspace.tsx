@@ -33,20 +33,21 @@ export default function CaseWorkspace({ caseData, onBack, onEdit, onDelete, prof
 
   const activeTabData = SUB_TABS.find((t) => t.id === activeTab);
 
+  const isClient = profile?.role === "cliente";
+
   const renderTabContent = () => (
     <>
-      {activeTab === "calendario" && <TabCalendario caseData={caseData} profile={profile} />}
-      {activeTab === "conteudo" && <TabConteudo caseData={caseData} profile={profile} />}
-      {activeTab === "financeiro" && <TabFinanceiro caseData={caseData} />}
-      
-      {/* ── COFRE E DRIVE AQUI ── */}
-      {/* "contratos" agora carrega o Cofre de Documentos (Upload restrito) */}
-      {activeTab === "contratos" && <TabDocumentos caseData={caseData} type="documento" readonly={profile?.role !== 'admin'} canUpload={false} />}
-      
-      {/* "documentos" agora carrega o Drive de Arquivos (Upload liberado) */}
-      {activeTab === "documentos" && <TabDocumentos caseData={caseData} type="arquivo" readonly={profile?.role !== 'admin'} canUpload={true} />}
-      
-      {activeTab === "notas" && <TabNotas caseData={caseData} profile={profile} />}
+      {activeTab === "calendario" && <TabCalendario caseData={caseData} profile={profile} readonly={isClient} />}
+      {activeTab === "conteudo" && <TabConteudo caseData={caseData} profile={profile} readonly={isClient} />}
+      {activeTab === "financeiro" && <TabFinanceiro caseData={caseData} readonly={isClient} />}
+
+      {/* Documentos (Cofre) — só admin envia, cliente só visualiza */}
+      {activeTab === "contratos" && <TabDocumentos caseData={caseData} type="documento" readonly={isClient} canUpload={false} />}
+
+      {/* Arquivos (Drive) — admin e cliente podem enviar */}
+      {activeTab === "documentos" && <TabDocumentos caseData={caseData} type="arquivo" readonly={isClient} canUpload={true} />}
+
+      {activeTab === "notas" && <TabNotas caseData={caseData} profile={profile} readonly={isClient} />}
     </>
   );
 

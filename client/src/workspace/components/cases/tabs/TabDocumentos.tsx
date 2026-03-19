@@ -7,7 +7,7 @@ import { useIsMobile } from "../../../hooks/useIsMobile";
 
 interface TabDocumentosProps {
   caseData: Case;
-  type: "documento" | "arquivo";
+  type: "documento" | "arquivo" | "contrato";
   readonly?: boolean;
   canUpload?: boolean;
 }
@@ -24,8 +24,7 @@ export default function TabDocumentos({
   const fileRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
-  // Agora separamos no banco como "documento" (oficiais) ou "arquivo" (drive livre)
-  const docType = type === "documento" ? "documento" : "arquivo";
+  const docType = type === "documento" ? "documento" : type === "contrato" ? "contrato" : "arquivo";
   const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
 
   useEffect(() => {
@@ -133,8 +132,8 @@ export default function TabDocumentos({
 
   return (
     <div>
-      {/* O botão só aparece se for Admin (!readonly) OU se a aba permitir upload (canUpload) */}
-      {(!readonly || canUpload) && (
+      {/* Admin pode enviar em qualquer aba. Cliente só pode enviar em "arquivo" */}
+      {(!readonly || (canUpload && type === "arquivo")) && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
           <button
             className="ws-btn"
@@ -143,7 +142,7 @@ export default function TabDocumentos({
           >
             {uploading
               ? "Enviando..."
-              : `+ Enviar ${type}`}
+              : `+ Enviar ${type === "arquivo" ? "arquivo" : type === "contrato" ? "contrato" : "documento"}`}
           </button>
 
           <input
@@ -163,7 +162,7 @@ export default function TabDocumentos({
         <Loader />
       ) : docs.length === 0 ? (
         <Empty
-          label={`Nenhum ${type} enviado ainda.`}
+          label={`Nenhum ${type === "arquivo" ? "arquivo" : type === "contrato" ? "contrato" : "documento"} enviado ainda.`}
         />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

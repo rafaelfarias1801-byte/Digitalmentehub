@@ -208,22 +208,25 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         {/* Mobile: tabs para admin / info de tipo+plataforma para cliente */}
         {isMobile && (
           readonly ? (
-            /* Cliente: mostra tipo e plataformas no topo, sem aba de ações */
-            <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: "var(--ws-text2)", textTransform: "uppercase", letterSpacing: "1px" }}>
-                {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
-              </span>
-              {(currentPost.platforms ?? []).length > 0 && (
-                <>
-                  <span style={{ color: "var(--ws-border2)" }}>·</span>
-                  <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>
-                    {(currentPost.platforms ?? []).map(p => p === "instagram" ? "Instagram" : p === "linkedin" ? "LinkedIn" : "TikTok").join(" · ")}
-                  </span>
-                </>
-              )}
+            /* Cliente: mostra tipo e plataformas no topo + botão fechar fixo */
+            <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: "var(--ws-text2)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
+                </span>
+                {(currentPost.platforms ?? []).length > 0 && (
+                  <>
+                    <span style={{ color: "var(--ws-border2)" }}>·</span>
+                    <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>
+                      {(currentPost.platforms ?? []).map(p => p === "instagram" ? "Instagram" : p === "linkedin" ? "LinkedIn" : "TikTok").join(" · ")}
+                    </span>
+                  </>
+                )}
+              </div>
+              <button onClick={onClose} style={{ ...closeBtnStyle, flexShrink: 0 }}>×</button>
             </div>
           ) : (
-            <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", flexShrink: 0 }}>
               <button onClick={() => setSidebarVisible(false)} style={{
                 flex: 1, padding: "11px 0", background: "none", border: "none",
                 color: !sidebarVisible ? caseData.color : "var(--ws-text3)",
@@ -238,6 +241,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 borderBottom: sidebarVisible ? `2px solid ${caseData.color}` : "2px solid transparent",
                 cursor: "pointer",
               }}>AÇÕES</button>
+              <button onClick={onClose} style={{ ...closeBtnStyle, margin: "auto 10px", flexShrink: 0 }}>×</button>
             </div>
           )
         )}
@@ -314,7 +318,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 )}
               </div>
             </div>
-            <button onClick={onClose} style={closeBtnStyle}>×</button>
+            <button onClick={onClose} style={{ ...closeBtnStyle, display: isMobile ? "none" : "flex" }}>×</button>
           </div>
 
           {/* ── Visualizador de slides ── */}
