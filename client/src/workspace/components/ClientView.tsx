@@ -72,106 +72,132 @@ export default function ClientView({ profile }: Props) {
 
   const TabContent = () => (
     <>
-      {activeTab === "calendario"  && <TabCalendario  caseData={caseData} profile={profile} />}
+      {activeTab === "calendario"  && <TabCalendario  caseData={caseData} profile={profile} readonly />}
       {activeTab === "conteudo"    && <TabConteudo    caseData={caseData} profile={profile} readonly />}
       {activeTab === "financeiro"  && <TabFinanceiro  caseData={caseData} readonly />}
-      {activeTab === "contratos"   && <TabDocumentos  caseData={caseData} type="contrato"  readonly canUpload={false} />}
-      {activeTab === "documentos"  && <TabDocumentos  caseData={caseData} type="documento" readonly canUpload={true} />}
+      {activeTab === "contratos"   && <TabDocumentos  caseData={caseData} type="documento" readonly canUpload={false} />}
+      {activeTab === "documentos"  && <TabDocumentos  caseData={caseData} type="arquivo"   readonly canUpload={true} />}
       {activeTab === "notas"       && <TabNotas       caseData={caseData} profile={profile} readonly />}
     </>
   );
 
-  // ── MOBILE — mesmo padrão de rail da sidebar principal ──
+  // Tabs principais (topo) e extras (hamburguer)
+  const MAIN_TABS = ["calendario", "conteudo", "financeiro"];
+  const MAIN_TAB_ICONS: Record<string, string> = { calendario: "📅", conteudo: "📋", financeiro: "💰" };
+  const MAIN_TAB_LABELS: Record<string, string> = { calendario: "Calendário", conteudo: "Conteúdo", financeiro: "Financeiro" };
+
+  // ── MOBILE — novo layout: top bar + hamburger ──
   if (isMobile) {
+    const firstName = profile.name?.split(" ")[0] ?? "";
+    const isMainTab = MAIN_TABS.includes(activeTab);
+
     return (
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "var(--ws-bg)", position: "relative" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100dvh", overflow: "hidden", background: "var(--ws-bg)" }}>
         <CasesGlobalStyle />
 
-        {/* Overlay quando sidebar aberta */}
-        {sidebarOpen && (
-          <div onClick={() => setSidebarOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "#00000060", zIndex: 198 }} />
-        )}
-
-        {/* Rail lateral — no fluxo, nunca sobrepõe */}
-        {!sidebarOpen && (
-          <div style={{ width: 56, flexShrink: 0, borderRight: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 10, gap: 2 }}>
-            <button onClick={() => setSidebarOpen(true)} className="ws-rail-expand" title="Abrir menu" style={{ marginBottom: 4 }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M5 2L10 7L5 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <div title={caseData.name} style={{ marginBottom: 4 }}>
-              <div style={{ width: 30, height: 30, borderRadius: 8, overflow: "hidden", background: `${caseData.color}22`, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${caseData.color}44`, fontSize: ".65rem", fontWeight: 800, color: caseData.color }}>
-                {caseData.logo_url
-                  ? <img src={caseData.logo_url} alt={caseData.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  : caseData.name.slice(0, 2).toUpperCase()
-                }
+        {/* ── Top bar fixa ── */}
+        <div style={{ background: "var(--ws-surface)", borderBottom: "1px solid var(--ws-border)", flexShrink: 0, zIndex: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", padding: "10px 16px", gap: 12 }}>
+            {/* DIG. Workspace */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+              <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-1px", color: "var(--ws-text)", lineHeight: 1 }}>
+                DIG<span style={{ color: caseData.color }}>.</span>
+              </div>
+              <div style={{ fontFamily: "Poppins", fontSize: ".52rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--ws-text3)" }}>
+                Workspace
               </div>
             </div>
-            <div style={{ width: 28, height: 1, background: "var(--ws-border)", margin: "4px 0" }} />
-            {CLIENT_TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} title={tab.label}
-                className={`ws-rail-item${activeTab === tab.id ? " active" : ""}`}
-                style={{ fontSize: "1rem" }}
-              >
-                <span className="ws-rail-icon">{tab.icon}</span>
-              </button>
-            ))}
-            <div style={{ flex: 1 }} />
-            <button onClick={() => supabase.auth.signOut()} title="Sair" className="ws-rail-item" style={{ marginBottom: 12 }}>
-              <span style={{ fontSize: ".9rem", color: "var(--ws-text3)" }}>↩</span>
+
+            {/* 3 ícones principais */}
+            <div style={{ display: "flex", gap: 4 }}>
+              {MAIN_TABS.map(tabId => (
+                <button key={tabId} onClick={() => setActiveTab(tabId)} style={{
+                  width: 36, height: 36, borderRadius: 8, border: "none", cursor: "pointer",
+                  background: activeTab === tabId ? `${caseData.color}22` : "none",
+                  color: activeTab === tabId ? caseData.color : "var(--ws-text3)",
+                  fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                  outline: activeTab === tabId ? `2px solid ${caseData.color}44` : "none",
+                  transition: "all .15s",
+                }} title={MAIN_TAB_LABELS[tabId]}>
+                  {MAIN_TAB_ICONS[tabId]}
+                </button>
+              ))}
+            </div>
+
+            {/* Hamburger */}
+            <button onClick={() => setSidebarOpen(p => !p)} style={{
+              width: 36, height: 36, borderRadius: 8, border: "1px solid var(--ws-border2)",
+              background: sidebarOpen ? "var(--ws-surface2)" : "none",
+              cursor: "pointer", display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0,
+            }}>
+              <span style={{ width: 14, height: 1.5, background: "var(--ws-text3)", display: "block", borderRadius: 1 }} />
+              <span style={{ width: 14, height: 1.5, background: "var(--ws-text3)", display: "block", borderRadius: 1 }} />
+              <span style={{ width: 14, height: 1.5, background: "var(--ws-text3)", display: "block", borderRadius: 1 }} />
             </button>
           </div>
-        )}
+        </div>
 
-        {/* Sidebar completa — slide in como overlay */}
+        {/* Dropdown hamburger */}
         {sidebarOpen && (
-          <aside style={{ position: "fixed", top: 0, left: 0, height: "100%", width: 200, flexShrink: 0, borderRight: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", flexDirection: "column", zIndex: 199, boxShadow: "4px 0 24px #00000050" }}>
-            <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid var(--ws-border)", position: "relative" }}>
-              <button onClick={() => setSidebarOpen(false)} style={{ position: "absolute", top: 10, right: 10, background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem" }}>
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              </button>
-              <div style={{ width: 44, height: 44, borderRadius: 10, overflow: "hidden", background: `${caseData.color}22`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10, border: `1px solid ${caseData.color}44` }}>
-                {caseData.logo_url
-                  ? <img src={caseData.logo_url} alt={caseData.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  : <span style={{ color: caseData.color, fontSize: ".9rem", fontWeight: 800 }}>{caseData.name.slice(0, 2).toUpperCase()}</span>
-                }
-              </div>
-              <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: ".88rem", color: "var(--ws-text)", lineHeight: 1.2 }}>{caseData.name}</div>
-              <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>Workspace do cliente</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "8px 0", borderTop: "1px solid var(--ws-border)" }}>
-                <div style={{ width: 28, height: 28, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".7rem", fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>
-                  {profile.avatar_url ? <img src={profile.avatar_url} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : profile.initials}
+          <>
+            <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 49 }} />
+            <div style={{
+              position: "absolute", top: 58, right: 16, zIndex: 50,
+              background: "var(--ws-surface)", border: "1px solid var(--ws-border2)",
+              borderRadius: 12, boxShadow: "0 8px 32px #00000050",
+              minWidth: 200, overflow: "hidden",
+            }}>
+              {/* Info do usuário */}
+              <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--ws-border)", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>
+                  {profile.initials}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: ".78rem", fontWeight: 600, color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{profile.name}</div>
+                  <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{profile.name}</div>
                   <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>cliente</div>
                 </div>
               </div>
-            </div>
-            <nav style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
-              {CLIENT_TABS.map(tab => (
+
+              {/* Tabs extras */}
+              {CLIENT_TABS.filter(t => !MAIN_TABS.includes(t.id)).map(tab => (
                 <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} style={{
-                  display: "flex", alignItems: "center", gap: 8, width: "100%",
-                  background: activeTab === tab.id ? `${caseData.color}18` : "none", border: "none",
-                  borderLeft: activeTab === tab.id ? `2px solid ${caseData.color}` : "2px solid transparent",
+                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                  background: activeTab === tab.id ? `${caseData.color}18` : "none",
+                  borderLeft: activeTab === tab.id ? `3px solid ${caseData.color}` : "3px solid transparent",
+                  border: "none", borderTop: "1px solid var(--ws-border)",
                   color: activeTab === tab.id ? caseData.color : "var(--ws-text2)",
-                  cursor: "pointer", fontSize: ".82rem", padding: "9px 16px",
-                  textAlign: "left", fontFamily: "inherit", transition: "all .15s",
+                  cursor: "pointer", fontSize: ".84rem", padding: "12px 16px",
+                  textAlign: "left", fontFamily: "inherit",
                 }}>
                   <span>{tab.icon}</span><span>{tab.label}</span>
                 </button>
               ))}
-            </nav>
-            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)" }}>
-              <button onClick={() => supabase.auth.signOut()} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".78rem", fontFamily: "inherit", textAlign: "left", padding: "4px 0" }}>↩ Sair</button>
+
+              {/* Tema + Sair */}
+              <div style={{ borderTop: "1px solid var(--ws-border)", padding: "8px 12px", display: "flex", gap: 8 }}>
+                <button onClick={toggleTheme} style={{ flex: 1, background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 8px", fontSize: ".72rem", fontFamily: "Poppins" }}>
+                  {isDark ? "🌙 Escuro" : "☀️ Claro"}
+                </button>
+                <button onClick={() => supabase.auth.signOut()} style={{ flex: 1, background: "none", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "6px 8px", fontSize: ".72rem", fontFamily: "inherit" }}>
+                  ↩ Sair
+                </button>
+              </div>
             </div>
-          </aside>
+          </>
+        )}
+
+        {/* Saudação — só aparece na aba principal */}
+        {isMainTab && activeTab === "calendario" && (
+          <div style={{ padding: "14px 16px 0", flexShrink: 0 }}>
+            <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.2rem", color: "var(--ws-text)" }}>
+              Olá, {firstName}<span style={{ color: caseData.color }}>.</span>
+            </div>
+          </div>
         )}
 
         {/* Conteúdo */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 14px 32px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px 32px", minWidth: 0 }}>
           <TabContent />
         </div>
       </div>
@@ -225,15 +251,14 @@ export default function ClientView({ profile }: Props) {
             <button onClick={() => setSidebarOpen(false)} style={{ position: "absolute", top: 10, right: 10, background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ws-text3)", fontSize: ".75rem" }}>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1L9 9M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
             </button>
-            {/* Logo do case */}
-            <div style={{ width: 44, height: 44, borderRadius: 10, overflow: "hidden", background: `${caseData.color}22`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10, border: `1px solid ${caseData.color}44` }}>
+            {/* Logo do case — banner horizontal */}
+            <div style={{ width: "100%", height: 52, borderRadius: 8, overflow: "hidden", background: caseData.logo_url ? "#000" : `${caseData.color}22`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10, border: `1px solid ${caseData.color}44` }}>
               {caseData.logo_url
-                ? <img src={caseData.logo_url} alt={caseData.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ? <img src={caseData.logo_url} alt={caseData.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                 : <span style={{ color: caseData.color, fontSize: ".9rem", fontWeight: 800 }}>{caseData.name.slice(0, 2).toUpperCase()}</span>
               }
             </div>
             <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: ".88rem", color: "var(--ws-text)", lineHeight: 1.2 }}>{caseData.name}</div>
-            <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>Workspace do cliente</div>
             {/* Avatar do usuário */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "8px 0", borderTop: "1px solid var(--ws-border)" }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".7rem", fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>

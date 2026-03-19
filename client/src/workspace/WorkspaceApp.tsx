@@ -112,6 +112,7 @@ export default function WorkspaceApp() {
         profile={profile}
         open={sidebarOpen}
         onOpenChange={setSidebarOpen}
+        onProfileUpdate={setProfile}
       />
       <main className="ws-main">
         <CurrentPage

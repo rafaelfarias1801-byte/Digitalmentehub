@@ -1,5 +1,6 @@
 // client/src/workspace/components/Sidebar.tsx
 import { useState, useEffect, useRef } from "react";
+import ProfileModal from "./ProfileModal";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import type { PageId } from "../WorkspaceApp";
@@ -10,6 +11,7 @@ interface Props {
   profile: Profile;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onProfileUpdate?: (profile: Profile) => void;
 }
 
 const NAV = [
@@ -55,7 +57,7 @@ function applyTheme(theme: "dark" | "light") {
   try { localStorage.setItem("ws_theme", theme); } catch {}
 }
 
-export default function Sidebar({ currentPage, onNavigate, profile, open: openProp, onOpenChange }: Props) {
+export default function Sidebar({ currentPage, onNavigate, profile, open: openProp, onOpenChange, onProfileUpdate }: Props) {
   const isAdmin = profile.role === "admin";
   const [openInternal, setOpenInternal] = useState(!getIsMobile());
   const open = openProp !== undefined ? openProp : openInternal;
@@ -94,6 +96,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
     applyTheme(next);
   }
 
+  const [profileModal, setProfileModal] = useState(false);
   const isDark = theme === "dark";
   const isMobile = getIsMobile();
 
@@ -120,11 +123,20 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
         </button>
         <div className="ws-brand">DIG<span className="ws-dot">.</span></div>
         <div className="ws-brand-sub">Workspace</div>
-        <div className="ws-user-pill">
-          <div className="ws-avatar">{profile.initials}</div>
+        <div className="ws-user-pill" onClick={() => setProfileModal(true)} title="Editar perfil"
+          style={{ cursor: "pointer", transition: "opacity .15s" }}
+          onMouseEnter={e => { e.currentTarget.style.opacity = ".8"; }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+        >
+          <div className="ws-avatar" style={{ overflow: "hidden" }}>
+            {profile.avatar_url
+              ? <img src={profile.avatar_url} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : profile.initials
+            }
+          </div>
           <div>
             <div className="ws-user-name">{profile.name}</div>
-            <div className="ws-user-role">{profile.role}</div>
+            <div className="ws-user-role">{profile.role} · <span style={{ color: "var(--ws-accent)", fontSize: ".6rem" }}>✏ editar</span></div>
           </div>
         </div>
       </div>
@@ -223,8 +235,13 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
               </svg>
             </button>
 
-            <div className="ws-rail-avatar" title={profile.name}>
-              <div className="ws-avatar">{profile.initials}</div>
+            <div className="ws-rail-avatar" title="Editar perfil" onClick={() => setOpenAndNotify(true)} style={{ cursor: "pointer" }}>
+              <div className="ws-avatar" style={{ overflow: "hidden" }}>
+                {profile.avatar_url
+                  ? <img src={profile.avatar_url} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                  : profile.initials
+                }
+              </div>
             </div>
 
             <div className="ws-rail-divider" />
@@ -301,6 +318,16 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
         >
           {sidebarContent}
         </aside>
+      )}
+      {profileModal && (
+        <ProfileModal
+          profile={profile}
+          onClose={() => setProfileModal(false)}
+          onUpdate={(updated) => {
+            setProfileModal(false);
+            if (onProfileUpdate) onProfileUpdate(updated);
+          }}
+        />
       )}
     </>
   );

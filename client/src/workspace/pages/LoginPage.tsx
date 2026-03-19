@@ -12,12 +12,23 @@ export default function LoginPage({ onLogin }: Props) {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      // Supabase persiste a sessão por padrão — o "manter conectado" controla
+      // se o token é armazenado em localStorage (persistente) ou sessionStorage (sessão)
+      await supabase.auth.signOut(); // limpa sessão anterior
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (!authError && !rememberMe) {
+        // Se não quer manter, remove do localStorage para não persistir
+        try { localStorage.removeItem("sb-" + window.location.hostname + "-auth-token"); } catch {}
+      }
       if (authError) throw authError;
     } catch {
       setError("Email ou senha inválidos.");
@@ -45,6 +56,17 @@ export default function LoginPage({ onLogin }: Props) {
         <input className="ws-input" type="password" value={password}
           onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
         {error && <div className="ws-login-error">{error}</div>}
+        <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={e => setRememberMe(e.target.checked)}
+            style={{ width: 16, height: 16, accentColor: "var(--ws-accent)", cursor: "pointer" }}
+          />
+          <span style={{ fontSize: ".82rem", color: "var(--ws-text2)", fontFamily: "Poppins" }}>
+            Manter conectado
+          </span>
+        </label>
         <button className="ws-login-btn" type="submit" disabled={loading}>
           {loading ? "ENTRANDO..." : "ENTRAR"}
         </button>
