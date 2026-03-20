@@ -13,10 +13,10 @@ interface CalEvent {
   note?: string;
   source?: "google";
   google_event_id?: string;
-  time?: string;       
-  time_end?: string;   
-  meet_link?: string;  
-  attendees?: string;  
+  time?: string;
+  time_end?: string;
+  meet_link?: string;
+  attendees?: string;
 }
 
 interface Props { profile: Profile; }
@@ -50,7 +50,6 @@ export default function Agenda({ profile }: Props) {
   const isMobile                  = useIsMobile();
   const [eventDetail, setEventDetail] = useState<CalEvent | null>(null);
 
-  // Busca inicial de eventos do banco
   const fetchLocalEvents = async () => {
     const { data } = await supabase.from("events").select("*");
     setEvents(data ?? []);
@@ -58,7 +57,6 @@ export default function Agenda({ profile }: Props) {
 
   useEffect(() => {
     fetchLocalEvents();
-    
     if (window.location.search.includes("google_connected=1")) {
       window.history.replaceState({}, "", window.location.pathname);
     }
@@ -73,11 +71,8 @@ export default function Agenda({ profile }: Props) {
       const res = await supabase.functions.invoke("google-calendar/events", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      
       if (res.data?.connected) {
         setGoogleConnected(true);
-        // Após sincronizar com o Google, recarregamos os eventos do banco
-        // pois a Edge Function acabou de dar 'upsert' neles.
         fetchLocalEvents();
       } else if (res.data?.expired) {
         setGoogleConnected(false);
@@ -100,7 +95,6 @@ export default function Agenda({ profile }: Props) {
 
   async function disconnectGoogle() {
     await supabase.from("profiles").update({ google_calendar_token: null }).eq("id", profile.id);
-    // Opcional: deletar eventos do google do banco ao desconectar
     await supabase.from("events").delete().eq("source", "google");
     setGoogleConnected(false);
     fetchLocalEvents();
@@ -114,7 +108,7 @@ export default function Agenda({ profile }: Props) {
   );
   const currDays = Array.from({ length: lastDay.getDate() }, (_, i) => i + 1);
 
-  function eventsOn(ymd: string) { return events.filter(e => e.date === ymd); }
+  function eventsOn(ymd: string) { return events.filter(e => e.date === ymd).sort((a,b) => (a.time || "24:00").localeCompare(b.time || "24:00")); }
 
   function openAdd(ymd: string) {
     setSelected(ymd); setEditing(null); setForm(EMPTY_FORM); setModal(true);
@@ -141,7 +135,7 @@ export default function Agenda({ profile }: Props) {
     await supabase.from("events").delete().eq("id", id);
   }
 
-  const selectedEvents = events.filter(e => e.date === selected);
+  const selectedEvents = events.filter(e => e.date === selected).sort((a,b) => (a.time || "24:00").localeCompare(b.time || "24:00"));
   const selectedDate   = new Date(selected + "T12:00:00");
 
   const CalendarBlock = (
@@ -152,7 +146,8 @@ export default function Agenda({ profile }: Props) {
         <button className="ws-cal-btn" onClick={() => setCal(new Date(cal.getFullYear(), cal.getMonth()+1, 1))}>→</button>
       </div>
 
-      <div className="ws-cal-grid">
+      {/* Ajuste no CSS do grid para acomodar as listas de eventos */}
+      <div className="ws-cal-grid" style={{ gridAutoRows: "minmax(80px, auto)" }}>
         {DAYS_HDR.map(d => <div key={d} className="ws-cal-hdr">{d}</div>)}
         {prevPad.map((d, i) => (
           <div key={`p${i}`} className="ws-cal-day other"><div className="ws-cal-day-num">{d}</div></div>
@@ -164,16 +159,49 @@ export default function Agenda({ profile }: Props) {
           const isSel   = ymd === selected;
           return (
             <div key={d} className={`ws-cal-day ${isToday ? "today" : ""}`}
-              style={{ cursor: "pointer", background: isSel ? "#e91e8c22" : undefined, borderColor: isSel ? "var(--ws-accent)" : undefined }}
+              style={{ cursor: "pointer", background: isSel ? "#e91e8c11" : undefined, borderColor: isSel ? "var(--ws-accent)" : undefined, padding: "4px", display: "flex", flexDirection: "column", alignItems: "stretch" }}
               onClick={() => setSelected(ymd)}
               onDoubleClick={() => openAdd(ymd)}
             >
-              <div className="ws-cal-day-num">{d}</div>
+              <div className="ws-cal-day-num" style={{ alignSelf: "center", marginBottom: "4px" }}>{d}</div>
+              
+              {/* NOVA LISTA DE EVENTOS NO CALENDÁRIO */}
               {dayEvs.length > 0 && (
-                <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
                   {dayEvs.slice(0, 3).map(ev => (
-                    <div key={ev.id} style={{ width: 6, height: 6, borderRadius: "50%", background: TYPE_COLORS[ev.type] }} />
+                    <div 
+                      key={ev.id} 
+                      onClick={(e) => { 
+                        e.stopPropagation(); // Evita que o clique só selecione o dia
+                        setSelected(ymd);
+                        if(ev.source === "google") setEventDetail(ev); 
+                      }}
+                      style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "4px", 
+                        padding: "2px 4px", 
+                        borderRadius: "4px",
+                        background: isSel ? "var(--ws-surface)" : "var(--ws-surface2)",
+                        fontSize: "0.65rem",
+                        color: "var(--ws-text2)",
+                        cursor: ev.source === "google" ? "pointer" : "default",
+                        transition: "background 0.2s"
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ws-surface3)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = isSel ? "var(--ws-surface)" : "var(--ws-surface2)"; }}
+                    >
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: TYPE_COLORS[ev.type], flexShrink: 0 }} />
+                      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {ev.time ? ev.time.replace(":00", "") : ""} {ev.title}
+                      </span>
+                    </div>
                   ))}
+                  {dayEvs.length > 3 && (
+                    <div style={{ fontSize: "0.6rem", color: "var(--ws-text3)", textAlign: "center", marginTop: "2px" }}>
+                      +{dayEvs.length - 3} mais
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -301,7 +329,6 @@ export default function Agenda({ profile }: Props) {
         {CalendarBlock}
         {PanelBlock}
       </div>
-
 
       {/* ── Modal detalhe evento Google ── */}
       {eventDetail && (
