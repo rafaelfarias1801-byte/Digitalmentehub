@@ -21,7 +21,7 @@ function fmt(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export default function Dashboard({ profile }: Props) {
+export default function Dashboard({ profile, onNavigateToPost }: Props & { onNavigateToPost?: (caseId: string, postId: string) => void }) {
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(true);
   const [tasksPending, setTasksPending] = useState(0);
@@ -203,9 +203,8 @@ export default function Dashboard({ profile }: Props) {
               {recentApprovals.map((a, i) => (
                 <div key={i} 
                   onClick={() => {
-  // Aciona a função de navegação interna que criamos no WorkspaceApp
-  if ((props as any).onNavigateToPost) {
-    (props as any).onNavigateToPost(a.caseId, a.postId);
+  if (onNavigateToPost) {
+    onNavigateToPost(a.caseId, a.postId);
   }
 }}
                   style={{ 
