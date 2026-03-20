@@ -35,7 +35,8 @@ export default function Dashboard({ profile }: Props) {
   const [upcomingSum, setUpcomingSum] = useState(0); 
   const [postsThisMonth, setPostsThisMonth] = useState(0);
   const [postsApproved, setPostsApproved] = useState(0);
-  const [recentApprovals, setRecentApprovals] = useState<{ title: string; caseName: string; status: string; date: string }[]>([]);
+  // Adicionamos postId e caseId na tipagem da Atividade para a navegação funcionar
+  const [recentApprovals, setRecentApprovals] = useState<{ title: string; caseName: string; status: string; date: string; postId: string; caseId: string }[]>([]);
   const [nextEvents, setNextEvents] = useState<{ title: string; date: string; type: string }[]>([]);
   const [upcomingFinance, setUpcomingFinance] = useState<{ id: string; amount: number; due_date: string; description: string; caseName: string; overdue: boolean }[]>([]);
 
@@ -99,8 +100,7 @@ export default function Dashboard({ profile }: Props) {
       setPostsThisMonth(monthPosts.length);
       setPostsApproved(monthPosts.filter(p => p.approval_status?.toLowerCase() === "aprovado").length);
 
-      // Atividade real: posts com status alterado OU com comentários
-      type ActivityItem = { title: string; caseName: string; status: string; date: string; ts: string };
+      type ActivityItem = { title: string; caseName: string; status: string; date: string; ts: string; postId: string; caseId: string };
       const activities: ActivityItem[] = [];
 
       for (const p of posts) {
@@ -108,16 +108,17 @@ export default function Dashboard({ profile }: Props) {
         const caseName = caseMap[p.case_id] ?? "—";
         const title = p.slug || p.title || "Post";
 
-        // Post com status diferente de pendente (cliente interagiu)
-        if (status !== "pendente") {
+        // Exclui os que estão pendentes (sem interação) E exclui os "postado" (já foram pra rua)
+        if (status !== "pendente" && status !== "postado") {
           const ts = p.status_changed_at ?? p.rejection_reason_at ?? p.created_at ?? "";
           activities.push({
             title, caseName, status, ts,
             date: ts ? new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
+            postId: p.id,
+            caseId: p.case_id
           });
         }
 
-        // Comentários no post
         const comments: { author: string; created_at: string }[] = Array.isArray(p.comments) ? p.comments : [];
         for (const c of comments) {
           activities.push({
@@ -126,11 +127,12 @@ export default function Dashboard({ profile }: Props) {
             status: "pendente",
             ts: c.created_at ?? "",
             date: c.created_at ? new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
+            postId: p.id,
+            caseId: p.case_id
           });
         }
       }
 
-      // Ordena por timestamp desc, pega os 5 mais recentes
       activities.sort((a, b) => b.ts.localeCompare(a.ts));
       setRecentApprovals(activities.slice(0, 5).map(({ ts: _ts, ...rest }) => rest));
       setNextEvents(events.map(e => ({ title: e.title, date: e.date, type: e.type })));
@@ -197,9 +199,25 @@ export default function Dashboard({ profile }: Props) {
         </div>
         <div className="ws-card">
           <div className="ws-card-title">Atividade dos clientes<span className="ws-badge">recente</span></div>
-          {recentApprovals.length === 0 ? <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Nenhuma atividade ainda.</div> : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {recentApprovals.length === 0 ? <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Nenhuma atividade pendente.</div> : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {recentApprovals.map((a, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "var(--ws-surface2)", borderRadius: 10, borderLeft: `3px solid ${APPROVAL_COLOR[a.status] ?? "#8d97bb"}` }}>
+                <div key={i} 
+                  onClick={() => {
+  // Aciona a função de navegação interna que criamos no WorkspaceApp
+  if ((props as any).onNavigateToPost) {
+    (props as any).onNavigateToPost(a.caseId, a.postId);
+  }
+}}
+                  style={{ 
+                    display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", 
+                    background: "var(--ws-surface2)", borderRadius: 10, 
+                    borderLeft: `3px solid ${APPROVAL_COLOR[a.status] ?? "#8d97bb"}`,
+                    cursor: "pointer", 
+                    transition: "opacity 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: ".84rem", fontWeight: 600, color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{a.title}</div>
                     <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 1 }}>{a.caseName} · {a.date}</div>

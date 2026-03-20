@@ -16,15 +16,7 @@ import Pomodoro from "./components/Pomodoro";
 import ClientView from "./components/ClientView";
 import "./workspace.css";
 
-export type PageId =
-  | "dashboard"
-  | "checklist"
-  | "agenda"
-  | "financeiro"
-  | "cases"
-  | "notas"
-  | "ia"
-  | "pomodoro";
+export type PageId = "dashboard" | "checklist" | "agenda" | "financeiro" | "cases" | "notas" | "ia" | "pomodoro";
 
 const PAGES: Record<PageId, React.ComponentType<any>> = {
   dashboard:  Dashboard,
@@ -54,6 +46,9 @@ export default function WorkspaceApp() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState<PageId>(getSavedPage);
   const [sidebarOpen, setSidebarOpen] = useState(!getIsMobile());
+  
+  // ESTADO NOVO: Guarda o post que deve ser aberto ao navegar
+  const [pendingPost, setPendingPost] = useState<{caseId: string, postId: string} | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -70,11 +65,7 @@ export default function WorkspaceApp() {
   }, []);
 
   async function fetchProfile(userId: string) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
     setProfile(data);
     setLoading(false);
   }
@@ -82,25 +73,19 @@ export default function WorkspaceApp() {
   function navigate(newPage: PageId) {
     localStorage.setItem("ws_page", newPage);
     setPage(newPage);
+    if (newPage !== "cases") setPendingPost(null); // Limpa se sair da tela de clientes
   }
 
-  if (loading) return (
-    <div className="ws-loading">
-      <div className="ws-loading-dot" />
-    </div>
-  );
+  // FUNÇÃO NOVA: Para a Dashboard chamar
+  function navigateToPost(caseId: string, postId: string) {
+    setPendingPost({ caseId, postId });
+    navigate("cases");
+  }
 
+  if (loading) return (<div className="ws-loading"><div className="ws-loading-dot" /></div>);
   if (!profile) return <LoginPage onLogin={setProfile} />;
-
-  if (profile.must_change_password) {
-    return (
-      <ChangePasswordPage onDone={() => setProfile(p => p ? { ...p, must_change_password: false } : p)} />
-    );
-  }
-
-  if (profile.role === "cliente") {
-    return <ClientView profile={profile} />;
-  }
+  if (profile.must_change_password) return <ChangePasswordPage onDone={() => setProfile(p => p ? { ...p, must_change_password: false } : p)} />;
+  if (profile.role === "cliente") return <ClientView profile={profile} />;
 
   const CurrentPage = PAGES[page];
 
@@ -119,6 +104,9 @@ export default function WorkspaceApp() {
           profile={profile}
           onCaseOpen={() => { if (!getIsMobile()) setSidebarOpen(false); }}
           onCaseClose={() => { if (!getIsMobile()) setSidebarOpen(true); }}
+          // PASSA AS FUNÇÕES NOVAS PARA AS TELAS
+          onNavigateToPost={navigateToPost}
+          initialPost={page === "cases" ? pendingPost : null}
         />
       </main>
     </div>

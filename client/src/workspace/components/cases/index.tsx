@@ -1,4 +1,5 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿// client/src/workspace/components/cases/index.tsx
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import CaseModal from "./CaseModal";
 import CaseWorkspace from "./CaseWorkspace";
@@ -9,7 +10,8 @@ import type { Case, CasesProps } from "./types";
 
 const LS_OPEN_CASE = "ws_open_case_id";
 
-export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps & { onCaseOpen?: () => void; onCaseClose?: () => void }) {
+// Adicionamos initialPost nas Props para receber o sinal da Dashboard
+export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }: CasesProps & { onCaseOpen?: () => void; onCaseClose?: () => void; initialPost?: {caseId: string, postId: string} | null }) {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [openCase, setOpenCase] = useState<Case | null>(null);
@@ -21,37 +23,37 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
 
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // EFEITO DE NAVEGAÇÃO AUTOMÁTICA
+  useEffect(() => {
+    if (initialPost && cases.length > 0) {
+      const targetCase = cases.find(c => c.id === initialPost.caseId);
+      if (targetCase) {
+        selectCase(targetCase);
+        // O ID do post é passado para o CaseWorkspace via window event ou prop interna
+        // para ele saber que deve abrir o modal do post assim que carregar.
+        (window as any)._pendingPostId = initialPost.postId;
+      }
+    }
+  }, [initialPost, cases]);
+
   useEffect(() => {
     let mounted = true;
-
     async function loadCases() {
       setLoading(true);
-
-      const { data } = await supabase
-        .from("cases")
-        .select("*")
-        .order("created_at");
-
+      const { data } = await supabase.from("cases").select("*").order("created_at");
       if (mounted) {
         const list = data ?? [];
         setCases(list);
-
-        // Restaura o case aberto se havia um salvo
         const savedId = localStorage.getItem(LS_OPEN_CASE);
         if (savedId) {
           const found = list.find((c) => c.id === savedId);
           if (found) setOpenCase(found);
         }
-
         setLoading(false);
       }
     }
-
     void loadCases();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   function selectCase(caseItem: Case) {
@@ -64,6 +66,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
     localStorage.removeItem(LS_OPEN_CASE);
     setOpenCase(null);
     onCaseClose?.();
+    (window as any)._pendingPostId = null;
   }
 
   function openAdd() {
@@ -72,7 +75,6 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
     setModal(true);
   }
 
-  // AQUI ESTAVA O PROBLEMA! AGORA ELE PUXA TUDO DO BANCO.
   function openEdit(caseItem: Case) {
     setEditing(caseItem);
     setForm({
@@ -98,82 +100,42 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
 
   async function uploadLogo(file: File) {
     setUploading(true);
-
     const ext = file.name.split(".").pop();
     const path = `cases/${Date.now()}.${ext}`;
-
-    const { error } = await supabase.storage
-      .from("assets")
-      .upload(path, file, { upsert: true });
-
+    const { error } = await supabase.storage.from("assets").upload(path, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("assets").getPublicUrl(path);
-
-      setForm((prev) => ({
-        ...prev,
-        logo_url: data.publicUrl,
-      }));
+      setForm((prev) => ({ ...prev, logo_url: data.publicUrl }));
     }
-
     setUploading(false);
   }
 
   async function save() {
     if (!form.name.trim()) return;
-
     setSaving(true);
-
     if (editing) {
-      const { data, error } = await supabase
-        .from("cases")
-        .update(form)
-        .eq("id", editing.id)
-        .select()
-        .single();
-
-      // 👇 SE O SUPABASE RECLAMAR, ELE VAI GRITAR NA TELA AGORA!
+      const { data, error } = await supabase.from("cases").update(form).eq("id", editing.id).select().single();
       if (error) {
         alert("Erro do Supabase ao atualizar: " + error.message);
-        console.error("Erro completo:", error);
       } else if (data) {
-        setCases((prev) =>
-          prev.map((item) => (item.id === editing.id ? data : item))
-        );
-
-        if (openCase?.id === editing.id) {
-          setOpenCase(data);
-        }
+        setCases((prev) => prev.map((item) => (item.id === editing.id ? data : item)));
+        if (openCase?.id === editing.id) setOpenCase(data);
       }
     } else {
-      const { data, error } = await supabase
-        .from("cases")
-        .insert(form)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("cases").insert(form).select().single();
       if (error) {
         alert("Erro do Supabase ao criar: " + error.message);
-        console.error("Erro completo:", error);
       } else if (data) {
         setCases((prev) => [...prev, data]);
       }
     }
-
     setSaving(false);
-    
-    // Só fecha o modal se não deu erro (para você não perder o que digitou)
-    if (!editing || (editing && openCase?.id === editing.id)) {
-       setModal(false);
-    }
+    if (!editing || (editing && openCase?.id === editing.id)) setModal(false);
   }
 
   async function remove(id: string) {
     setCases((prev) => prev.filter((item) => item.id !== id));
-
-    if (openCase?.id === id) {
-      closeCase();
-    }
-
+    if (openCase?.id === id) closeCase();
     await supabase.from("cases").delete().eq("id", id);
   }
 
@@ -186,19 +148,14 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
           onEdit={() => openEdit(openCase)}
           onDelete={() => void remove(openCase.id)}
           profile={profile}
+          // Passamos o ID pendente para o workspace do cliente
+          initialPostId={(window as any)._pendingPostId}
         />
-
         {modal && (
           <CaseModal
-            form={form}
-            setForm={setForm}
-            editing={editing}
-            saving={saving}
-            uploading={uploading}
-            fileRef={fileRef}
-            uploadLogo={uploadLogo}
-            onSave={save}
-            onClose={() => setModal(false)}
+            form={form} setForm={setForm} editing={editing} saving={saving}
+            uploading={uploading} fileRef={fileRef} uploadLogo={uploadLogo}
+            onSave={save} onClose={() => setModal(false)}
           />
         )}
       </>
@@ -208,141 +165,42 @@ export default function Cases({ profile, onCaseOpen, onCaseClose }: CasesProps &
   return (
     <div className="ws-page">
       <CasesGlobalStyle />
-
-      <div className="ws-page-title">
-        Clientes<span className="ws-dot">.</span>
-      </div>
-
-      <div className="ws-page-sub">
-        Clientes ativos e histórico de projetos
-      </div>
-
+      <div className="ws-page-title">Clientes<span className="ws-dot">.</span></div>
+      <div className="ws-page-sub">Clientes ativos e histórico de projetos</div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <button className="ws-btn" onClick={openAdd}>
-          + Novo Cliente
-        </button>
+        <button className="ws-btn" onClick={openAdd}>+ Novo Cliente</button>
       </div>
-
-      {loading ? (
-        <Loader />
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))",
-            gap: 16,
-          }}
-        >
+      {loading ? ( <Loader /> ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
           {cases.map((caseItem) => (
-            <div
-              key={caseItem.id}
-              className="ws-case"
-              style={{ cursor: "pointer" }}
-              onClick={() => selectCase(caseItem)}
-            >
-              <div
-                className="ws-case-thumb"
-                style={{
-                  background: caseItem.logo_url
-                    ? undefined
-                    : `linear-gradient(135deg,${caseItem.color}33,${caseItem.color}11)`,
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
-                {caseItem.logo_url ? (
-                  <img
-                    src={caseItem.logo_url}
-                    alt={caseItem.name}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <span style={{ color: caseItem.color, fontSize: "2rem" }}>
-                    {caseItem.name.slice(0, 2).toUpperCase()}
-                  </span>
+            <div key={caseItem.id} className="ws-case" style={{ cursor: "pointer" }} onClick={() => selectCase(caseItem)}>
+              <div className="ws-case-thumb" style={{ background: caseItem.logo_url ? undefined : `linear-gradient(135deg,${caseItem.color}33,${caseItem.color}11)`, position: "relative", overflow: "hidden" }}>
+                {caseItem.logo_url ? ( <img src={caseItem.logo_url} alt={caseItem.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> ) : (
+                  <span style={{ color: caseItem.color, fontSize: "2rem" }}>{caseItem.name.slice(0, 2).toUpperCase()}</span>
                 )}
-
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 3,
-                    background: caseItem.color,
-                  }}
-                />
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: caseItem.color }} />
               </div>
-
               <div className="ws-case-body">
                 <div className="ws-case-name">{caseItem.name}</div>
-                <div className="ws-case-desc">
-                  {caseItem.description || "—"}
-                </div>
-                <span
-                  className={`ws-case-status ${STATUS_STYLES[caseItem.status]}`}
-                >
-                  {caseItem.status}
-                </span>
+                <div className="ws-case-desc">{caseItem.description || "—"}</div>
+                <span className={`ws-case-status ${STATUS_STYLES[caseItem.status]}`}>{caseItem.status}</span>
               </div>
             </div>
           ))}
-
-          <div
-            onClick={openAdd}
-            style={{
-              background: "transparent",
-              border: "2px dashed var(--ws-border2)",
-              borderRadius: "var(--ws-radius)",
-              minHeight: 180,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "column",
-              gap: 8,
-              cursor: "pointer",
-              color: "var(--ws-text3)",
-              fontSize: ".8rem",
-              transition: "all .15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "var(--ws-accent)";
-              e.currentTarget.style.color = "var(--ws-accent)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--ws-border2)";
-              e.currentTarget.style.color = "var(--ws-text3)";
-            }}
+          <div onClick={openAdd} style={{ background: "transparent", border: "2px dashed var(--ws-border2)", borderRadius: "var(--ws-radius)", minHeight: 180, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8, cursor: "pointer", color: "var(--ws-text3)", fontSize: ".8rem", transition: "all .15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ws-accent)"; e.currentTarget.style.color = "var(--ws-accent)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--ws-border2)"; e.currentTarget.style.color = "var(--ws-text3)"; }}
           >
             <div style={{ fontSize: "1.6rem" }}>+</div>
-            <div
-              style={{
-                fontFamily: "Poppins",
-                fontSize: ".62rem",
-                letterSpacing: "1px",
-              }}
-            >
-              NOVO CLIENTE
-            </div>
+            <div style={{ fontFamily: "Poppins", fontSize: ".62rem", letterSpacing: "1px" }}>NOVO CLIENTE</div>
           </div>
         </div>
       )}
-
       {modal && (
         <CaseModal
-          form={form}
-          setForm={setForm}
-          editing={editing}
-          saving={saving}
-          uploading={uploading}
-          fileRef={fileRef}
-          uploadLogo={uploadLogo}
-          onSave={save}
-          onClose={() => setModal(false)}
+          form={form} setForm={setForm} editing={editing} saving={saving}
+          uploading={uploading} fileRef={fileRef} uploadLogo={uploadLogo}
+          onSave={save} onClose={() => setModal(false)}
         />
       )}
     </div>

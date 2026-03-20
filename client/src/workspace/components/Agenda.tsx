@@ -50,6 +50,11 @@ export default function Agenda({ profile }: Props) {
   const isMobile                  = useIsMobile();
   const [eventDetail, setEventDetail] = useState<CalEvent | null>(null);
 
+  // Variáveis de tempo real para ocultar eventos passados
+  const today = toYMD(new Date());
+  const now = new Date();
+  const currentHourMin = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
   const fetchLocalEvents = async () => {
     const { data } = await supabase.from("events").select("*");
     setEvents(data ?? []);
@@ -100,7 +105,6 @@ export default function Agenda({ profile }: Props) {
     fetchLocalEvents();
   }
 
-  const today    = toYMD(new Date());
   const firstDay = new Date(cal.getFullYear(), cal.getMonth(), 1);
   const lastDay  = new Date(cal.getFullYear(), cal.getMonth()+1, 0);
   const prevPad  = Array.from({ length: firstDay.getDay() }, (_, i) =>
@@ -138,6 +142,19 @@ export default function Agenda({ profile }: Props) {
   const selectedEvents = events.filter(e => e.date === selected).sort((a,b) => (a.time || "24:00").localeCompare(b.time || "24:00"));
   const selectedDate   = new Date(selected + "T12:00:00");
 
+  // Filtra apenas eventos que ainda vão acontecer (futuros)
+  const upcomingEvents = events.filter(e => {
+    if (e.date > today) return true;
+    if (e.date === today) {
+      const endTime = e.time_end || e.time || "23:59";
+      return endTime >= currentHourMin;
+    }
+    return false;
+  }).sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.time || "24:00").localeCompare(b.time || "24:00");
+  }).slice(0, 5);
+
   const CalendarBlock = (
     <div className="ws-card">
       <div className="ws-cal-nav">
@@ -164,35 +181,39 @@ export default function Agenda({ profile }: Props) {
             >
               <div className="ws-cal-day-num">{d}</div>
               
-              {/* Eventos em blocos estilo Google Agenda (com travas para não quebrar o layout) */}
               {dayEvs.length > 0 && (
                 <div style={{ width: "100%", marginTop: 2, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                  {dayEvs.slice(0, 3).map(ev => (
-                    <div 
-                      key={ev.id} 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        setSelected(ymd);
-                        if(ev.source === "google") setEventDetail(ev); 
-                      }}
-                      style={{ 
-                        fontSize: "0.55rem",
-                        color: "var(--ws-text)",
-                        background: TYPE_COLORS[ev.type] + "22",
-                        borderLeft: `2px solid ${TYPE_COLORS[ev.type]}`,
-                        padding: "2px 4px",
-                        borderRadius: "2px",
-                        whiteSpace: "nowrap", 
-                        overflow: "hidden", 
-                        textOverflow: "ellipsis",
-                        cursor: ev.source === "google" ? "pointer" : "default",
-                        boxSizing: "border-box"
-                      }}
-                      title={ev.title} // Dica de ferramenta: mostra o nome completo se o mouse ficar em cima
-                    >
-                      <strong style={{ opacity: 0.8 }}>{ev.time ? ev.time.replace(":00", "") : ""}</strong> {ev.title}
-                    </div>
-                  ))}
+                  {dayEvs.slice(0, 3).map(ev => {
+                    const isPast = ev.date < today || (ev.date === today && (ev.time_end || ev.time || "23:59") < currentHourMin);
+                    return (
+                      <div 
+                        key={ev.id} 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setSelected(ymd);
+                          if(ev.source === "google") setEventDetail(ev); 
+                        }}
+                        style={{ 
+                          fontSize: "0.55rem",
+                          color: "var(--ws-text)",
+                          background: TYPE_COLORS[ev.type] + "22",
+                          borderLeft: `2px solid ${TYPE_COLORS[ev.type]}`,
+                          padding: "2px 4px",
+                          borderRadius: "2px",
+                          whiteSpace: "nowrap", 
+                          overflow: "hidden", 
+                          textOverflow: "ellipsis",
+                          cursor: ev.source === "google" ? "pointer" : "default",
+                          boxSizing: "border-box",
+                          opacity: isPast ? 0.4 : 1, // UX: Deixa apagadinho se já passou
+                          textDecoration: isPast ? "line-through" : "none" // UX: Riscado se já passou
+                        }}
+                        title={ev.title}
+                      >
+                        <strong style={{ opacity: 0.8 }}>{ev.time ? ev.time.replace(":00", "") : ""}</strong> {ev.title}
+                      </div>
+                    )
+                  })}
                   {dayEvs.length > 3 && (
                     <div style={{ fontSize: "0.55rem", color: "var(--ws-text3)", textAlign: "center", marginTop: 1 }}>
                       +{dayEvs.length - 3}
@@ -236,53 +257,56 @@ export default function Agenda({ profile }: Props) {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {selectedEvents.map(ev => (
-              <div key={ev.id}
-                onClick={() => ev.source === "google" && setEventDetail(ev)}
-                style={{ background: "var(--ws-surface2)", borderRadius: "var(--ws-radius-sm)", padding: "12px 14px", borderLeft: `3px solid ${TYPE_COLORS[ev.type]}`, cursor: ev.source === "google" ? "pointer" : "default", transition: "opacity .15s" }}
-                onMouseEnter={e => { if (ev.source === "google") e.currentTarget.style.opacity = ".85"; }}
-                onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
-              >
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: ".87rem", fontWeight: 600, color: "var(--ws-text)", marginBottom: 4 }}>{ev.title}</div>
-                    <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "Poppins", fontSize: ".55rem", letterSpacing: "1px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: TYPE_COLORS[ev.type] + "22", color: TYPE_COLORS[ev.type] }}>{TYPE_LABELS[ev.type]}</span>
-                      {ev.source === "google" && (
-                        <span style={{ fontFamily: "Poppins", fontSize: ".55rem", padding: "2px 7px", borderRadius: 4, background: "#4285f422", color: "#4285f4", fontWeight: 600 }}>🗓 Google</span>
-                      )}
-                      {ev.time && <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>🕐 {ev.time}{ev.time_end ? ` – ${ev.time_end}` : ""}</span>}
-                      {ev.client && ev.client !== "—" && <span style={{ fontSize: ".72rem", color: "var(--ws-text3)" }}>{ev.client}</span>}
+            {selectedEvents.map(ev => {
+              const isPast = ev.date < today || (ev.date === today && (ev.time_end || ev.time || "23:59") < currentHourMin);
+              return (
+                <div key={ev.id}
+                  onClick={() => ev.source === "google" && setEventDetail(ev)}
+                  style={{ background: "var(--ws-surface2)", borderRadius: "var(--ws-radius-sm)", padding: "12px 14px", borderLeft: `3px solid ${TYPE_COLORS[ev.type]}`, cursor: ev.source === "google" ? "pointer" : "default", transition: "opacity .15s", opacity: isPast ? 0.5 : 1 }}
+                  onMouseEnter={e => { if (ev.source === "google") e.currentTarget.style.opacity = isPast ? "0.7" : "0.85"; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = isPast ? "0.5" : "1"; }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: ".87rem", fontWeight: 600, color: "var(--ws-text)", marginBottom: 4, textDecoration: isPast ? "line-through" : "none" }}>{ev.title}</div>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                        <span style={{ fontFamily: "Poppins", fontSize: ".55rem", letterSpacing: "1px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: TYPE_COLORS[ev.type] + "22", color: TYPE_COLORS[ev.type] }}>{TYPE_LABELS[ev.type]}</span>
+                        {ev.source === "google" && (
+                          <span style={{ fontFamily: "Poppins", fontSize: ".55rem", padding: "2px 7px", borderRadius: 4, background: "#4285f422", color: "#4285f4", fontWeight: 600 }}>🗓 Google</span>
+                        )}
+                        {ev.time && <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>🕐 {ev.time}{ev.time_end ? ` – ${ev.time_end}` : ""}</span>}
+                        {ev.client && ev.client !== "—" && <span style={{ fontSize: ".72rem", color: "var(--ws-text3)" }}>{ev.client}</span>}
+                      </div>
+                      {ev.meet_link && <div style={{ fontSize: ".72rem", color: "#4285f4", marginTop: 4, fontFamily: "Poppins" }}>📹 Google Meet</div>}
+                      {ev.note && !ev.meet_link && <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 6 }}>{ev.note}</div>}
                     </div>
-                    {ev.meet_link && <div style={{ fontSize: ".72rem", color: "#4285f4", marginTop: 4, fontFamily: "Poppins" }}>📹 Google Meet</div>}
-                    {ev.note && !ev.meet_link && <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 6 }}>{ev.note}</div>}
-                  </div>
-                  <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                    {!ev.source && <button onClick={e => { e.stopPropagation(); openEdit(ev); }} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>✎</button>}
-                    {!ev.source && <button onClick={e => { e.stopPropagation(); deleteEvent(ev.id); }} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>×</button>}
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      {!ev.source && <button onClick={e => { e.stopPropagation(); openEdit(ev); }} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>✎</button>}
+                      {!ev.source && <button onClick={e => { e.stopPropagation(); deleteEvent(ev.id); }} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>×</button>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
       <div className="ws-card">
         <div className="ws-card-title" style={{ marginBottom: 12 }}>Próximos eventos</div>
-        {events.filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5).map(ev => (
+        {upcomingEvents.map(ev => (
           <div key={ev.id} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--ws-border)", cursor: "pointer" }}
             onClick={() => { setSelected(ev.date); setCal(new Date(ev.date + "T12:00:00")); }}>
             <div style={{ width: 3, height: 32, borderRadius: 2, background: TYPE_COLORS[ev.type], flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: ".82rem", color: "var(--ws-text)" }}>{ev.title}</div>
               <div style={{ fontFamily: "Poppins", fontSize: ".58rem", color: "var(--ws-accent)", marginTop: 2 }}>
-                {new Date(ev.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).toUpperCase()}
+                {new Date(ev.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).toUpperCase()} {ev.time ? `• ${ev.time}` : ""}
               </div>
             </div>
           </div>
         ))}
-        {events.filter(e => e.date >= today).length === 0 && <div style={{ color: "var(--ws-text3)", fontSize: ".8rem" }}>Nenhum evento próximo.</div>}
+        {upcomingEvents.length === 0 && <div style={{ color: "var(--ws-text3)", fontSize: ".8rem" }}>Nenhum evento próximo.</div>}
       </div>
     </div>
   );
