@@ -146,8 +146,7 @@ export default function Agenda({ profile }: Props) {
         <button className="ws-cal-btn" onClick={() => setCal(new Date(cal.getFullYear(), cal.getMonth()+1, 1))}>→</button>
       </div>
 
-      {/* Ajuste no CSS do grid para acomodar as listas de eventos */}
-      <div className="ws-cal-grid" style={{ gridAutoRows: "minmax(80px, auto)" }}>
+      <div className="ws-cal-grid">
         {DAYS_HDR.map(d => <div key={d} className="ws-cal-hdr">{d}</div>)}
         {prevPad.map((d, i) => (
           <div key={`p${i}`} className="ws-cal-day other"><div className="ws-cal-day-num">{d}</div></div>
@@ -159,47 +158,42 @@ export default function Agenda({ profile }: Props) {
           const isSel   = ymd === selected;
           return (
             <div key={d} className={`ws-cal-day ${isToday ? "today" : ""}`}
-              style={{ cursor: "pointer", background: isSel ? "#e91e8c11" : undefined, borderColor: isSel ? "var(--ws-accent)" : undefined, padding: "4px", display: "flex", flexDirection: "column", alignItems: "stretch" }}
+              style={{ cursor: "pointer", background: isSel ? "#e91e8c22" : undefined, borderColor: isSel ? "var(--ws-accent)" : undefined }}
               onClick={() => setSelected(ymd)}
               onDoubleClick={() => openAdd(ymd)}
             >
-              <div className="ws-cal-day-num" style={{ alignSelf: "center", marginBottom: "4px" }}>{d}</div>
+              <div className="ws-cal-day-num">{d}</div>
               
-              {/* NOVA LISTA DE EVENTOS NO CALENDÁRIO */}
+              {/* Eventos em formato de texto compacto (sem alterar altura do grid) */}
               {dayEvs.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 1, width: "100%", marginTop: 4, overflow: "hidden" }}>
                   {dayEvs.slice(0, 3).map(ev => (
                     <div 
                       key={ev.id} 
                       onClick={(e) => { 
-                        e.stopPropagation(); // Evita que o clique só selecione o dia
+                        e.stopPropagation(); 
                         setSelected(ymd);
                         if(ev.source === "google") setEventDetail(ev); 
                       }}
                       style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        gap: "4px", 
-                        padding: "2px 4px", 
-                        borderRadius: "4px",
-                        background: isSel ? "var(--ws-surface)" : "var(--ws-surface2)",
-                        fontSize: "0.65rem",
-                        color: "var(--ws-text2)",
+                        fontSize: "0.58rem",
+                        color: "var(--ws-text)",
+                        whiteSpace: "nowrap", 
+                        overflow: "hidden", 
+                        textOverflow: "ellipsis",
                         cursor: ev.source === "google" ? "pointer" : "default",
-                        transition: "background 0.2s"
+                        padding: "1px 3px",
+                        borderRadius: 3
                       }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ws-surface3)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = isSel ? "var(--ws-surface)" : "var(--ws-surface2)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                     >
-                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: TYPE_COLORS[ev.type], flexShrink: 0 }} />
-                      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {ev.time ? ev.time.replace(":00", "") : ""} {ev.title}
-                      </span>
+                      {ev.time ? ev.time.replace(":00", "") : ""} {ev.title}
                     </div>
                   ))}
                   {dayEvs.length > 3 && (
-                    <div style={{ fontSize: "0.6rem", color: "var(--ws-text3)", textAlign: "center", marginTop: "2px" }}>
-                      +{dayEvs.length - 3} mais
+                    <div style={{ fontSize: "0.55rem", color: "var(--ws-text3)", textAlign: "center", marginTop: 2 }}>
+                      +{dayEvs.length - 3}
                     </div>
                   )}
                 </div>
