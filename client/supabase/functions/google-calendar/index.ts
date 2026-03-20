@@ -132,13 +132,17 @@ serve(async (req) => {
 
     const gcal = await gcalRes.json();
     const events = (gcal.items ?? []).map((item: any) => ({
-      id:     `gcal_${item.id}`,
-      title:  item.summary ?? "(Sem título)",
-      date:   (item.start?.date ?? item.start?.dateTime ?? "").slice(0, 10),
-      type:   "reuniao" as const,
-      note:   item.description ?? item.location ?? "",
-      source: "google",
-    }));
+  id:        `gcal_${item.id}`,
+  title:     item.summary ?? "(Sem título)",
+  date:      (item.start?.date ?? item.start?.dateTime ?? "").slice(0, 10),
+  type:      "reuniao" as const,
+  note:      item.description ?? item.location ?? "",
+  source:    "google",
+  time:      item.start?.dateTime ? new Date(item.start.dateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : undefined,
+  time_end:  item.end?.dateTime ? new Date(item.end.dateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : undefined,
+  meet_link: item.hangoutLink ?? undefined,
+  attendees: item.attendees ? item.attendees.map((a: any) => a.displayName ?? a.email).join(", ") : undefined,
+}));
 
     return new Response(JSON.stringify({ events, connected: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

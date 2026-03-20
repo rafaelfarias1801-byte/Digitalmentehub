@@ -11,7 +11,11 @@ interface CalEvent {
   type: "reuniao" | "prazo" | "pagamento" | "pessoal";
   client?: string;
   note?: string;
-  source?: "google"; // eventos vindos do Google Calendar
+  source?: "google";
+  time?: string;       // horário ex: "14:00"
+  time_end?: string;   // fim ex: "14:45"
+  meet_link?: string;  // link Google Meet
+  attendees?: string;  // participantes
 }
 
 interface Props { profile: Profile; }
@@ -44,6 +48,7 @@ export default function Agenda({ profile }: Props) {
   const [form, setForm]           = useState(EMPTY_FORM);
   const [saving, setSaving]       = useState(false);
   const isMobile                  = useIsMobile();
+  const [eventDetail, setEventDetail] = useState<CalEvent | null>(null);
 
   useEffect(() => {
     supabase.from("events").select("*").then(({ data }) => setEvents(data ?? []));
@@ -61,15 +66,13 @@ export default function Agenda({ profile }: Props) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch(
-        "https://nznyzjvtmqfcjkogkfju.supabase.co/functions/v1/google-calendar/events",
-        { headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" } }
-      );
-      const data = await res.json();
-      if (data?.connected) {
+      const res = await supabase.functions.invoke("google-calendar/events", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.data?.connected) {
         setGoogleConnected(true);
-        setGoogleEvents(data.events ?? []);
-      } else {
+        setGoogleEvents(res.data.events ?? []);
+      } else if (res.data?.expired) {
         setGoogleConnected(false);
         setGoogleEvents([]);
       }
@@ -83,16 +86,10 @@ export default function Agenda({ profile }: Props) {
   async function connectGoogle() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    const res = await fetch(
-      "https://nznyzjvtmqfcjkogkfju.supabase.co/functions/v1/google-calendar/auth-url",
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bnl6anZ0bXFmY2prb2drZmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTAzMTAsImV4cCI6MjA4ODkyNjMxMH0.NLf83n9WS3v-e0u_H3WvHGvEgOq1xMgpCP1m7C8LFIY`, "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: session.user.id }),
-      }
-    );
-    const data = await res.json();
-    if (data?.url) window.location.href = data.url;
+    const res = await supabase.functions.invoke("google-calendar/auth-url", {
+      body: { user_id: session.user.id },
+    });
+    if (res.data?.url) window.location.href = res.data.url;
   }
 
   async function disconnectGoogle() {
@@ -209,7 +206,12 @@ export default function Agenda({ profile }: Props) {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {selectedEvents.map(ev => (
-              <div key={ev.id} style={{ background: "var(--ws-surface2)", borderRadius: "var(--ws-radius-sm)", padding: "12px 14px", borderLeft: `3px solid ${TYPE_COLORS[ev.type]}` }}>
+              <div key={ev.id}
+                onClick={() => ev.source === "google" && setEventDetail(ev)}
+                style={{ background: "var(--ws-surface2)", borderRadius: "var(--ws-radius-sm)", padding: "12px 14px", borderLeft: `3px solid ${TYPE_COLORS[ev.type]}`, cursor: ev.source === "google" ? "pointer" : "default", transition: "opacity .15s" }}
+                onMouseEnter={e => { if (ev.source === "google") e.currentTarget.style.opacity = ".85"; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+              >
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: ".87rem", fontWeight: 600, color: "var(--ws-text)", marginBottom: 4 }}>{ev.title}</div>
@@ -218,13 +220,15 @@ export default function Agenda({ profile }: Props) {
                       {ev.source === "google" && (
                         <span style={{ fontFamily: "Poppins", fontSize: ".55rem", padding: "2px 7px", borderRadius: 4, background: "#4285f422", color: "#4285f4", fontWeight: 600 }}>🗓 Google</span>
                       )}
+                      {ev.time && <span style={{ fontFamily: "Poppins", fontSize: ".65rem", color: "var(--ws-text3)" }}>🕐 {ev.time}{ev.time_end ? ` – ${ev.time_end}` : ""}</span>}
                       {ev.client && ev.client !== "—" && <span style={{ fontSize: ".72rem", color: "var(--ws-text3)" }}>{ev.client}</span>}
                     </div>
-                    {ev.note && <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 6 }}>{ev.note}</div>}
+                    {ev.meet_link && <div style={{ fontSize: ".72rem", color: "#4285f4", marginTop: 4, fontFamily: "Poppins" }}>📹 Google Meet</div>}
+                    {ev.note && !ev.meet_link && <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 6 }}>{ev.note}</div>}
                   </div>
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                    {!ev.source && <button onClick={() => openEdit(ev)} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>✎</button>}
-                    {!ev.source && <button onClick={() => deleteEvent(ev.id)} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>×</button>}
+                    {!ev.source && <button onClick={e => { e.stopPropagation(); openEdit(ev); }} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>✎</button>}
+                    {!ev.source && <button onClick={e => { e.stopPropagation(); deleteEvent(ev.id); }} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>×</button>}
                   </div>
                 </div>
               </div>
@@ -292,6 +296,77 @@ export default function Agenda({ profile }: Props) {
         {PanelBlock}
       </div>
 
+
+      {/* ── Modal detalhe evento Google ── */}
+      {eventDetail && (
+        <div style={{ position: "fixed", inset: 0, background: "#00000080", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}
+          onClick={e => e.target === e.currentTarget && setEventDetail(null)}>
+          <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border2)", borderRadius: 20, padding: "32px 36px", width: "100%", maxWidth: 420, boxShadow: "0 30px 80px #00000060" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 20 }}>
+              <div>
+                <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)", lineHeight: 1.3, marginBottom: 6 }}>{eventDetail.title}</div>
+                <span style={{ fontFamily: "Poppins", fontSize: ".6rem", padding: "2px 8px", borderRadius: 4, background: "#4285f422", color: "#4285f4", fontWeight: 600 }}>🗓 Google Agenda</span>
+              </div>
+              <button onClick={() => setEventDetail(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem", flexShrink: 0 }}>×</button>
+            </div>
+
+            {/* Data e hora */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "var(--ws-surface2)", borderRadius: 10, marginBottom: 12 }}>
+              <span style={{ fontSize: "1.2rem" }}>📅</span>
+              <div>
+                <div style={{ fontSize: ".85rem", fontWeight: 600, color: "var(--ws-text)" }}>
+                  {new Date(eventDetail.date + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+                </div>
+                {eventDetail.time && (
+                  <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
+                    {eventDetail.time}{eventDetail.time_end ? ` – ${eventDetail.time_end}` : ""}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Link Meet */}
+            {eventDetail.meet_link && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 6, letterSpacing: "1px", textTransform: "uppercase" }}>Link da reunião</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "var(--ws-surface2)", borderRadius: 10, border: "1px solid #4285f433" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📹</span>
+                  <div style={{ flex: 1, fontSize: ".8rem", color: "#4285f4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{eventDetail.meet_link}</div>
+                  <button onClick={() => { navigator.clipboard.writeText(eventDetail.meet_link!); }}
+                    style={{ background: "#4285f4", border: "none", borderRadius: 6, color: "#fff", cursor: "pointer", padding: "5px 10px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 600, flexShrink: 0 }}>
+                    Copiar
+                  </button>
+                </div>
+                <a href={eventDetail.meet_link} target="_blank" rel="noreferrer"
+                  style={{ display: "block", marginTop: 8, textAlign: "center", background: "#4285f4", color: "#fff", borderRadius: 10, padding: "10px 0", fontSize: ".82rem", fontWeight: 700, textDecoration: "none", fontFamily: "Poppins" }}>
+                  Entrar na reunião
+                </a>
+              </div>
+            )}
+
+            {/* Participantes */}
+            {eventDetail.attendees && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 6, letterSpacing: "1px", textTransform: "uppercase" }}>Participantes</div>
+                <div style={{ fontSize: ".8rem", color: "var(--ws-text2)", padding: "10px 14px", background: "var(--ws-surface2)", borderRadius: 10, lineHeight: 1.6 }}>
+                  {eventDetail.attendees}
+                </div>
+              </div>
+            )}
+
+            {/* Observação */}
+            {eventDetail.note && (
+              <div>
+                <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 6, letterSpacing: "1px", textTransform: "uppercase" }}>Observação</div>
+                <div style={{ fontSize: ".8rem", color: "var(--ws-text2)", padding: "10px 14px", background: "var(--ws-surface2)", borderRadius: 10, lineHeight: 1.6 }}>
+                  {eventDetail.note}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {modal && (
         <div style={{ position: "fixed", inset: 0, background: "#00000080", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}
           onClick={(e) => e.target === e.currentTarget && setModal(false)}>
