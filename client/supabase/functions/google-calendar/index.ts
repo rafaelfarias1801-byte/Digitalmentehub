@@ -61,7 +61,7 @@ serve(async (req) => {
     return Response.redirect(`${appUrl}?google_connected=1`, 302);
   }
 
-  // ── EVENTS (Busca e Salva no Banco) ──
+  // ── EVENTS (Sincronização Manual pelo Frontend) ──
   if (path === "events") {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
@@ -112,13 +112,12 @@ serve(async (req) => {
 
       return {
         google_event_id: item.id,
-        profile_id: user.id, // VINCULA O EVENTO AO USUÁRIO
+        profile_id: user.id,
         title: item.summary ?? "(Sem título)",
         date: (item.start?.date ?? startDateTime ?? "").slice(0, 10),
         type: "reuniao",
         note: item.description ?? item.location ?? "",
         source: "google",
-        // CORREÇÃO DO FUSO HORÁRIO:
         time: startDateTime ? new Date(startDateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : undefined,
         time_end: endDateTime ? new Date(endDateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : undefined,
         meet_link: item.hangoutLink ?? undefined,
@@ -126,20 +125,89 @@ serve(async (req) => {
       };
     });
 
-    // SALVA NO SUPABASE (UPSERT) COM TRATAMENTO DE ERRO
     if (events.length > 0) {
-      const { error: upsertError } = await supabase
-        .from("events")
-        .upsert(events, { onConflict: "google_event_id" });
-        
-      if (upsertError) {
-        console.error("Erro no Upsert do Supabase:", upsertError);
-      } else {
-        console.log(`${events.length} eventos sincronizados com sucesso.`);
-      }
+      await supabase.from("events").upsert(events, { onConflict: "google_event_id" });
     }
 
     return new Response(JSON.stringify({ events, connected: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ── SYNC-ALL (O "Webhook" do Robô do Supabase) ──
+  if (path === "sync-all") {
+    // Segurança máxima: Exige a chave mestra (Service Role Key) para rodar
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader !== `Bearer ${SUPABASE_SERVICE_KEY}`) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    
+    // Busca todos os membros da agência que conectaram o Google Agenda
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, google_calendar_token")
+      .not("google_calendar_token", "is", null);
+
+    if (!profiles || profiles.length === 0) {
+      return new Response(JSON.stringify({ message: "Nenhuma agenda conectada." }), { headers: corsHeaders });
+    }
+
+    let totalSaved = 0;
+    const now = new Date().toISOString();
+    const in60 = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Loop que atualiza a agenda de cada um
+    for (const profile of profiles) {
+      try {
+        const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            refresh_token: profile.google_calendar_token,
+            client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
+            grant_type: "refresh_token",
+          }),
+        });
+
+        const refreshed = await refreshRes.json();
+        if (!refreshed.access_token) continue; // Pula se o token estiver inválido
+
+        const gcalRes = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${now}&timeMax=${in60}&singleEvents=true&orderBy=startTime&maxResults=50`,
+          { headers: { Authorization: `Bearer ${refreshed.access_token}` } }
+        );
+
+        const gcal = await gcalRes.json();
+        const eventsToUpsert = (gcal.items ?? []).map((item: any) => {
+          const startDateTime = item.start?.dateTime;
+          const endDateTime = item.end?.dateTime;
+          return {
+            google_event_id: item.id,
+            profile_id: profile.id, // Vincula certinho a quem pertence
+            title: item.summary ?? "(Sem título)",
+            date: (item.start?.date ?? startDateTime ?? "").slice(0, 10),
+            type: "reuniao",
+            note: item.description ?? item.location ?? "",
+            source: "google",
+            time: startDateTime ? new Date(startDateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : undefined,
+            time_end: endDateTime ? new Date(endDateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : undefined,
+            meet_link: item.hangoutLink ?? undefined,
+            attendees: item.attendees ? item.attendees.map((a: any) => a.displayName ?? a.email).join(", ") : undefined,
+          };
+        });
+
+        if (eventsToUpsert.length > 0) {
+          await supabase.from("events").upsert(eventsToUpsert, { onConflict: "google_event_id" });
+          totalSaved += eventsToUpsert.length;
+        }
+      } catch (err) {
+        console.error(`Erro no sync do perfil ${profile.id}:`, err);
+      }
+    }
+
+    return new Response(JSON.stringify({ message: "Sincronização em lote concluída!", total: totalSaved }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
