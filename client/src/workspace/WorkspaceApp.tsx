@@ -1,5 +1,5 @@
 // client/src/workspace/WorkspaceApp.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { Profile } from "../lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
@@ -37,76 +37,102 @@ function getSavedPage(): PageId {
   return "dashboard";
 }
 
-function getIsMobile() {
-  return typeof window !== "undefined" && window.innerWidth < 768;
-}
-
 export default function WorkspaceApp() {
+  const [page, setPage] = useState<PageId>(getSavedPage);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState<PageId>(getSavedPage);
-  const [sidebarOpen, setSidebarOpen] = useState(!getIsMobile());
-  
-  // ESTADO NOVO: Guarda o post que deve ser aberto ao navegar
-  const [pendingPost, setPendingPost] = useState<{caseId: string, postId: string} | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [pendingPost, setPendingPost] = useState<{ caseId: string, postId: string } | null>(null);
+
+  // --- LÓGICA GLOBAL DO POMODORO ---
+  const [pomoMode, setPomoMode] = useState<"focus" | "short" | "long">("focus");
+  const [pomoSecs, setPomoSecs] = useState(25 * 60);
+  const [pomoRunning, setPomoRunning] = useState(false);
+  const [pomoSessions, setPomoSessions] = useState([false, false, false, false]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const notify = () => {
+    // Som de alerta
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = 440; gain.gain.value = 0.1;
+    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+
+    // Notificação de Sistema (Windows/Mac)
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Digitalmente Hub", { 
+        body: pomoMode === "focus" ? "Foco encerrado! Hora de uma pausa. ☕" : "Pausa encerrada! Vamos focar? 🚀" 
+      });
+    }
+  };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) fetchProfile(session.user.id);
-      else setLoading(false);
-    });
+    if (pomoRunning) {
+      timerRef.current = setInterval(() => {
+        setPomoSecs(s => {
+          if (s <= 1) {
+            clearInterval(timerRef.current!);
+            setPomoRunning(false);
+            notify();
+            if (pomoMode === "focus") {
+              setPomoSessions(prev => {
+                const next = [...prev];
+                const i = next.findIndex(v => !v);
+                if (i !== -1) next[i] = true;
+                return next;
+              });
+            }
+            return s;
+          }
+          return s - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [pomoRunning, pomoMode]);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+  // Resto da lógica de inicialização...
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) fetchProfile(session.user.id);
       else { setProfile(null); setLoading(false); }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
   async function fetchProfile(userId: string) {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    setProfile(data);
-    setLoading(false);
+    setProfile(data); setLoading(false);
   }
 
   function navigate(newPage: PageId) {
     localStorage.setItem("ws_page", newPage);
     setPage(newPage);
-    if (newPage !== "cases") setPendingPost(null); // Limpa se sair da tela de clientes
   }
 
-  // FUNÇÃO NOVA: Para a Dashboard chamar
-  function navigateToPost(caseId: string, postId: string) {
-    setPendingPost({ caseId, postId });
-    navigate("cases");
-  }
-
-  if (loading) return (<div className="ws-loading"><div className="ws-loading-dot" /></div>);
+  if (loading) return <div className="ws-loading"><div className="ws-loading-dot" /></div>;
   if (!profile) return <LoginPage onLogin={setProfile} />;
-  if (profile.must_change_password) return <ChangePasswordPage onDone={() => setProfile(p => p ? { ...p, must_change_password: false } : p)} />;
   if (profile.role === "cliente") return <ClientView profile={profile} />;
 
   const CurrentPage = PAGES[page];
 
   return (
     <div className="ws-layout">
-      <Sidebar
-        currentPage={page}
-        onNavigate={navigate}
-        profile={profile}
-        open={sidebarOpen}
-        onOpenChange={setSidebarOpen}
-        onProfileUpdate={setProfile}
-      />
+      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} open={sidebarOpen} onOpenChange={setSidebarOpen} onProfileUpdate={setProfile} />
       <main className="ws-main">
         <CurrentPage
           profile={profile}
-          onCaseOpen={() => { if (!getIsMobile()) setSidebarOpen(false); }}
-          onCaseClose={() => { if (!getIsMobile()) setSidebarOpen(true); }}
-          // PASSA AS FUNÇÕES NOVAS PARA AS TELAS
-          onNavigateToPost={navigateToPost}
-          initialPost={page === "cases" ? pendingPost : null}
+          onCaseOpen={() => setSidebarOpen(false)}
+          onCaseClose={() => setSidebarOpen(true)}
+          onNavigateToPost={(caseId: string, postId: string) => { setPendingPost({ caseId, postId }); navigate("cases"); }}
+          initialPostId={pendingPost?.postId}
+          // PASSA O ESTADO DO POMODORO PARA A TELA
+          pomoState={{ pomoMode, setPomoMode, pomoSecs, setPomoSecs, pomoRunning, setPomoRunning, pomoSessions }}
         />
       </main>
     </div>
