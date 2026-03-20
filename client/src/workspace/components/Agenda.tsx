@@ -158,15 +158,15 @@ export default function Agenda({ profile }: Props) {
           const isSel   = ymd === selected;
           return (
             <div key={d} className={`ws-cal-day ${isToday ? "today" : ""}`}
-              style={{ cursor: "pointer", background: isSel ? "#e91e8c22" : undefined, borderColor: isSel ? "var(--ws-accent)" : undefined }}
+              style={{ cursor: "pointer", background: isSel ? "#e91e8c22" : undefined, borderColor: isSel ? "var(--ws-accent)" : undefined, overflow: "hidden" }}
               onClick={() => setSelected(ymd)}
               onDoubleClick={() => openAdd(ymd)}
             >
               <div className="ws-cal-day-num">{d}</div>
               
-              {/* Eventos em formato de texto compacto (sem alterar altura do grid) */}
+              {/* Eventos em blocos estilo Google Agenda (com travas para não quebrar o layout) */}
               {dayEvs.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 1, width: "100%", marginTop: 4, overflow: "hidden" }}>
+                <div style={{ width: "100%", marginTop: 2, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                   {dayEvs.slice(0, 3).map(ev => (
                     <div 
                       key={ev.id} 
@@ -176,23 +176,25 @@ export default function Agenda({ profile }: Props) {
                         if(ev.source === "google") setEventDetail(ev); 
                       }}
                       style={{ 
-                        fontSize: "0.58rem",
+                        fontSize: "0.55rem",
                         color: "var(--ws-text)",
+                        background: TYPE_COLORS[ev.type] + "22",
+                        borderLeft: `2px solid ${TYPE_COLORS[ev.type]}`,
+                        padding: "2px 4px",
+                        borderRadius: "2px",
                         whiteSpace: "nowrap", 
                         overflow: "hidden", 
                         textOverflow: "ellipsis",
                         cursor: ev.source === "google" ? "pointer" : "default",
-                        padding: "1px 3px",
-                        borderRadius: 3
+                        boxSizing: "border-box"
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ws-surface3)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      title={ev.title} // Dica de ferramenta: mostra o nome completo se o mouse ficar em cima
                     >
-                      {ev.time ? ev.time.replace(":00", "") : ""} {ev.title}
+                      <strong style={{ opacity: 0.8 }}>{ev.time ? ev.time.replace(":00", "") : ""}</strong> {ev.title}
                     </div>
                   ))}
                   {dayEvs.length > 3 && (
-                    <div style={{ fontSize: "0.55rem", color: "var(--ws-text3)", textAlign: "center", marginTop: 2 }}>
+                    <div style={{ fontSize: "0.55rem", color: "var(--ws-text3)", textAlign: "center", marginTop: 1 }}>
                       +{dayEvs.length - 3}
                     </div>
                   )}
