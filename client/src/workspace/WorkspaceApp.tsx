@@ -49,10 +49,11 @@ export default function WorkspaceApp() {
   const [pomoSecs, setPomoSecs] = useState(25 * 60);
   const [pomoRunning, setPomoRunning] = useState(false);
   const [pomoSessions, setPomoSessions] = useState([false, false, false, false]);
+  const [pomoTaskId, setPomoTaskId] = useState<string | null>(null); // Vínculo com tarefa
+  const [tasks, setTasks] = useState<any[]>([]); // Lista de tarefas para o seletor
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const notify = () => {
-    // Som de alerta
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -60,7 +61,6 @@ export default function WorkspaceApp() {
     osc.frequency.value = 440; gain.gain.value = 0.1;
     osc.start(); osc.stop(audioCtx.currentTime + 0.5);
 
-    // Notificação de Sistema (Windows/Mac)
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Digitalmente Hub", { 
         body: pomoMode === "focus" ? "Foco encerrado! Hora de uma pausa. ☕" : "Pausa encerrada! Vamos focar? 🚀" 
@@ -84,7 +84,7 @@ export default function WorkspaceApp() {
                 return next;
               });
             }
-            return s;
+            return 0;
           }
           return s - 1;
         });
@@ -95,9 +95,14 @@ export default function WorkspaceApp() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [pomoRunning, pomoMode]);
 
-  // Resto da lógica de inicialização...
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) fetchProfile(session.user.id);
+      else setLoading(false);
+    });
+
     if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) fetchProfile(session.user.id);
       else { setProfile(null); setLoading(false); }
@@ -107,7 +112,12 @@ export default function WorkspaceApp() {
 
   async function fetchProfile(userId: string) {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    setProfile(data); setLoading(false);
+    setProfile(data);
+    
+    // Busca as tarefas abertas para o Pomodoro
+    const { data: tks } = await supabase.from("tasks").select("id, title, status").neq("status", "concluido");
+    setTasks(tks || []);
+    setLoading(false);
   }
 
   function navigate(newPage: PageId) {
@@ -131,8 +141,8 @@ export default function WorkspaceApp() {
           onCaseClose={() => setSidebarOpen(true)}
           onNavigateToPost={(caseId: string, postId: string) => { setPendingPost({ caseId, postId }); navigate("cases"); }}
           initialPostId={pendingPost?.postId}
-          // PASSA O ESTADO DO POMODORO PARA A TELA
-          pomoState={{ pomoMode, setPomoMode, pomoSecs, setPomoSecs, pomoRunning, setPomoRunning, pomoSessions }}
+          // ESTADO COMPLETO DO POMODORO
+          pomoState={{ pomoMode, setPomoMode, pomoSecs, setPomoSecs, pomoRunning, setPomoRunning, pomoSessions, pomoTaskId, setPomoTaskId, tasks }}
         />
       </main>
     </div>
