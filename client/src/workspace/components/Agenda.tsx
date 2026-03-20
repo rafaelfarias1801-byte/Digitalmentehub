@@ -11,6 +11,7 @@ interface CalEvent {
   type: "reuniao" | "prazo" | "pagamento" | "pessoal";
   client?: string;
   note?: string;
+  source?: "google"; // eventos vindos do Google Calendar
 }
 
 interface Props { profile: Profile; }
@@ -32,18 +33,73 @@ function toYMD(d: Date) {
 const EMPTY_FORM = { title: "", type: "reuniao" as CalEvent["type"], client: "", note: "" };
 
 export default function Agenda({ profile }: Props) {
-  const [cal, setCal]           = useState(new Date());
-  const [events, setEvents]     = useState<CalEvent[]>([]);
-  const [selected, setSelected] = useState<string>(toYMD(new Date()));
-  const [modal, setModal]       = useState(false);
-  const [editing, setEditing]   = useState<CalEvent | null>(null);
-  const [form, setForm]         = useState(EMPTY_FORM);
-  const [saving, setSaving]     = useState(false);
-  const isMobile                = useIsMobile();
+  const [cal, setCal]             = useState(new Date());
+  const [events, setEvents]       = useState<CalEvent[]>([]);
+  const [googleEvents, setGoogleEvents] = useState<CalEvent[]>([]);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [selected, setSelected]   = useState<string>(toYMD(new Date()));
+  const [modal, setModal]         = useState(false);
+  const [editing, setEditing]     = useState<CalEvent | null>(null);
+  const [form, setForm]           = useState(EMPTY_FORM);
+  const [saving, setSaving]       = useState(false);
+  const isMobile                  = useIsMobile();
 
   useEffect(() => {
     supabase.from("events").select("*").then(({ data }) => setEvents(data ?? []));
+    // Verifica se voltou do OAuth do Google
+    if (window.location.search.includes("google_connected=1")) {
+      window.history.replaceState({}, "", window.location.pathname);
+      void fetchGoogleEvents();
+    } else {
+      void fetchGoogleEvents();
+    }
   }, []);
+
+  async function fetchGoogleEvents() {
+    setGoogleLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(
+        "https://nznyzjvtmqfcjkogkfju.supabase.co/functions/v1/google-calendar/events",
+        { headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" } }
+      );
+      const data = await res.json();
+      if (data?.connected) {
+        setGoogleConnected(true);
+        setGoogleEvents(data.events ?? []);
+      } else {
+        setGoogleConnected(false);
+        setGoogleEvents([]);
+      }
+    } catch (e) {
+      console.error("Google Calendar:", e);
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
+  async function connectGoogle() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const res = await fetch(
+      "https://nznyzjvtmqfcjkogkfju.supabase.co/functions/v1/google-calendar/auth-url",
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bnl6anZ0bXFmY2prb2drZmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTAzMTAsImV4cCI6MjA4ODkyNjMxMH0.NLf83n9WS3v-e0u_H3WvHGvEgOq1xMgpCP1m7C8LFIY`, "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: session.user.id }),
+      }
+    );
+    const data = await res.json();
+    if (data?.url) window.location.href = data.url;
+  }
+
+  async function disconnectGoogle() {
+    await supabase.from("profiles").update({ google_calendar_token: null }).eq("id", profile.id);
+    setGoogleConnected(false);
+    setGoogleEvents([]);
+  }
 
   const today    = toYMD(new Date());
   const firstDay = new Date(cal.getFullYear(), cal.getMonth(), 1);
@@ -53,7 +109,7 @@ export default function Agenda({ profile }: Props) {
   );
   const currDays = Array.from({ length: lastDay.getDate() }, (_, i) => i + 1);
 
-  function eventsOn(ymd: string) { return events.filter(e => e.date === ymd); }
+  function eventsOn(ymd: string) { return allEvents.filter(e => e.date === ymd); }
 
   function openAdd(ymd: string) {
     setSelected(ymd); setEditing(null); setForm(EMPTY_FORM); setModal(true);
@@ -80,7 +136,8 @@ export default function Agenda({ profile }: Props) {
     await supabase.from("events").delete().eq("id", id);
   }
 
-  const selectedEvents = eventsOn(selected);
+  const allEvents    = [...events, ...googleEvents];
+  const selectedEvents = allEvents.filter(e => e.date === selected);
   const selectedDate   = new Date(selected + "T12:00:00");
 
   const CalendarBlock = (
@@ -158,13 +215,16 @@ export default function Agenda({ profile }: Props) {
                     <div style={{ fontSize: ".87rem", fontWeight: 600, color: "var(--ws-text)", marginBottom: 4 }}>{ev.title}</div>
                     <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={{ fontFamily: "Poppins", fontSize: ".55rem", letterSpacing: "1px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: TYPE_COLORS[ev.type] + "22", color: TYPE_COLORS[ev.type] }}>{TYPE_LABELS[ev.type]}</span>
+                      {ev.source === "google" && (
+                        <span style={{ fontFamily: "Poppins", fontSize: ".55rem", padding: "2px 7px", borderRadius: 4, background: "#4285f422", color: "#4285f4", fontWeight: 600 }}>🗓 Google</span>
+                      )}
                       {ev.client && ev.client !== "—" && <span style={{ fontSize: ".72rem", color: "var(--ws-text3)" }}>{ev.client}</span>}
                     </div>
                     {ev.note && <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 6 }}>{ev.note}</div>}
                   </div>
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                    <button onClick={() => openEdit(ev)} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>✎</button>
-                    <button onClick={() => deleteEvent(ev.id)} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>×</button>
+                    {!ev.source && <button onClick={() => openEdit(ev)} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>✎</button>}
+                    {!ev.source && <button onClick={() => deleteEvent(ev.id)} style={{ background: "var(--ws-surface3)", border: "none", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "4px 8px", fontSize: ".75rem" }}>×</button>}
                   </div>
                 </div>
               </div>
@@ -195,7 +255,31 @@ export default function Agenda({ profile }: Props) {
   return (
     <div className="ws-page">
       <div className="ws-page-title">Agenda<span className="ws-dot">.</span></div>
-      <div className="ws-page-sub">Compromissos, prazos e reuniões</div>
+      <div className="ws-page-sub" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <span>Compromissos, prazos e reuniões</span>
+        {googleLoading ? (
+          <span style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Sincronizando Google...</span>
+        ) : googleConnected ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: ".72rem", background: "#4285f422", color: "#4285f4", borderRadius: 20, padding: "3px 10px", fontFamily: "Poppins", fontWeight: 600 }}>
+              🗓 Google Agenda conectado
+            </span>
+            <button onClick={disconnectGoogle} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", fontFamily: "Poppins", textDecoration: "underline" }}>
+              desconectar
+            </button>
+          </div>
+        ) : (
+          <button onClick={connectGoogle} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: "#fff", border: "1px solid #dadce0", borderRadius: 20,
+            padding: "4px 12px", cursor: "pointer", fontSize: ".72rem", fontWeight: 600,
+            color: "#3c4043", fontFamily: "Poppins", boxShadow: "0 1px 3px #0002",
+          }}>
+            <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+            Conectar Google Agenda
+          </button>
+        )}
+      </div>
 
       {/* Desktop: lado a lado | Mobile: coluna */}
       <div style={{
