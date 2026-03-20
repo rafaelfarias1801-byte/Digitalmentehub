@@ -12,10 +12,11 @@ interface CalEvent {
   client?: string;
   note?: string;
   source?: "google";
-  time?: string;       // horário ex: "14:00"
-  time_end?: string;   // fim ex: "14:45"
-  meet_link?: string;  // link Google Meet
-  attendees?: string;  // participantes
+  google_event_id?: string;
+  time?: string;       
+  time_end?: string;   
+  meet_link?: string;  
+  attendees?: string;  
 }
 
 interface Props { profile: Profile; }
@@ -39,7 +40,6 @@ const EMPTY_FORM = { title: "", type: "reuniao" as CalEvent["type"], client: "",
 export default function Agenda({ profile }: Props) {
   const [cal, setCal]             = useState(new Date());
   const [events, setEvents]       = useState<CalEvent[]>([]);
-  const [googleEvents, setGoogleEvents] = useState<CalEvent[]>([]);
   const [googleConnected, setGoogleConnected] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [selected, setSelected]   = useState<string>(toYMD(new Date()));
@@ -50,15 +50,19 @@ export default function Agenda({ profile }: Props) {
   const isMobile                  = useIsMobile();
   const [eventDetail, setEventDetail] = useState<CalEvent | null>(null);
 
+  // Busca inicial de eventos do banco
+  const fetchLocalEvents = async () => {
+    const { data } = await supabase.from("events").select("*");
+    setEvents(data ?? []);
+  };
+
   useEffect(() => {
-    supabase.from("events").select("*").then(({ data }) => setEvents(data ?? []));
-    // Verifica se voltou do OAuth do Google
+    fetchLocalEvents();
+    
     if (window.location.search.includes("google_connected=1")) {
       window.history.replaceState({}, "", window.location.pathname);
-      void fetchGoogleEvents();
-    } else {
-      void fetchGoogleEvents();
     }
+    fetchGoogleEvents();
   }, []);
 
   async function fetchGoogleEvents() {
@@ -69,15 +73,17 @@ export default function Agenda({ profile }: Props) {
       const res = await supabase.functions.invoke("google-calendar/events", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
+      
       if (res.data?.connected) {
         setGoogleConnected(true);
-        setGoogleEvents(res.data.events ?? []);
+        // Após sincronizar com o Google, recarregamos os eventos do banco
+        // pois a Edge Function acabou de dar 'upsert' neles.
+        fetchLocalEvents();
       } else if (res.data?.expired) {
         setGoogleConnected(false);
-        setGoogleEvents([]);
       }
     } catch (e) {
-      console.error("Google Calendar:", e);
+      console.error("Google Calendar Sync Error:", e);
     } finally {
       setGoogleLoading(false);
     }
@@ -94,8 +100,10 @@ export default function Agenda({ profile }: Props) {
 
   async function disconnectGoogle() {
     await supabase.from("profiles").update({ google_calendar_token: null }).eq("id", profile.id);
+    // Opcional: deletar eventos do google do banco ao desconectar
+    await supabase.from("events").delete().eq("source", "google");
     setGoogleConnected(false);
-    setGoogleEvents([]);
+    fetchLocalEvents();
   }
 
   const today    = toYMD(new Date());
@@ -106,7 +114,7 @@ export default function Agenda({ profile }: Props) {
   );
   const currDays = Array.from({ length: lastDay.getDate() }, (_, i) => i + 1);
 
-  function eventsOn(ymd: string) { return allEvents.filter(e => e.date === ymd); }
+  function eventsOn(ymd: string) { return events.filter(e => e.date === ymd); }
 
   function openAdd(ymd: string) {
     setSelected(ymd); setEditing(null); setForm(EMPTY_FORM); setModal(true);
@@ -133,8 +141,7 @@ export default function Agenda({ profile }: Props) {
     await supabase.from("events").delete().eq("id", id);
   }
 
-  const allEvents    = [...events, ...googleEvents];
-  const selectedEvents = allEvents.filter(e => e.date === selected);
+  const selectedEvents = events.filter(e => e.date === selected);
   const selectedDate   = new Date(selected + "T12:00:00");
 
   const CalendarBlock = (
@@ -285,7 +292,6 @@ export default function Agenda({ profile }: Props) {
         )}
       </div>
 
-      {/* Desktop: lado a lado | Mobile: coluna */}
       <div style={{
         display: "grid",
         gridTemplateColumns: isMobile ? "1fr" : "1fr 340px",
@@ -302,7 +308,6 @@ export default function Agenda({ profile }: Props) {
         <div style={{ position: "fixed", inset: 0, background: "#00000080", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}
           onClick={e => e.target === e.currentTarget && setEventDetail(null)}>
           <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border2)", borderRadius: 20, padding: "32px 36px", width: "100%", maxWidth: 420, boxShadow: "0 30px 80px #00000060" }}>
-            {/* Header */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 20 }}>
               <div>
                 <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.1rem", color: "var(--ws-text)", lineHeight: 1.3, marginBottom: 6 }}>{eventDetail.title}</div>
@@ -311,7 +316,6 @@ export default function Agenda({ profile }: Props) {
               <button onClick={() => setEventDetail(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem", flexShrink: 0 }}>×</button>
             </div>
 
-            {/* Data e hora */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "var(--ws-surface2)", borderRadius: 10, marginBottom: 12 }}>
               <span style={{ fontSize: "1.2rem" }}>📅</span>
               <div>
@@ -326,7 +330,6 @@ export default function Agenda({ profile }: Props) {
               </div>
             </div>
 
-            {/* Link Meet */}
             {eventDetail.meet_link && (
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 6, letterSpacing: "1px", textTransform: "uppercase" }}>Link da reunião</div>
@@ -345,7 +348,6 @@ export default function Agenda({ profile }: Props) {
               </div>
             )}
 
-            {/* Participantes */}
             {eventDetail.attendees && (
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 6, letterSpacing: "1px", textTransform: "uppercase" }}>Participantes</div>
@@ -355,7 +357,6 @@ export default function Agenda({ profile }: Props) {
               </div>
             )}
 
-            {/* Observação */}
             {eventDetail.note && (
               <div>
                 <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 6, letterSpacing: "1px", textTransform: "uppercase" }}>Observação</div>
@@ -367,6 +368,7 @@ export default function Agenda({ profile }: Props) {
           </div>
         </div>
       )}
+
       {modal && (
         <div style={{ position: "fixed", inset: 0, background: "#00000080", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}
           onClick={(e) => e.target === e.currentTarget && setModal(false)}>
