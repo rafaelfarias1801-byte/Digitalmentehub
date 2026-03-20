@@ -112,12 +112,13 @@ serve(async (req) => {
 
       return {
         google_event_id: item.id,
+        profile_id: user.id, // VINCULA O EVENTO AO USUÁRIO
         title: item.summary ?? "(Sem título)",
         date: (item.start?.date ?? startDateTime ?? "").slice(0, 10),
         type: "reuniao",
         note: item.description ?? item.location ?? "",
         source: "google",
-        // CORREÇÃO DO FUSO HORÁRIO AQUI:
+        // CORREÇÃO DO FUSO HORÁRIO:
         time: startDateTime ? new Date(startDateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : undefined,
         time_end: endDateTime ? new Date(endDateTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : undefined,
         meet_link: item.hangoutLink ?? undefined,
@@ -125,9 +126,17 @@ serve(async (req) => {
       };
     });
 
-    // SALVA NO SUPABASE (UPSERT)
+    // SALVA NO SUPABASE (UPSERT) COM TRATAMENTO DE ERRO
     if (events.length > 0) {
-      await supabase.from("events").upsert(events, { onConflict: "google_event_id" });
+      const { error: upsertError } = await supabase
+        .from("events")
+        .upsert(events, { onConflict: "google_event_id" });
+        
+      if (upsertError) {
+        console.error("Erro no Upsert do Supabase:", upsertError);
+      } else {
+        console.log(`${events.length} eventos sincronizados com sucesso.`);
+      }
     }
 
     return new Response(JSON.stringify({ events, connected: true }), {
