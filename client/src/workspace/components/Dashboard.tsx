@@ -7,10 +7,10 @@ import { useIsMobile } from "../hooks/useIsMobile";
 interface Props { profile: Profile; }
 
 const APPROVAL_COLOR: Record<string, string> = {
-  aprovado: "#00e676", reprovado: "#ff5c7a", alteracao: "#ffd600", pendente: "#8d97bb",
+  aprovado: "#00e676", reprovado: "#ff5c7a", alteracao: "#ffd600", pendente: "#4dabf7",
 };
 const APPROVAL_ICON: Record<string, string> = {
-  aprovado: "✅", reprovado: "❌", alteracao: "⚠️", pendente: "⏳",
+  aprovado: "✅", reprovado: "❌", alteracao: "⚠️", pendente: "💬",
 };
 const EVENT_COLOR: Record<string, string> = {
   reuniao: "#e91e8c", prazo: "#4dabf7", pagamento: "#ffd600", pessoal: "#00e676",
@@ -58,7 +58,7 @@ export default function Dashboard({ profile }: Props) {
         supabase.from("tasks").select("*"),
         supabase.from("cases").select("id, name"),
         supabase.from("payments").select("id, amount, paid, due_date, description, case_id"),
-        supabase.from("posts").select("id, slug, title, approval_status, scheduled_date, case_id, updated_at"),
+        supabase.from("posts").select("id, slug, title, approval_status, scheduled_date, case_id, rejection_reason_at, status_changed_at, created_at, comments"),
         supabase.from("events").select("title, date, type").gte("date", todayStr).order("date").limit(6),
       ]);
 
@@ -99,11 +99,40 @@ export default function Dashboard({ profile }: Props) {
       setPostsThisMonth(monthPosts.length);
       setPostsApproved(monthPosts.filter(p => p.approval_status?.toLowerCase() === "aprovado").length);
 
-      setRecentApprovals(posts.filter(p => p.approval_status).sort((a, b) => (b.updated_at ?? b.scheduled_date ?? "").localeCompare(a.updated_at ?? a.scheduled_date ?? "")).slice(0, 5).map(p => ({
-            title: p.slug || p.title || "Post", caseName: caseMap[p.case_id] ?? "—",
-            status: p.approval_status?.toLowerCase() ?? "pendente",
-            date: p.updated_at ? new Date(p.updated_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
-          })));
+      // Atividade real: posts com status alterado OU com comentários
+      type ActivityItem = { title: string; caseName: string; status: string; date: string; ts: string };
+      const activities: ActivityItem[] = [];
+
+      for (const p of posts) {
+        const status = p.approval_status?.toLowerCase() ?? "pendente";
+        const caseName = caseMap[p.case_id] ?? "—";
+        const title = p.slug || p.title || "Post";
+
+        // Post com status diferente de pendente (cliente interagiu)
+        if (status !== "pendente") {
+          const ts = p.status_changed_at ?? p.rejection_reason_at ?? p.created_at ?? "";
+          activities.push({
+            title, caseName, status, ts,
+            date: ts ? new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
+          });
+        }
+
+        // Comentários no post
+        const comments: { author: string; created_at: string }[] = Array.isArray(p.comments) ? p.comments : [];
+        for (const c of comments) {
+          activities.push({
+            title: `💬 ${title}`,
+            caseName: `${c.author ?? "Alguém"} comentou`,
+            status: "pendente",
+            ts: c.created_at ?? "",
+            date: c.created_at ? new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
+          });
+        }
+      }
+
+      // Ordena por timestamp desc, pega os 5 mais recentes
+      activities.sort((a, b) => b.ts.localeCompare(a.ts));
+      setRecentApprovals(activities.slice(0, 5).map(({ ts: _ts, ...rest }) => rest));
       setNextEvents(events.map(e => ({ title: e.title, date: e.date, type: e.type })));
       setLoading(false);
     }

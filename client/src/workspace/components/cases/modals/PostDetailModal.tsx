@@ -121,14 +121,14 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
 
   async function saveApproval(status: Post["approval_status"]) {
     setSaving(true);
-    await save({ approval_status: status });
+    await save({ approval_status: status, status_changed_at: new Date().toISOString() });
     setSaving(false);
   }
 
   async function saveApprovalWithReason(status: Post["approval_status"], reason: string) {
     setSaving(true);
     const now = new Date().toISOString();
-    await save({ approval_status: status, rejection_reason: reason, rejection_reason_at: now });
+    await save({ approval_status: status, rejection_reason: reason, rejection_reason_at: now, status_changed_at: now });
     setRejectionReason(reason);
     setShowRejectionInput(null);
     setRejectionInput("");
