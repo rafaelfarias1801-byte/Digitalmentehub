@@ -17,6 +17,7 @@ import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
 import CheckoutPack from "@/pages/CheckoutPack";
 import WorkspaceApp from "./workspace/WorkspaceApp";
+import AnalisePerfilLanding from "@/pages/AnalisePerfilLanding";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -45,6 +46,7 @@ function Router() {
         <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
         <Route path="/checkout-pack" component={CheckoutPack} />
         <Route path="/workspace" component={WorkspaceApp} />
+        <Route path="/analise-perfil" component={AnalisePerfilLanding} />
         <Route component={NotFound} />
       </Switch>
     </>
