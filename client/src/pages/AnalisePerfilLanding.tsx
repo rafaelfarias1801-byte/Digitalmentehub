@@ -351,7 +351,7 @@ export default function AnalisePerfilLanding() {
         <div style={{ maxWidth: 440, margin: "0 auto" }}>
           <FadeIn>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Investimento</p>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.4rem, 2.8vw, 2.2rem)", lineHeight: 1.15, letterSpacing: -1, marginBottom: 40, whiteSpace: "nowrap" }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.4rem, 2.5vw, 2rem)", lineHeight: 1.1, letterSpacing: -1, marginBottom: 40 }}>
               Um diagnóstico que se paga na primeira venda.
             </h2>
           </FadeIn>
