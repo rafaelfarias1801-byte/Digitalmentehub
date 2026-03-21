@@ -50,13 +50,13 @@ function Countdown() {
   const s = secs % 60;
   const pad = (n: number) => String(n).padStart(2, "0");
   return (
-    <div style={{ background: "rgba(180,10,60,0.18)", border: "1px solid rgba(232,25,125,0.35)", borderRadius: 18, padding: "22px 28px", textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
-      <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: "#f5f5ff" }}>🔥 Promoção por tempo limitado! 🔥</p>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-        <span style={{ color: "#e8197d", fontSize: 13 }}>⏱ Essa oferta expira em</span>
+    <div style={{ background: "rgba(180,10,60,0.18)", border: "1px solid rgba(232,25,125,0.35)", borderRadius: 18, padding: "20px 24px", textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
+      <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 12, color: "#f5f5ff" }}>🔥 Promoção por tempo limitado! 🔥</p>
+      <p style={{ color: "#e8197d", fontSize: 13, marginBottom: 10, whiteSpace: "nowrap" }}>⏱ Essa oferta expira em</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
         {[pad(h), pad(m), pad(s)].map((v, i) => (
-          <span key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ background: "rgba(180,10,60,0.5)", border: "1px solid rgba(232,25,125,0.3)", borderRadius: 10, padding: "6px 14px", fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, color: "#f5f5ff", minWidth: 48, textAlign: "center" }}>{v}</span>
+          <span key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ background: "rgba(180,10,60,0.5)", border: "1px solid rgba(232,25,125,0.3)", borderRadius: 10, padding: "6px 14px", fontFamily: "'DM Sans', sans-serif", fontWeight: 800, fontSize: 20, color: "#f5f5ff", minWidth: 48, textAlign: "center" }}>{v}</span>
             {i < 2 && <span style={{ color: "#e8197d", fontWeight: 800, fontSize: 18 }}>:</span>}
           </span>
         ))}
@@ -88,7 +88,7 @@ function SocialProof() {
         ].map((s, i) => (
           <div key={i}>
             <div style={{ fontSize: 22, marginBottom: 6 }}>{s.icon}</div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, color: i === 2 ? "#f5c842" : "#f5f5ff" }}>{s.num}</p>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, fontSize: 20, color: i === 2 ? "#f5c842" : "#f5f5ff" }}>{s.num}</p>
             <p style={{ fontSize: 10, color: "#8888aa", letterSpacing: 1.5, textTransform: "uppercase", marginTop: 4 }}>{s.label}</p>
           </div>
         ))}
@@ -118,23 +118,26 @@ export default function AnalisePerfilLanding() {
   return (
     <div style={{ background: "#0a0a14", color: "#f5f5ff", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;700;800&display=swap');
         .anlp-btn:hover { filter: brightness(1.12); transform: translateY(-2px) !important; }
         .anlp-card:hover { border-color: rgba(232,25,125,0.4) !important; transform: translateY(-2px); }
         * { box-sizing: border-box; }
+        @media (max-width: 600px) {
+          .anlp-grid-2 { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* PIXEL */}
       <img src="https://www.facebook.com/tr?id=1463783841928356&ev=PageView&noscript=1" alt="" style={{ display: "none" }} />
 
       {/* HERO */}
-      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "60px 24px 60px", position: "relative", overflow: "hidden" }}>
+      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "100px 24px 60px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 700, height: 700, background: "radial-gradient(circle, rgba(232,25,125,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-        {/* LOGO — esquerda, pequena */}
-        <div style={{ position: "absolute", top: 24, left: 32 }}>
+        {/* LOGO — esquerda, pequena, sem fundo */}
+        <div style={{ position: "absolute", top: 20, left: 24, zIndex: 10 }}>
           <a href={SITE_URL}>
-            <img src={LOGO_B64} alt="Digitalmente HUB" style={{ width: 80, height: "auto", display: "block" }} />
+            <img src={LOGO_B64} alt="Digitalmente HUB" style={{ width: 72, height: "auto", display: "block", mixBlendMode: "normal" }} />
           </a>
         </div>
 
@@ -183,7 +186,7 @@ export default function AnalisePerfilLanding() {
               Você sente que está fazendo tudo e mesmo assim não avança?
             </h2>
           </FadeIn>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, textAlign: "left" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, textAlign: "left" }} className="anlp-grid-2">
             {[
               { title: "Posta com frequência mas não vende", desc: "Você é consistente, cria conteúdo, aparece — mas o faturamento não reflete esse esforço." },
               { title: "Não sabe qual conteúdo gera resultado", desc: "Posta de tudo um pouco, sem saber o que realmente atrai cliente e o que só gera curtida." },
@@ -233,7 +236,7 @@ export default function AnalisePerfilLanding() {
               Não é para quem quer fórmula mágica.
             </h2>
           </FadeIn>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, textAlign: "left" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, textAlign: "left" }} className="anlp-grid-2">
             {[
               "Empreendedores que estão presentes nas redes mas não conseguem converter seguidores em clientes.",
               "Criadores de conteúdo que produzem com frequência mas sentem que o perfil não representa seu potencial.",
@@ -348,15 +351,15 @@ export default function AnalisePerfilLanding() {
         <div style={{ maxWidth: 440, margin: "0 auto" }}>
           <FadeIn>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Investimento</p>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 3rem)", lineHeight: 1.05, letterSpacing: -2, marginBottom: 40 }}>
-              Um diagnóstico que<br />se paga na primeira venda.
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.4rem, 2.8vw, 2.2rem)", lineHeight: 1.15, letterSpacing: -1, marginBottom: 40, whiteSpace: "nowrap" }}>
+              Um diagnóstico que se paga na primeira venda.
             </h2>
           </FadeIn>
           <FadeIn delay={0.1}>
             <div style={{ background: "#13132a", border: "1px solid rgba(232,25,125,0.3)", borderRadius: 24, padding: "44px 40px", boxShadow: "0 0 60px rgba(232,25,125,0.08)" }}>
               <p style={{ color: "#8888aa", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Análise Estratégica + Plano de Ação</p>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 24 }}>Diagnóstico Estratégico de Instagram</h3>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 64, color: "#e8197d", lineHeight: 1 }}>
+              <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 24 }}>Diagnóstico Estratégico de Instagram</h3>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, fontSize: 64, color: "#e8197d", lineHeight: 1 }}>
                 <span style={{ fontSize: 22, fontWeight: 400, color: "#8888aa" }}>R$</span> 97
               </p>
               <p style={{ color: "#8888aa", fontSize: 13, marginTop: 8 }}>Entrega em até 5 dias úteis · Pix ou cartão parcelado</p>
