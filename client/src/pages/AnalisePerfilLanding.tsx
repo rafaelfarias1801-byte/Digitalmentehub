@@ -23,6 +23,148 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   );
 }
 
+function Countdown() {
+  const DURATION = 47 * 60; // 47 minutos em segundos
+  const [secs, setSecs] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("anlp_countdown");
+      return saved ? parseInt(saved) : DURATION;
+    }
+    return DURATION;
+  });
+  useEffect(() => {
+    if (secs <= 0) return;
+    const t = setInterval(() => {
+      setSecs(s => {
+        const next = s - 1;
+        sessionStorage.setItem("anlp_countdown", String(next));
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    <div style={{ background: "rgba(180,10,60,0.18)", border: "1px solid rgba(232,25,125,0.35)", borderRadius: 18, padding: "22px 28px", textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
+      <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: "#f5f5ff" }}>🔥 Promoção por tempo limitado! 🔥</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+        <span style={{ color: "#e8197d", fontSize: 13 }}>⏱ Essa oferta expira em</span>
+        {[pad(h), pad(m), pad(s)].map((v, i) => (
+          <span key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ background: "rgba(180,10,60,0.5)", border: "1px solid rgba(232,25,125,0.3)", borderRadius: 10, padding: "6px 14px", fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, color: "#f5f5ff", minWidth: 48, textAlign: "center" }}>{v}</span>
+            {i < 2 && <span style={{ color: "#e8197d", fontWeight: 800, fontSize: 18 }}>:</span>}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SocialProof() {
+  return (
+    <div style={{ background: "#13132a", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: "22px 28px", maxWidth: 560, margin: "0 auto" }}>
+      {/* Avatares */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+        <div style={{ display: "flex" }}>
+          {["#e8197d","#ff6b35","#7c3aed"].map((c, i) => (
+            <div key={i} style={{ width: 36, height: 36, borderRadius: "50%", background: c, border: "2px solid #0a0a14", marginLeft: i > 0 ? -10 : 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>
+              {["👩","👨","👩‍💼"][i]}
+            </div>
+          ))}
+        </div>
+        <p style={{ color: "#f5f5ff", fontSize: 14, fontWeight: 500 }}>Junte-se a mais de <strong style={{ color: "#e8197d" }}>500 empreendedores</strong></p>
+      </div>
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, textAlign: "center" }}>
+        {[
+          { icon: "📊", num: "579+", label: "PERFIS ANALISADOS" },
+          { icon: "👤", num: "500+", label: "EMPREENDEDORES" },
+          { icon: "🏆", num: "100%", label: "SATISFAÇÃO" },
+        ].map((s, i) => (
+          <div key={i}>
+            <div style={{ fontSize: 22, marginBottom: 6 }}>{s.icon}</div>
+            <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, color: i === 2 ? "#f5c842" : "#f5f5ff" }}>{s.num}</p>
+            <p style={{ fontSize: 10, color: "#8888aa", letterSpacing: 1.5, textTransform: "uppercase", marginTop: 4 }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PhoneMockup({ before, after }: { before: React.ReactNode; after: React.ReactNode }) {
+  const phoneStyle: React.CSSProperties = {
+    width: 160,
+    background: "#111",
+    borderRadius: 28,
+    border: "3px solid #333",
+    overflow: "hidden",
+    boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+    flexShrink: 0,
+  };
+  return (
+    <div style={{ display: "flex", gap: 24, alignItems: "flex-start", justifyContent: "center", flexWrap: "wrap" }}>
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#8888aa", marginBottom: 10 }}>ANTES</p>
+        <div style={phoneStyle}>{before}</div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", alignSelf: "center", color: "#e8197d", fontSize: 22, fontWeight: 800, margin: "20px 0" }}>→</div>
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#e8197d", marginBottom: 10 }}>DEPOIS</p>
+        <div style={phoneStyle}>{after}</div>
+      </div>
+    </div>
+  );
+}
+
+// Perfil Instagram mockup
+function IGProfile({ username, name, bio, link, followers, posts, hasLink, elegant }: {
+  username: string; name: string; bio: string; link?: string;
+  followers: string; posts: string; hasLink: boolean; elegant: boolean;
+}) {
+  return (
+    <div style={{ background: "#fafafa", minHeight: 280, fontFamily: "system-ui, sans-serif" }}>
+      {/* Header */}
+      <div style={{ background: "#fff", padding: "10px 10px 6px", borderBottom: "1px solid #eee" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          {/* Avatar */}
+          <div style={{ width: 52, height: 52, borderRadius: "50%", background: elegant ? "linear-gradient(135deg,#e8197d,#ff6b35)" : "#ccc", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: elegant ? "2px solid #e8197d" : "2px solid #ccc" }}>
+            {elegant ? "👩‍💼" : "😐"}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 4 }}>
+              {["publicações","seguidores","seguindo"].map((l, i) => (
+                <div key={i} style={{ textAlign: "center", flex: 1 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#111" }}>{["12", followers, "340"][i]}</p>
+                  <p style={{ fontSize: 8, color: "#999" }}>{l}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <p style={{ fontSize: 10, fontWeight: 700, color: "#111", marginBottom: 2 }}>{name}</p>
+        <p style={{ fontSize: 9, color: "#555", lineHeight: 1.4, marginBottom: hasLink ? 3 : 0 }}>{bio}</p>
+        {hasLink && <p style={{ fontSize: 9, color: "#0095f6", fontWeight: 600 }}>{link}</p>}
+        <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+          <button style={{ flex: 1, background: elegant ? "#e8197d" : "#0095f6", color: "#fff", border: "none", borderRadius: 6, padding: "4px 0", fontSize: 9, fontWeight: 700, cursor: "default" }}>Seguir</button>
+          <button style={{ flex: 1, background: "#efefef", border: "none", borderRadius: 6, padding: "4px 0", fontSize: 9, cursor: "default" }}>Mensagem</button>
+        </div>
+      </div>
+      {/* Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1 }}>
+        {Array(6).fill(0).map((_, i) => (
+          <div key={i} style={{ aspectRatio: "1", background: elegant ? ["#f9c6d8","#fde8c8","#d4edff","#f0d4ff","#d4f0e8","#fff3cc"][i] : ["#ddd","#bbb","#ccc","#aaa","#c8c8c8","#d5d5d5"][i], display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+            {elegant ? ["🌸","💆‍♀️","✨","💅","🪷","⭐"][i] : ["📷","📷","📷","📷","📷","📷"][i]}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -54,13 +196,13 @@ export default function AnalisePerfilLanding() {
       <img src="https://www.facebook.com/tr?id=1463783841928356&ev=PageView&noscript=1" alt="" style={{ display: "none" }} />
 
       {/* HERO */}
-      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "80px 24px 80px", position: "relative", overflow: "hidden" }}>
+      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "60px 24px 60px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 700, height: 700, background: "radial-gradient(circle, rgba(232,25,125,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-        {/* LOGO */}
-        <div style={{ marginBottom: 36 }}>
+        {/* LOGO — esquerda, pequena */}
+        <div style={{ position: "absolute", top: 24, left: 32 }}>
           <a href={SITE_URL}>
-            <img src={LOGO_B64} alt="Digitalmente HUB" style={{ width: 130, height: "auto", display: "block" }} />
+            <img src={LOGO_B64} alt="Digitalmente HUB" style={{ width: 80, height: "auto", display: "block" }} />
           </a>
         </div>
 
@@ -88,18 +230,28 @@ export default function AnalisePerfilLanding() {
             </span>
           ))}
         </div>
+
+        {/* COUNTDOWN */}
+        <div style={{ marginTop: 36, width: "100%", maxWidth: 560 }}>
+          <Countdown />
+        </div>
+
+        {/* SOCIAL PROOF */}
+        <div style={{ marginTop: 20, width: "100%", maxWidth: 560 }}>
+          <SocialProof />
+        </div>
       </section>
 
-      {/* PROBLEMA */}
+      {/* 1. PROBLEMA */}
       <section style={{ padding: "90px 24px", background: "#0f0f1e" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <FadeIn>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>O Problema</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 40 }}>
               Você sente que está fazendo tudo e mesmo assim não avança?
             </h2>
           </FadeIn>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, textAlign: "left" }}>
             {[
               { title: "Posta com frequência mas não vende", desc: "Você é consistente, cria conteúdo, aparece — mas o faturamento não reflete esse esforço." },
               { title: "Não sabe qual conteúdo gera resultado", desc: "Posta de tudo um pouco, sem saber o que realmente atrai cliente e o que só gera curtida." },
@@ -109,8 +261,7 @@ export default function AnalisePerfilLanding() {
               <FadeIn key={i} delay={i * 0.08}>
                 <div className="anlp-card" style={{ background: "#13132a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: "26px 24px", transition: "all 0.2s" }}>
                   <p style={{ color: "#f5f5ff", fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#e8197d", flexShrink: 0, display: "inline-block" }} />
-                    {c.title}
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#e8197d", flexShrink: 0, display: "inline-block" }} />{c.title}
                   </p>
                   <p style={{ color: "#8888aa", fontSize: 13, lineHeight: 1.65 }}>{c.desc}</p>
                 </div>
@@ -125,7 +276,7 @@ export default function AnalisePerfilLanding() {
         </div>
       </section>
 
-      {/* O QUE É */}
+      {/* 2. O QUE É */}
       <section style={{ padding: "90px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 620, margin: "0 auto" }}>
           <FadeIn>
@@ -141,9 +292,41 @@ export default function AnalisePerfilLanding() {
         </div>
       </section>
 
-      {/* O QUE RECEBE */}
+      {/* 3. PARA QUEM É */}
       <section style={{ padding: "90px 24px", background: "#0f0f1e" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+          <FadeIn>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Para quem é</p>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 40 }}>
+              Não é para quem quer fórmula mágica.
+            </h2>
+          </FadeIn>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, textAlign: "left" }}>
+            {[
+              "Empreendedores que estão presentes nas redes mas não conseguem converter seguidores em clientes.",
+              "Criadores de conteúdo que produzem com frequência mas sentem que o perfil não representa seu potencial.",
+              "Profissionais liberais que precisam transmitir autoridade e credibilidade desde o primeiro acesso.",
+              "Quem quer clareza estratégica antes de investir em gestão completa de redes sociais.",
+            ].map((item, i) => (
+              <FadeIn key={i} delay={i * 0.08}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 14, background: "#13132a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "20px 22px" }}>
+                  <div style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid #e8197d", background: "rgba(232,25,125,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2, color: "#e8197d", fontSize: 12 }}>✓</div>
+                  <p style={{ color: "#8888aa", fontSize: 13, lineHeight: 1.6 }}>{item}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+          <FadeIn delay={0.3}>
+            <p style={{ textAlign: "center", fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, marginTop: 36 }}>
+              É para quem quer <span style={{ color: "#e8197d" }}>clareza estratégica</span> e crescimento estruturado.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* 4. O QUE RECEBE */}
+      <section style={{ padding: "90px 24px" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
           <FadeIn>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>O que você recebe</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 40 }}>
@@ -172,7 +355,54 @@ export default function AnalisePerfilLanding() {
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
+      {/* 5. PROVAS SOCIAIS — ANTES/DEPOIS */}
+      <section style={{ padding: "90px 24px", background: "#0f0f1e" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", textAlign: "center" }}>
+          <FadeIn>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Provas Reais</p>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 12 }}>
+              O que muda depois da análise.
+            </h2>
+            <p style={{ color: "#8888aa", fontSize: 15, marginBottom: 56, fontWeight: 300 }}>Perfil confuso vira perfil que vende. É isso que entregamos.</p>
+          </FadeIn>
+          <FadeIn delay={0.05}>
+            <div style={{ marginBottom: 60 }}>
+              <p style={{ color: "#8888aa", fontSize: 12, letterSpacing: 2, textTransform: "uppercase", marginBottom: 24 }}>Perfil • Esteticista</p>
+              <PhoneMockup
+                before={<IGProfile username="ana.silva.184729" name="Ana Silva" bio="Faço serviços de estética. Atendo em CWB. Chama no zap 🌸💆‍♀️✨💅" followers="312" posts="47" hasLink={false} elegant={false} />}
+                after={<IGProfile username="anasilva.estetica" name="Ana Silva | Esteticista em Curitiba" bio="Transformo sua pele com técnicas exclusivas ✨ Agenda pelo link 👇" link="anasilva.as.me/agenda" followers="1.2k" posts="47" hasLink={true} elegant={true} />}
+              />
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.05}>
+            <div style={{ marginBottom: 60 }}>
+              <p style={{ color: "#8888aa", fontSize: 12, letterSpacing: 2, textTransform: "uppercase", marginBottom: 24 }}>Perfil • Coach de Negócios</p>
+              <PhoneMockup
+                before={<IGProfile username="roberto_coach99" name="Roberto M." bio="Coach 🙏 Mentoria 💼 Transformando vidas desde 2019 🔥🔥🔥" followers="589" posts="102" hasLink={false} elegant={false} />}
+                after={<IGProfile username="robertomelo.coach" name="Roberto Melo | Coach de Negócios" bio="Ajudo empreendedores a faturar mais com menos esforço 🎯 +200 mentorados" link="robertomelo.com/mentoria" followers="3.8k" posts="102" hasLink={true} elegant={true} />}
+              />
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.05}>
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ color: "#8888aa", fontSize: 12, letterSpacing: 2, textTransform: "uppercase", marginBottom: 24 }}>Perfil • Nutricionista</p>
+              <PhoneMockup
+                before={<IGProfile username="nutri.carol.2021_" name="Caroline" bio="Nutricionista 🥗 Atendo online e presencial. CRN 12345" followers="208" posts="31" hasLink={false} elegant={false} />}
+                after={<IGProfile username="carolinenutri" name="Caroline Lima | Nutricionista" bio="Emagrecimento sem dieta restritiva 🥗 Consultas online para todo o Brasil 👇" link="caroline.nutri/consulta" followers="2.1k" posts="31" hasLink={true} elegant={true} />}
+              />
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.1}>
+            <div style={{ marginTop: 48 }}>
+              <a href={CHECKOUT_URL} className="anlp-btn" style={{ display: "inline-block", background: "#e8197d", color: "#fff", fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 16, padding: "16px 40px", borderRadius: 100, textDecoration: "none", transition: "all 0.2s", boxShadow: "0 0 32px rgba(232,25,125,0.35)" }}>
+                Quero meu perfil assim →
+              </a>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* 6. COMO FUNCIONA */}
       <section style={{ padding: "90px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <FadeIn>
@@ -202,45 +432,13 @@ export default function AnalisePerfilLanding() {
         </div>
       </section>
 
-      {/* PARA QUEM */}
-      <section style={{ padding: "90px 24px", background: "#0f0f1e" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <FadeIn>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Para quem é</p>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 40 }}>
-              Não é para quem quer fórmula mágica.
-            </h2>
-          </FadeIn>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
-            {[
-              "Empreendedores que estão presentes nas redes mas não conseguem converter seguidores em clientes.",
-              "Criadores de conteúdo que produzem com frequência mas sentem que o perfil não representa seu potencial.",
-              "Profissionais liberais que precisam transmitir autoridade e credibilidade desde o primeiro acesso.",
-              "Quem quer clareza estratégica antes de investir em gestão completa de redes sociais.",
-            ].map((item, i) => (
-              <FadeIn key={i} delay={i * 0.08}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 14, background: "#13132a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: "20px 22px" }}>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid #e8197d", background: "rgba(232,25,125,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2, color: "#e8197d", fontSize: 12 }}>✓</div>
-                  <p style={{ color: "#8888aa", fontSize: 13, lineHeight: 1.6 }}>{item}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-          <FadeIn delay={0.3}>
-            <p style={{ textAlign: "center", fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, marginTop: 36 }}>
-              É para quem quer <span style={{ color: "#e8197d" }}>clareza estratégica</span> e crescimento estruturado.
-            </p>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* PREÇO */}
+      {/* 7. PREÇO */}
       <section style={{ padding: "90px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 440, margin: "0 auto" }}>
           <FadeIn>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Investimento</p>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 40 }}>
-              Um diagnóstico que se paga na primeira venda.
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 3rem)", lineHeight: 1.05, letterSpacing: -2, marginBottom: 40 }}>
+              Um diagnóstico que<br />se paga na primeira venda.
             </h2>
           </FadeIn>
           <FadeIn delay={0.1}>
@@ -262,16 +460,16 @@ export default function AnalisePerfilLanding() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* 8. FAQ */}
       <section style={{ padding: "90px 24px", background: "#0f0f1e" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
           <FadeIn>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#e8197d", marginBottom: 16 }}>Perguntas Frequentes</p>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", lineHeight: 1.1, letterSpacing: -1.5, marginBottom: 40 }}>
               Tudo que você precisa saber antes de comprar.
             </h2>
           </FadeIn>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
             {[
               { q: "O que exatamente é o Diagnóstico Estratégico?", a: "É uma análise 360° do seu perfil no Instagram: foto, bio, destaques, conteúdo, engajamento, links e posicionamento. Você recebe um PDF detalhado com diagnóstico + plano de ação de 30 dias + vídeo explicativo personalizado." },
               { q: "Serve para qualquer nicho?", a: "Sim. A metodologia é adaptada ao seu posicionamento e objetivo. Atendemos empreendedores, criadores de conteúdo, profissionais liberais e pequenos negócios de qualquer segmento." },
@@ -289,7 +487,7 @@ export default function AnalisePerfilLanding() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* 9. CTA FINAL */}
       <section style={{ padding: "100px 24px", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", bottom: -100, left: "50%", transform: "translateX(-50%)", width: 600, height: 600, background: "radial-gradient(circle, rgba(232,25,125,0.08) 0%, transparent 65%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 620, margin: "0 auto", position: "relative" }}>
