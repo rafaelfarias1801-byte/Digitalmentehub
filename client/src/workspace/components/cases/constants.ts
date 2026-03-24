@@ -81,12 +81,13 @@ export const APPROVAL_STYLES: Record<
 };
 
 export const SUB_TABS = [
-  { id: "calendario", label: "Calendário", icon: "📅" },
-  { id: "conteudo", label: "Conteúdo", icon: "📋" },
-  { id: "financeiro", label: "Financeiro", icon: "💰" },
-  { id: "contratos", label: "Documentos", icon: "📑" },
-  { id: "documentos", label: "Arquivos", icon: "📁" },
-  { id: "notas", label: "Notas", icon: "🗒" },
+  { id: "calendario",  label: "Calendário",  icon: "📅" },
+  { id: "conteudo",    label: "Conteúdo",    icon: "📋" },
+  { id: "financeiro",  label: "Financeiro",  icon: "💰" },
+  { id: "contratos",   label: "Documentos",  icon: "📑" },
+  { id: "documentos",  label: "Arquivos",    icon: "📁" },
+  { id: "notas",       label: "Notas",       icon: "🗒" },
+  { id: "designer",    label: "Designer",    icon: "🎨" },   // ← NOVO
 ] as const;
 
 export const MONTHS_FULL = [
@@ -111,5 +112,5 @@ export const DEFAULT_LABELS: NoteLabel[] = [
   { color: "#00e676", name: "" },
   { color: "#4dabf7", name: "" },
   { color: "#7b2fff", name: "" },
-  { color: "#aaa", name: "" },
+  { color: "#aaa",    name: "" },
 ];

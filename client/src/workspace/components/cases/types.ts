@@ -12,7 +12,7 @@ export interface Case {
   phone?: string;
   since?: string;
   notes?: string;
-  client_email?: string;    // email de acesso do cliente
+  client_email?: string;
   // Redes Sociais
   instagram_username?: string;
   instagram_page_id?: string;
@@ -87,6 +87,7 @@ export interface NoteCard {
   due_date?: string;
   label_color?: string;
   order: number;
+  completed?: boolean;
 }
 
 export interface NoteColumn {
@@ -101,6 +102,33 @@ export interface NoteLabel {
   name: string;
 }
 
+// ── Designer / Parceiro ──────────────────────────────────────
+export interface Designer {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  created_at: string;
+}
+
+// ── Briefing ─────────────────────────────────────────────────
+export interface Briefing {
+  id: string;
+  case_id: string;
+  designer_id: string;
+  format: string;
+  reference_text?: string;
+  reference_links: string[];      // array de URLs
+  reference_images: string[];     // URLs no R2
+  deadline: string;               // ISO date YYYY-MM-DD
+  brand_identity?: string;        // cores, tipografia, etc.
+  status: "aguardando" | "entregue" | "revisao" | "aprovado";
+  revision_note?: string;         // nota de revisão solicitada
+  delivery_urls?: string[];       // artes entregues pelo designer
+  created_at: string;
+}
+
+// ── Props components ─────────────────────────────────────────
 export interface CasesProps {
   profile: Profile;
 }
