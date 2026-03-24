@@ -125,6 +125,7 @@ export interface Briefing {
   status: "aguardando" | "entregue" | "revisao" | "aprovado";
   revision_note?: string;         // nota de revisão solicitada
   delivery_urls?: string[];       // artes entregues pelo designer
+  designer_value?: number;        // valor cobrado pelo designer
   created_at: string;
 }
 
@@ -155,4 +156,18 @@ export interface BrandIdentity {
   style_notes?: string;
   warnings?: string;
   updated_at?: string;
+}
+
+// ── Designer Closing ──────────────────────────────────────────
+export interface DesignerClosing {
+  id?: string;
+  designer_id: string;
+  month: number;
+  year: number;
+  total_bruto: number;
+  discount: number;
+  total_final: number;
+  notes?: string;
+  closed_at?: string;
+  created_at?: string;
 }

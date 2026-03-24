@@ -228,6 +228,23 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     setBrandIdentity(brandForm); setEditingBrand(false); setSaving(false);
   }
 
+  async function saveDesignerValue(b: Briefing) {
+    const val = parseFloat(editingValue);
+    if (isNaN(val)) return;
+    setSavingValue(true);
+    const { data } = await supabase
+      .from("briefings")
+      .update({ designer_value: val })
+      .eq("id", b.id)
+      .select()
+      .single();
+    if (data) {
+      setBriefings(prev => prev.map(x => x.id === b.id ? data : x));
+      setDetailBriefing(data);
+    }
+    setSavingValue(false);
+  }
+
   async function approveBriefing(b: Briefing) {
     const { data } = await supabase.from("briefings").update({ status: "aprovado" }).eq("id", b.id).select().single();
     if (data) { setBriefings(prev => prev.map(x => x.id === b.id ? data : x)); setDetailBriefing(data); }
@@ -565,6 +582,35 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
             {detailBriefing.revision_note && (
               <BSection label="Revisão solicitada"><p style={{ margin: 0, fontSize: ".82rem", color: "#ff6b35", lineHeight: 1.6 }}>{detailBriefing.revision_note}</p></BSection>
             )}
+
+            {/* Valor da entrega — designer define */}
+            <BSection label="Valor cobrado">
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>R$</span>
+                  <input
+                    className="ws-input"
+                    type="number"
+                    placeholder="0,00"
+                    defaultValue={detailBriefing.designer_value ?? ""}
+                    onChange={e => setEditingValue(e.target.value)}
+                    style={{ paddingLeft: 30, marginBottom: 0 }}
+                  />
+                </div>
+                <button
+                  onClick={() => void saveDesignerValue(detailBriefing)}
+                  disabled={savingValue}
+                  style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", padding: "8px 14px", fontSize: ".76rem", fontFamily: "Poppins", flexShrink: 0 }}
+                >
+                  {savingValue ? "..." : "Salvar"}
+                </button>
+              </div>
+              {detailBriefing.designer_value > 0 && (
+                <div style={{ marginTop: 6, fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>
+                  ✓ R$ {detailBriefing.designer_value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} registrado
+                </div>
+              )}
+            </BSection>
 
             {!readonly && (
               <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 16, marginTop: 8 }}>
