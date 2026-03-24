@@ -133,30 +133,36 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 
   // ── Criar designer/parceiro ──
   async function saveDesigner() {
-    if (!designerForm.name || !designerForm.email || !designerForm.password) return;
+    if (!designerForm.name || !designerForm.email) return;
     setSaving(true);
 
-    // Cria auth user no Supabase
-    const { data: authData, error: authError } = await supabase.auth.admin
-      ? // se tiver admin api disponível
-        { data: null, error: null }
-      : { data: null, error: null };
+    try {
+      const { data, error: dbError } = await supabase
+        .from("designers")
+        .insert({
+          name: designerForm.name,
+          email: designerForm.email,
+          phone: designerForm.phone || null,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
-    // Insere na tabela designers
-    const { data } = await supabase
-      .from("designers")
-      .insert({
-        name: designerForm.name,
-        email: designerForm.email,
-        phone: designerForm.phone,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+      if (dbError) {
+        console.error("Erro ao salvar designer:", dbError);
+        alert(`Erro ao salvar: ${dbError.message}`);
+        setSaving(false);
+        return;
+      }
 
-    if (data) setDesigners(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
-    setDesignerForm(EMPTY_DESIGNER);
-    setDesignerModal(false);
+      if (data) setDesigners(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      setDesignerForm(EMPTY_DESIGNER);
+      setDesignerModal(false);
+    } catch (err) {
+      console.error("Erro inesperado:", err);
+      alert("Erro inesperado ao criar designer.");
+    }
+
     setSaving(false);
   }
 
@@ -468,16 +474,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               placeholder="(41) 99999-9999"
               value={designerForm.phone}
               onChange={e => setDesignerForm(p => ({ ...p, phone: e.target.value }))}
-              style={{ marginBottom: 12 }}
-            />
-
-            <label className="ws-label">Senha de acesso *</label>
-            <input
-              className="ws-input"
-              type="password"
-              placeholder="Mínimo 8 caracteres"
-              value={designerForm.password}
-              onChange={e => setDesignerForm(p => ({ ...p, password: e.target.value }))}
               style={{ marginBottom: 18 }}
             />
 
@@ -485,7 +481,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               <button
                 className="ws-btn"
                 onClick={() => void saveDesigner()}
-                disabled={saving || !designerForm.name || !designerForm.email || !designerForm.password}
+                disabled={saving || !designerForm.name || !designerForm.email}
                 style={{ flex: 1 }}
               >
                 {saving ? "Criando..." : "Criar acesso"}
@@ -557,18 +553,32 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               </Section>
             )}
 
-            {/* Imagens de referência */}
-            {detailBriefing.reference_images?.length > 0 && (
-              <Section label="Imagens de referência">
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {/* Imagens de referência — sempre visível, com upload para admin */}
+            <Section label="Imagens de referência">
+              {(detailBriefing.reference_images?.length ?? 0) > 0 && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                   {detailBriefing.reference_images.map((url, i) => (
                     <a key={i} href={url} target="_blank" rel="noreferrer">
                       <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)" }} />
                     </a>
                   ))}
                 </div>
-              </Section>
-            )}
+              )}
+              {!readonly && (
+                <DetailImgUpload
+                  caseData={caseData}
+                  briefing={detailBriefing}
+                  onUploaded={(newUrls) => {
+                    const updated = {
+                      ...detailBriefing,
+                      reference_images: [...(detailBriefing.reference_images ?? []), ...newUrls],
+                    };
+                    setDetailBriefing(updated);
+                    setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b));
+                  }}
+                />
+              )}
+            </Section>
 
             {/* Arte entregue pelo designer */}
             {detailBriefing.delivery_urls?.length > 0 && (
@@ -592,8 +602,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               </Section>
             )}
 
-            {/* Ações admin — só aparece se a arte foi entregue e ainda não aprovada */}
-            {!readonly && detailBriefing.status === "entregue" && (
+            {/* Ações admin — sempre visíveis para admin */}
+            {!readonly && (
               <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 16, marginTop: 8 }}>
                 <div style={{ fontSize: ".72rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>Revisão</div>
 
@@ -646,6 +656,73 @@ function Section({ label, children }: { label: string; children: React.ReactNode
       <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px" }}>
         {children}
       </div>
+    </div>
+  );
+}
+// ── Helper: upload de imagens dentro do detalhe ──
+function DetailImgUpload({
+  caseData,
+  briefing,
+  onUploaded,
+}: {
+  caseData: Case;
+  briefing: Briefing;
+  onUploaded: (urls: string[]) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
+  async function handleFiles(files: File[]) {
+    if (!files.length) return;
+    setUploading(true);
+    const urls: string[] = [];
+
+    for (const file of files) {
+      const ext = file.name.split(".").pop();
+      const path = `briefings/${caseData.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", {
+        body: { filename: path, contentType: file.type },
+      });
+      if (error || !data?.signedUrl) continue;
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) urls.push(`${R2_PUBLIC_URL}/${path}`);
+    }
+
+    if (urls.length > 0) {
+      const newImages = [...(briefing.reference_images ?? []), ...urls];
+      await supabase.from("briefings").update({ reference_images: newImages }).eq("id", briefing.id);
+      onUploaded(urls);
+    }
+
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  return (
+    <div>
+      <div
+        onClick={() => !uploading && fileRef.current?.click()}
+        style={{
+          border: "1px dashed var(--ws-border2)", borderRadius: 7,
+          padding: "8px 12px", cursor: uploading ? "default" : "pointer",
+          color: "var(--ws-text3)", fontSize: ".74rem", fontFamily: "Poppins",
+          textAlign: "center", transition: "border-color .15s",
+          opacity: uploading ? 0.6 : 1,
+        }}
+        onMouseEnter={e => { if (!uploading) e.currentTarget.style.borderColor = caseData.color; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border2)"; }}
+      >
+        {uploading ? "Enviando..." : "+ Adicionar imagens"}
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: "none" }}
+        onChange={e => void handleFiles(Array.from(e.target.files ?? []))}
+      />
     </div>
   );
 }
