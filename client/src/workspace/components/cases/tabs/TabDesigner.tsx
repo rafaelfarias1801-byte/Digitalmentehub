@@ -382,7 +382,12 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
               <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{activeCase.name}<span style={{ color: activeCase.color }}>.</span></div>
-              <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Designer: {activeDesigner?.name}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                <div style={{ width: 20, height: 20, borderRadius: 5, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}22)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: caseData.color, flexShrink: 0 }}>
+                  {activeDesigner?.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div style={{ fontSize: ".75rem", color: "var(--ws-text2)", fontFamily: "Poppins", fontWeight: 600 }}>{activeDesigner?.name}</div>
+              </div>
             </div>
             {!readonly && activeSubTab === "briefings" && <button className="ws-btn" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => setBriefingModal(true)}>+ Novo briefing</button>}
             {!readonly && activeSubTab === "identidade" && !editingBrand && <button className="ws-btn-ghost" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => { setBrandForm(brandIdentity); setEditingBrand(true); }}>✎ Editar</button>}
