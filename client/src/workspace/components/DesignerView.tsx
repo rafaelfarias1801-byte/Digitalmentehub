@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import { CasesGlobalStyle } from "./cases/styles";
-import TabDesigner from "./cases/tabs/TabDesigner";
 import Loader from "./cases/shared/Loader";
 import type { Case, Briefing, DesignerClosing } from "./cases/types";
 
@@ -63,7 +62,8 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   const [discount, setDiscount]       = useState("");
   const [closingNotes, setClosingNotes] = useState("");
 
-  const firstName = profile.name?.split(" ")[0] ?? "Designer";
+  const displayName = profile.name || (profile as any)?.raw_user_meta_data?.name || profile.email?.split("@")[0] || "Designer";
+  const firstName = displayName.split(" ")[0];
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
 
@@ -174,7 +174,12 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           <button onClick={() => setView("dashboard")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px" }}>← Dashboard</button>
         </Header>
         <div style={{ flex: 1, padding: "28px" }}>
-          <TabDesigner caseData={activeCase} readonly={false} />
+          <DesignerClientWorkspace
+            profile={profile}
+            caseData={activeCase}
+            briefings={briefings.filter(b => b.case_id === activeCase.id)}
+            onBriefingUpdate={updated => setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b))}
+          />
         </div>
       </div>
     );
@@ -485,9 +490,9 @@ function Header({ profile, onLogout, children }: { profile: Profile; onLogout: (
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #e91e8c44, #e91e8c22)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: ".65rem", color: "#e91e8c" }}>
-          {profile.name?.slice(0, 2).toUpperCase()}
+          {displayName.slice(0, 2).toUpperCase()}
         </div>
-        <div style={{ fontSize: ".78rem", color: "var(--ws-text2)", fontFamily: "Poppins" }}>{profile.name}</div>
+        <div style={{ fontSize: ".78rem", color: "var(--ws-text2)", fontFamily: "Poppins" }}>{displayName}</div>
         <button onClick={onLogout} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", padding: "4px 12px", fontFamily: "Poppins" }}>Sair</button>
       </div>
     </div>
@@ -505,6 +510,273 @@ function StatCard({ label, value, color, icon }: { label: string; value: number;
         <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "2rem", color: "var(--ws-text)", lineHeight: 1, letterSpacing: "-0.04em" }}>{value}</div>
         <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 4 }}>{label}</div>
       </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════
+//  Workspace do designer logado — por cliente
+// ════════════════════════════════════════
+function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdate }: {
+  profile: Profile;
+  caseData: Case;
+  briefings: Briefing[];
+  onBriefingUpdate: (b: Briefing) => void;
+}) {
+  const [subTab, setSubTab]             = useState<"briefings" | "identidade">("briefings");
+  const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
+  const [loadingBrand, setLoadingBrand] = useState(false);
+  const [detailBriefing, setDetailBriefing] = useState<Briefing | null>(null);
+  const [editingValue, setEditingValue] = useState("");
+  const [savingValue, setSavingValue]   = useState(false);
+
+  useEffect(() => {
+    async function loadBrand() {
+      setLoadingBrand(true);
+      const { data } = await supabase.from("brand_identity").select("*").eq("case_id", caseData.id).maybeSingle();
+      setBrandIdentity(data);
+      setLoadingBrand(false);
+    }
+    void loadBrand();
+  }, [caseData.id]);
+
+  async function saveValue(b: Briefing) {
+    const val = parseFloat(editingValue);
+    if (isNaN(val)) return;
+    setSavingValue(true);
+    const { data } = await supabase.from("briefings").update({ designer_value: val }).eq("id", b.id).select().single();
+    if (data) { onBriefingUpdate(data); setDetailBriefing(data); }
+    setSavingValue(false);
+  }
+
+  return (
+    <div style={{ border: "1px solid var(--ws-border)", borderRadius: 14, overflow: "hidden", minHeight: 400 }}>
+      {/* Header */}
+      <div style={{ padding: "16px 20px 0", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface)" }}>
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>
+            {caseData.name}<span style={{ color: caseData.color }}>.</span>
+          </div>
+        </div>
+        <div style={{ display: "flex" }}>
+          {(["briefings", "identidade"] as const).map(tab => (
+            <button key={tab} onClick={() => setSubTab(tab)} style={{ background: "none", border: "none", cursor: "pointer", borderBottom: subTab === tab ? `2px solid ${caseData.color}` : "2px solid transparent", color: subTab === tab ? caseData.color : "var(--ws-text3)", fontSize: ".78rem", padding: "6px 14px", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
+              {tab === "briefings" ? "📋 Briefings" : "🎨 Identidade Visual"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Conteúdo */}
+      <div style={{ padding: 20, background: "var(--ws-bg)" }}>
+        {subTab === "briefings" && (
+          briefings.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".82rem" }}>
+              Nenhum briefing para este cliente ainda.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {briefings.map(b => {
+                const cfg = STATUS_CFG[b.status];
+                return (
+                  <div key={b.id} onClick={() => { setDetailBriefing(b); setEditingValue(String(b.designer_value ?? "")); }}
+                    style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color .15s" }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = caseData.color}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--ws-border)"}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)" }}>{b.format}</div>
+                      <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 3 }}>
+                        Prazo: {new Date(`${b.deadline}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                      </div>
+                      {b.reference_links?.length > 0 && (
+                        <div style={{ marginTop: 5, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {b.reference_links.map((link, i) => (
+                            <a key={i} href={link} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                              style={{ fontSize: ".62rem", color: caseData.color, background: `${caseData.color}15`, borderRadius: 4, padding: "2px 7px", textDecoration: "none", fontFamily: "Poppins", whiteSpace: "nowrap", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
+                              ↗ {link.replace(/^https?:\/\//, "").slice(0, 30)}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ background: cfg.bg ?? `${cfg.color}18`, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5, marginBottom: b.designer_value ? 4 : 0 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color }} />{cfg.label}
+                      </div>
+                      {b.designer_value ? (
+                        <div style={{ fontSize: ".68rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>{fmt(b.designer_value)}</div>
+                      ) : (
+                        <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>sem valor</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+        {subTab === "identidade" && (
+          loadingBrand ? <div style={{ padding: "32px 0", textAlign: "center", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Carregando...</div> :
+          !brandIdentity || (!brandIdentity.colors?.length && !brandIdentity.fonts?.length && !brandIdentity.links?.length && !brandIdentity.style_notes && !brandIdentity.warnings) ? (
+            <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".82rem" }}>
+              Identidade visual não cadastrada ainda.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {brandIdentity.colors?.length > 0 && (
+                <div>
+                  <BILabel>Paleta de cores</BILabel>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {brandIdentity.colors.map((c, i) => (
+                      <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 10, background: c.hex, border: "1px solid var(--ws-border)", boxShadow: `0 2px 8px ${c.hex}44` }} />
+                        <span style={{ fontSize: ".6rem", fontFamily: "Poppins", color: "var(--ws-text3)" }}>{c.hex}</span>
+                        {c.name && <span style={{ fontSize: ".6rem", fontFamily: "Poppins", color: "var(--ws-text2)" }}>{c.name}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {brandIdentity.fonts?.length > 0 && (
+                <div>
+                  <BILabel>Tipografia</BILabel>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {brandIdentity.fonts.map((f, i) => (
+                      <div key={i} style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 8, padding: "8px 12px", display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontWeight: 600, fontSize: ".84rem", color: "var(--ws-text)" }}>{f.name}</span>
+                        <span style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>{f.role}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {brandIdentity.style_notes && (
+                <div>
+                  <BILabel>Estilo / Personalidade</BILabel>
+                  <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 8, padding: "10px 14px", fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{brandIdentity.style_notes}</div>
+                </div>
+              )}
+              {brandIdentity.links?.length > 0 && (
+                <div>
+                  <BILabel>Links</BILabel>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {brandIdentity.links.map((l, i) => (
+                      <a key={i} href={l.url} target="_blank" rel="noreferrer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 8, padding: "8px 12px", textDecoration: "none" }}>
+                        <span style={{ fontSize: ".8rem", fontWeight: 600, color: caseData.color }}>{l.label}</span>
+                        <span style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>↗ {l.url.slice(0, 40)}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {brandIdentity.warnings && (
+                <div>
+                  <BILabel>⚠️ Avisos</BILabel>
+                  <div style={{ background: "rgba(255,214,0,0.08)", border: "1px solid rgba(255,214,0,0.25)", borderRadius: 8, padding: "10px 14px", fontSize: ".82rem", color: "#b08800", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{brandIdentity.warnings}</div>
+                </div>
+              )}
+            </div>
+          )
+        )}
+      </div>
+
+      {/* Modal detalhe do briefing */}
+      {detailBriefing && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={e => e.target === e.currentTarget && setDetailBriefing(null)}>
+          <div style={{ background: "var(--ws-surface)", borderRadius: 16, padding: "24px", maxWidth: 520, width: "100%", maxHeight: "90dvh", overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{detailBriefing.format}</div>
+                <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
+                  Prazo: {new Date(`${detailBriefing.deadline}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                </div>
+              </div>
+              {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
+                <div style={{ background: `${cfg.color}18`, color: cfg.color, borderRadius: 20, padding: "4px 12px", fontSize: ".68rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color }} />{cfg.label}
+                </div>
+              ); })()}
+            </div>
+
+            {detailBriefing.reference_text && (
+              <BISection label="Briefing / Referência">
+                <p style={{ margin: 0, fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6 }}>{detailBriefing.reference_text}</p>
+              </BISection>
+            )}
+
+            {detailBriefing.reference_links?.length > 0 && (
+              <BISection label="Links de referência">
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {detailBriefing.reference_links.map((link, i) => (
+                    <a key={i} href={link} target="_blank" rel="noreferrer" style={{ fontSize: ".78rem", color: caseData.color, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</a>
+                  ))}
+                </div>
+              </BISection>
+            )}
+
+            {detailBriefing.reference_images?.length > 0 && (
+              <BISection label="Imagens de referência">
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {detailBriefing.reference_images.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noreferrer">
+                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)" }} />
+                    </a>
+                  ))}
+                </div>
+              </BISection>
+            )}
+
+            {detailBriefing.revision_note && (
+              <BISection label="Revisão solicitada">
+                <p style={{ margin: 0, fontSize: ".82rem", color: "#ff6b35", lineHeight: 1.6 }}>{detailBriefing.revision_note}</p>
+              </BISection>
+            )}
+
+            {/* Valor cobrado pelo designer */}
+            <BISection label="Meu valor para este briefing">
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>R$</span>
+                  <input className="ws-input" type="number" placeholder="0,00"
+                    value={editingValue}
+                    onChange={e => setEditingValue(e.target.value)}
+                    style={{ paddingLeft: 30, marginBottom: 0 }}
+                  />
+                </div>
+                <button onClick={() => void saveValue(detailBriefing)} disabled={savingValue}
+                  style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", padding: "8px 14px", fontSize: ".76rem", fontFamily: "Poppins", flexShrink: 0 }}>
+                  {savingValue ? "..." : "Salvar"}
+                </button>
+              </div>
+              {detailBriefing.designer_value > 0 && (
+                <div style={{ marginTop: 6, fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>
+                  ✓ {fmt(detailBriefing.designer_value)} registrado
+                </div>
+              )}
+            </BISection>
+
+            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setDetailBriefing(null)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 16px", fontFamily: "Poppins" }}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BILabel({ children }: { children: React.ReactNode }) {
+  return <div style={{ fontSize: ".62rem", fontFamily: "Poppins", letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--ws-text3)", marginBottom: 8 }}>{children}</div>;
+}
+
+function BISection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: ".62rem", fontFamily: "Poppins", letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--ws-text3)", marginBottom: 6 }}>{label}</div>
+      <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px" }}>{children}</div>
     </div>
   );
 }
