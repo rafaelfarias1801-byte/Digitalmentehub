@@ -140,3 +140,19 @@ export interface CaseWorkspaceProps {
   onDelete: () => void;
   profile: Profile;
 }
+
+// ── Brand Identity ────────────────────────────────────────────
+export interface BrandColor { hex: string; name: string; }
+export interface BrandFont  { name: string; role: string; }
+export interface BrandLink  { label: string; url: string; }
+
+export interface BrandIdentity {
+  id?: string;
+  case_id?: string;
+  colors: BrandColor[];
+  fonts: BrandFont[];
+  links: BrandLink[];
+  style_notes?: string;
+  warnings?: string;
+  updated_at?: string;
+}
