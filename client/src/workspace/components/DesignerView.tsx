@@ -1,5 +1,5 @@
 // client/src/workspace/components/DesignerView.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import { CasesGlobalStyle } from "./cases/styles";
@@ -170,7 +170,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
         <CasesGlobalStyle />
-        <Header profile={profile} onLogout={handleLogout}>
+        <Header profile={profile} displayName={displayName} onLogout={handleLogout}>
           <button onClick={() => setView("dashboard")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px" }}>← Dashboard</button>
         </Header>
         <div style={{ flex: 1, padding: "28px" }}>
@@ -189,7 +189,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
       <CasesGlobalStyle />
-      <Header profile={profile} onLogout={handleLogout} />
+      <Header profile={profile} displayName={displayName} onLogout={handleLogout} />
 
       <div style={{ flex: 1, padding: "32px 28px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
 
@@ -479,7 +479,28 @@ export default function DesignerView({ profile }: DesignerViewProps) {
 }
 
 // ── Sub-componentes ──────────────────────────────────────────
-function Header({ profile, onLogout, children }: { profile: Profile; onLogout: () => void; children?: React.ReactNode }) {
+function Header({ profile, displayName, onLogout, children }: { profile: Profile; displayName: string; onLogout: () => void; children?: React.ReactNode }) {
+  const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>((profile as any).avatar_url ?? null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const R2 = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
+  async function handleAvatar(file: File) {
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `avatars/${profile.id}.${ext}`;
+    const { data, error } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename: path, contentType: file.type } });
+    if (!error && data?.signedUrl) {
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) {
+        const url = `${R2}/${path}?t=${Date.now()}`;
+        await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+        setAvatarUrl(url);
+      }
+    }
+    setUploading(false);
+  }
+
   return (
     <div style={{ background: "var(--ws-surface)", borderBottom: "1px solid var(--ws-border)", padding: "0 28px", height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -489,9 +510,21 @@ function Header({ profile, onLogout, children }: { profile: Profile; onLogout: (
         {children && <><div style={{ width: 1, height: 16, background: "var(--ws-border2)" }} />{children}</>}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #e91e8c44, #e91e8c22)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: ".65rem", color: "#e91e8c" }}>
-          {displayName.slice(0, 2).toUpperCase()}
+        {/* Avatar clicável */}
+        <div
+          onClick={() => !uploading && fileRef.current?.click()}
+          title="Clique para trocar sua foto"
+          style={{ width: 30, height: 30, borderRadius: 8, overflow: "hidden", cursor: uploading ? "default" : "pointer", flexShrink: 0, position: "relative", border: "1.5px solid #e91e8c44" }}
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #e91e8c44, #e91e8c22)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: ".65rem", color: "#e91e8c" }}>
+              {uploading ? "..." : displayName.slice(0, 2).toUpperCase()}
+            </div>
+          )}
         </div>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
         <div style={{ fontSize: ".78rem", color: "var(--ws-text2)", fontFamily: "Poppins" }}>{displayName}</div>
         <button onClick={onLogout} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", padding: "4px 12px", fontFamily: "Poppins" }}>Sair</button>
       </div>

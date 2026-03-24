@@ -287,8 +287,14 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ws-border)"; e.currentTarget.style.transform = "translateY(0)"; }}
               >
                 <div style={{ height: 72, background: `linear-gradient(135deg, ${caseData.color}33, ${caseData.color}11)`, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: `1px solid ${caseData.color}22` }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 12, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}33)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem", color: caseData.color, border: `2px solid ${caseData.color}44` }}>
-                    {d.name.slice(0, 2).toUpperCase()}
+                  <div style={{ width: 48, height: 48, borderRadius: 12, overflow: "hidden", border: `2px solid ${caseData.color}44`, flexShrink: 0 }}>
+                    {(d as any).avatar_url ? (
+                      <img src={(d as any).avatar_url} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}33)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem", color: caseData.color }}>
+                        {d.name.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div style={{ padding: "12px 14px" }}>
@@ -348,7 +354,9 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         </button>
         <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--ws-border)" }}>
           <div style={{ width: 36, height: 36, borderRadius: 9, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}22)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: ".85rem", color: caseData.color, marginBottom: 6 }}>
-            {activeDesigner?.name.slice(0, 2).toUpperCase()}
+            {(activeDesigner as any)?.avatar_url
+            ? <img src={(activeDesigner as any).avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 9 }} />
+            : activeDesigner?.name.slice(0, 2).toUpperCase()}
           </div>
           <div style={{ fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text)" }}>{activeDesigner?.name}</div>
           <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeDesigner?.email}</div>
@@ -401,7 +409,9 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{activeCase.name}<span style={{ color: activeCase.color }}>.</span></div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
                 <div style={{ width: 20, height: 20, borderRadius: 5, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}22)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: caseData.color, flexShrink: 0 }}>
-                  {activeDesigner?.name.slice(0, 2).toUpperCase()}
+                  {(activeDesigner as any)?.avatar_url
+            ? <img src={(activeDesigner as any).avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 9 }} />
+            : activeDesigner?.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text2)", fontFamily: "Poppins", fontWeight: 600 }}>{activeDesigner?.name}</div>
               </div>
