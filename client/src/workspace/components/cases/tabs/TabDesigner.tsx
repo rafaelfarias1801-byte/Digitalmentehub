@@ -44,7 +44,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [designerModal, setDesignerModal]     = useState(false);
   const [briefingModal, setBriefingModal]     = useState(false);
   const [detailBriefing, setDetailBriefing]   = useState<Briefing | null>(null);
-  const [linkModal, setLinkModal]             = useState(false);
   const [saving, setSaving]                   = useState(false);
   const [uploading, setUploading]             = useState(false);
 
@@ -79,15 +78,15 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     setView("workspace");
     setLoadingWorkspace(true);
 
-    const { data: dcRows } = await supabase.from("designer_cases").select("case_id").eq("designer_id", designer.id);
-    const caseIds = (dcRows ?? []).map((r: any) => r.case_id);
+    // Deriva clientes a partir dos briefings existentes — sem designer_cases
+    const { data: bfRows } = await supabase
+      .from("briefings")
+      .select("case_id")
+      .eq("designer_id", designer.id);
 
-    if (!caseIds.includes(caseData.id)) {
-      await supabase.from("designer_cases").upsert({ designer_id: designer.id, case_id: caseData.id });
-      caseIds.push(caseData.id);
-    }
-
+    const caseIds = [...new Set((bfRows ?? []).map((r: any) => r.case_id as string))];
     setDesignerCases(allCases.filter(c => caseIds.includes(c.id)));
+
     await loadClientData(designer.id, caseData.id);
     setLoadingWorkspace(false);
   }
@@ -156,7 +155,14 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
       deadline: briefingForm.deadline, status: "aguardando",
       created_at: new Date().toISOString(),
     }).select().single();
-    if (data) setBriefings(prev => [data, ...prev]);
+    if (data) {
+      setBriefings(prev => [data, ...prev]);
+      // Se o cliente ainda não está na sidebar, adiciona agora
+      const currentCase = allCases.find(c => c.id === activeClientId);
+      if (currentCase && !designerCases.find(c => c.id === activeClientId)) {
+        setDesignerCases(prev => [...prev, currentCase]);
+      }
+    }
     setBriefingForm(EMPTY_BRIEFING); setBriefingImages([]);
     setBriefingModal(false); setSaving(false); setUploading(false);
   }
@@ -170,14 +176,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
       await supabase.from("brand_identity").insert({ ...brandForm, case_id: activeClientId, updated_at: new Date().toISOString() });
     }
     setBrandIdentity(brandForm); setEditingBrand(false); setSaving(false);
-  }
-
-  async function linkCase(caseId: string) {
-    if (!activeDesigner) return;
-    await supabase.from("designer_cases").upsert({ designer_id: activeDesigner.id, case_id: caseId });
-    const newCase = allCases.find(c => c.id === caseId);
-    if (newCase && !designerCases.find(c => c.id === caseId)) setDesignerCases(prev => [...prev, newCase]);
-    setLinkModal(false);
   }
 
   async function approveBriefing(b: Briefing) {
@@ -279,7 +277,11 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         </div>
         <div style={{ fontSize: ".55rem", fontFamily: "Poppins", letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--ws-text3)", padding: "10px 14px 4px" }}>Clientes</div>
         <div style={{ flex: 1, overflowY: "auto" }}>
-          {designerCases.map(c => (
+          {designerCases.length === 0 ? (
+            <div style={{ padding: "14px", fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", lineHeight: 1.5, textAlign: "center", marginTop: 8 }}>
+              Nenhum cliente vinculado ainda. Crie um briefing.
+            </div>
+          ) : designerCases.map(c => (
             <button key={c.id} onClick={() => void switchClient(c.id)}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: activeClientId === c.id ? `${c.color}18` : "none", border: "none", borderLeft: activeClientId === c.id ? `2px solid ${c.color}` : "2px solid transparent", color: activeClientId === c.id ? c.color : "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 14px", textAlign: "left", fontFamily: "inherit", transition: "all .15s" }}
             >
@@ -290,11 +292,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
             </button>
           ))}
         </div>
-        {!readonly && (
-          <button onClick={() => setLinkModal(true)} style={{ background: "none", border: "none", borderTop: "1px solid var(--ws-border)", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", fontFamily: "Poppins", padding: "10px 14px", textAlign: "left" }}>
-            + Vincular cliente
-          </button>
-        )}
+
       </div>
 
       {/* Área principal */}
@@ -501,31 +499,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         </div>
       )}
 
-      {/* MODAL — Vincular cliente */}
-      {linkModal && !readonly && (
-        <div style={getOverlayStyle(isMobile)} onClick={e => e.target === e.currentTarget && setLinkModal(false)}>
-          <div style={{ ...modalBoxStyle, maxWidth: 380, width: "100%" }}>
-            <div style={modalTitleStyle}>Vincular cliente</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {allCases.filter(c => !designerCases.find(dc => dc.id === c.id)).map(c => (
-                <button key={c.id} onClick={() => void linkCase(c.id)}
-                  style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--ws-surface2)", border: "1px solid var(--ws-border)", borderRadius: 8, padding: "10px 14px", cursor: "pointer", textAlign: "left" }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 6, background: `${c.color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".6rem", fontWeight: 800, color: c.color, flexShrink: 0, overflow: "hidden" }}>
-                    {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <span style={{ fontSize: ".84rem", color: "var(--ws-text)", fontWeight: 600 }}>{c.name}</span>
-                </button>
-              ))}
-              {allCases.filter(c => !designerCases.find(dc => dc.id === c.id)).length === 0 && (
-                <p style={{ color: "var(--ws-text3)", fontSize: ".82rem", textAlign: "center", margin: "8px 0" }}>Todos os clientes já estão vinculados.</p>
-              )}
-            </div>
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-              <button className="ws-btn-ghost" onClick={() => setLinkModal(false)}>Fechar</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
