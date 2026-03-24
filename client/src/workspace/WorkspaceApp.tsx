@@ -14,6 +14,7 @@ import Notas from "./components/Notas";
 import IA from "./components/IA";
 import Pomodoro from "./components/Pomodoro";
 import ClientView from "./components/ClientView";
+import DesignerView from "./components/DesignerView";
 import "./workspace.css";
 
 export type PageId = "dashboard" | "checklist" | "agenda" | "financeiro" | "cases" | "notas" | "ia" | "pomodoro";
@@ -128,6 +129,7 @@ export default function WorkspaceApp() {
   if (loading) return <div className="ws-loading"><div className="ws-loading-dot" /></div>;
   if (!profile) return <LoginPage onLogin={setProfile} />;
   if (profile.role === "cliente") return <ClientView profile={profile} />;
+  if (profile.role === "designer") return <DesignerView profile={profile} />;
 
   const CurrentPage = PAGES[page];
 

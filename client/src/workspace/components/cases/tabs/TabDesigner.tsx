@@ -48,6 +48,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [uploading, setUploading]             = useState(false);
 
   const [designerForm, setDesignerForm]       = useState(EMPTY_DESIGNER);
+  const [editingDesigner, setEditingDesigner] = useState<Designer | null>(null);
   const [briefingForm, setBriefingForm]       = useState(EMPTY_BRIEFING);
   const [briefingImages, setBriefingImages]   = useState<File[]>([]);
   const [brandForm, setBrandForm]             = useState<BrandIdentity>(EMPTY_BRAND);
@@ -78,13 +79,13 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     setView("workspace");
     setLoadingWorkspace(true);
 
-    // Deriva clientes a partir dos briefings existentes — sem designer_cases
-    const { data: bfRows } = await supabase
-      .from("briefings")
+    // Carrega clientes de designer_cases (vínculo permanente)
+    const { data: dcRows } = await supabase
+      .from("designer_cases")
       .select("case_id")
       .eq("designer_id", designer.id);
 
-    const caseIds = [...new Set((bfRows ?? []).map((r: any) => r.case_id as string))];
+    const caseIds = (dcRows ?? []).map((r: any) => r.case_id as string);
     setDesignerCases(allCases.filter(c => caseIds.includes(c.id)));
 
     await loadClientData(designer.id, caseData.id);
@@ -118,15 +119,60 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         email: designerForm.email, password: designerForm.password,
         options: { data: { name: designerForm.name, role: "designer" } },
       });
-      if (authError) { alert(`Erro: ${authError.message}`); setSaving(false); return; }
-      const { data } = await supabase.from("designers").insert({
-        id: authData.user?.id, name: designerForm.name,
+
+      if (authError) {
+        alert(`Erro ao criar acesso: ${authError.message}`);
+        setSaving(false);
+        return;
+      }
+
+      if (!authData.user) {
+        alert("Erro: usuário não foi criado. Verifique se o email já está em uso.");
+        setSaving(false);
+        return;
+      }
+
+      // Confirma o email automaticamente via SQL (sem precisar de Edge Function)
+      await supabase.rpc("confirm_user_email", { user_id: authData.user.id }).maybeSingle();
+
+      const { data, error: dbError } = await supabase.from("designers").insert({
+        id: authData.user.id, name: designerForm.name,
         email: designerForm.email, phone: designerForm.phone || null,
         created_at: new Date().toISOString(),
       }).select().single();
+
+      if (dbError) {
+        alert(`Erro ao salvar designer: ${dbError.message}`);
+        setSaving(false);
+        return;
+      }
+
       if (data) setDesigners(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
-      setDesignerForm(EMPTY_DESIGNER); setDesignerModal(false);
-    } catch { alert("Erro inesperado."); }
+      setDesignerForm(EMPTY_DESIGNER);
+      setDesignerModal(false);
+    } catch (err: any) {
+      alert(`Erro inesperado: ${err?.message ?? err}`);
+    }
+    setSaving(false);
+  }
+
+  async function updateDesigner() {
+    if (!editingDesigner || !designerForm.name || !designerForm.email) return;
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("designers")
+      .update({ name: designerForm.name, email: designerForm.email, phone: designerForm.phone || null })
+      .eq("id", editingDesigner.id)
+      .select()
+      .single();
+    if (error) { alert(`Erro: ${error.message}`); setSaving(false); return; }
+    if (data) {
+      setDesigners(prev => prev.map(d => d.id === data.id ? data : d).sort((a, b) => a.name.localeCompare(b.name)));
+      if (activeDesigner?.id === data.id) setActiveDesigner(data);
+    }
+    setEditingDesigner(null);
+    setDesignerForm(EMPTY_DESIGNER);
+    setDesignerModal(false);
     setSaving(false);
   }
 
@@ -157,7 +203,11 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     }).select().single();
     if (data) {
       setBriefings(prev => [data, ...prev]);
-      // Se o cliente ainda não está na sidebar, adiciona agora
+      // Vínculo permanente em designer_cases
+      await supabase.from("designer_cases").upsert(
+        { designer_id: activeDesigner!.id, case_id: activeClientId },
+        { onConflict: "designer_id,case_id" }
+      );
       const currentCase = allCases.find(c => c.id === activeClientId);
       if (currentCase && !designerCases.find(c => c.id === activeClientId)) {
         setDesignerCases(prev => [...prev, currentCase]);
@@ -228,6 +278,12 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                   <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 2 }}>{d.name}</div>
                   <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.email}</div>
                   {d.phone && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>{d.phone}</div>}
+                  {!readonly && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setEditingDesigner(d); setDesignerForm({ name: d.name, email: d.email, phone: d.phone ?? "", password: "" }); setDesignerModal(true); }}
+                      style={{ marginTop: 8, background: "var(--ws-surface2)", border: "1px solid var(--ws-border)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".65rem", padding: "3px 10px", fontFamily: "Poppins" }}
+                    >✎ Editar</button>
+                  )}
                 </div>
               </div>
             ))}
@@ -237,18 +293,23 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         {designerModal && (
           <div style={getOverlayStyle(isMobile)} onClick={e => e.target === e.currentTarget && setDesignerModal(false)}>
             <div style={{ ...modalBoxStyle, maxWidth: 420, width: "100%" }}>
-              <div style={modalTitleStyle}>Novo designer / parceiro</div>
+              <div style={modalTitleStyle}>{editingDesigner ? "Editar designer" : "Novo designer / parceiro"}</div>
               <label className="ws-label">Nome *</label>
               <input className="ws-input" placeholder="Nome completo" value={designerForm.name} onChange={e => setDesignerForm(p => ({ ...p, name: e.target.value }))} style={{ marginBottom: 12 }} />
               <label className="ws-label">E-mail (login) *</label>
               <input className="ws-input" type="email" placeholder="designer@email.com" value={designerForm.email} onChange={e => setDesignerForm(p => ({ ...p, email: e.target.value }))} style={{ marginBottom: 12 }} />
               <label className="ws-label">Telefone / WhatsApp</label>
               <input className="ws-input" placeholder="(41) 99999-9999" value={designerForm.phone} onChange={e => setDesignerForm(p => ({ ...p, phone: e.target.value }))} style={{ marginBottom: 12 }} />
-              <label className="ws-label">Senha de acesso *</label>
-              <input className="ws-input" type="password" placeholder="Mínimo 8 caracteres" value={designerForm.password} onChange={e => setDesignerForm(p => ({ ...p, password: e.target.value }))} style={{ marginBottom: 18 }} />
+              {!editingDesigner && (
+                <>
+                  <label className="ws-label">Senha de acesso *</label>
+                  <input className="ws-input" type="password" placeholder="Mínimo 8 caracteres" value={designerForm.password} onChange={e => setDesignerForm(p => ({ ...p, password: e.target.value }))} style={{ marginBottom: 18 }} />
+                </>
+              )}
+              {editingDesigner && <div style={{ marginBottom: 18 }} />}
               <div style={{ display: "flex", gap: 10 }}>
-                <button className="ws-btn" onClick={() => void saveDesigner()} disabled={saving || !designerForm.name || !designerForm.email || !designerForm.password} style={{ flex: 1 }}>{saving ? "Criando..." : "Criar acesso"}</button>
-                <button className="ws-btn-ghost" onClick={() => { setDesignerModal(false); setDesignerForm(EMPTY_DESIGNER); }}>Cancelar</button>
+                <button className="ws-btn" onClick={() => editingDesigner ? void updateDesigner() : void saveDesigner()} disabled={saving || !designerForm.name || !designerForm.email || (!editingDesigner && !designerForm.password)} style={{ flex: 1 }}>{saving ? "Salvando..." : editingDesigner ? "Salvar alterações" : "Criar acesso"}</button>
+                <button className="ws-btn-ghost" onClick={() => { setDesignerModal(false); setDesignerForm(EMPTY_DESIGNER); setEditingDesigner(null); }}>Cancelar</button>
               </div>
             </div>
           </div>
@@ -281,16 +342,35 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
             <div style={{ padding: "14px", fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", lineHeight: 1.5, textAlign: "center", marginTop: 8 }}>
               Nenhum cliente vinculado ainda. Crie um briefing.
             </div>
-          ) : designerCases.map(c => (
-            <button key={c.id} onClick={() => void switchClient(c.id)}
-              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: activeClientId === c.id ? `${c.color}18` : "none", border: "none", borderLeft: activeClientId === c.id ? `2px solid ${c.color}` : "2px solid transparent", color: activeClientId === c.id ? c.color : "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 14px", textAlign: "left", fontFamily: "inherit", transition: "all .15s" }}
-            >
-              <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: `${c.color}33`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: c.color }}>
-                {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.name.slice(0, 2).toUpperCase()}
-              </div>
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-            </button>
-          ))}
+          ) : (() => {
+            const ativos    = designerCases.filter(c => c.status === "ativo");
+            const pausados  = designerCases.filter(c => c.status === "pausado");
+            const encerrados = designerCases.filter(c => c.status === "encerrado");
+            const allAtivos = pausados.length === 0 && encerrados.length === 0;
+
+            const renderClient = (c: Case) => (
+              <button key={c.id} onClick={() => void switchClient(c.id)}
+                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: activeClientId === c.id ? `${c.color}18` : "none", border: "none", borderLeft: activeClientId === c.id ? `2px solid ${c.color}` : "2px solid transparent", color: activeClientId === c.id ? c.color : "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 14px", textAlign: "left", fontFamily: "inherit", transition: "all .15s" }}
+              >
+                <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: `${c.color}33`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: c.color }}>
+                  {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.name.slice(0, 2).toUpperCase()}
+                </div>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+              </button>
+            );
+
+            const GroupLabel = ({ label }: { label: string }) => (
+              <div style={{ fontSize: ".52rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "var(--ws-text3)", padding: "8px 14px 2px" }}>{label}</div>
+            );
+
+            if (allAtivos) return <>{ativos.map(renderClient)}</>;
+
+            return <>
+              {ativos.length > 0 && <><GroupLabel label="Ativos" />{ativos.map(renderClient)}</>}
+              {pausados.length > 0 && <><GroupLabel label="Pausados" />{pausados.map(renderClient)}</>}
+              {encerrados.length > 0 && <><GroupLabel label="Encerrados" />{encerrados.map(renderClient)}</>}
+            </>;
+          })()}
         </div>
 
       </div>
