@@ -749,11 +749,22 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 async function downloadFile(url: string, filename?: string) {
   const name = filename || url.split("/").pop()?.split("?")[0] || "arquivo";
   try {
-    const { data, error } = await supabase.functions.invoke("download-file", {
-      body: { url, filename: name },
-    });
-    if (error) throw error;
-    const blob = new Blob([data], { type: "application/octet-stream" });
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token ?? "";
+    const res = await fetch(
+      "https://nznyzjvtmqfcjkogkfju.supabase.co/functions/v1/download-file",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bnl6anZ0bXFmY2prb2drZmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTAzMTAsImV4cCI6MjA4ODkyNjMxMH0.NLf83n9WS3v-e0u_H3WvHGvEgOq1xMgpCP1m7C8LFIY",
+        },
+        body: JSON.stringify({ url, filename: name }),
+      }
+    );
+    if (!res.ok) throw new Error("download failed");
+    const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = blobUrl;
@@ -767,7 +778,6 @@ async function downloadFile(url: string, filename?: string) {
     window.open(url, "_blank");
   }
 }
-
 function BSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
