@@ -12,6 +12,29 @@ interface TabDesignerProps {
   readonly?: boolean;
 }
 
+function deadlineStatus(deadline: string): "ok" | "warning" | "overdue" {
+  const d = new Date(`${deadline}T23:59:59`);
+  const now = new Date();
+  const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  if (diff < 0) return "overdue";
+  if (diff <= 3) return "warning";
+  return "ok";
+}
+
+function DeadlineBadge({ deadline }: { deadline: string }) {
+  const status = deadlineStatus(deadline);
+  const cfg = {
+    ok:      { color: "#00a864", bg: "rgba(0,180,100,0.10)", icon: "" },
+    warning: { color: "#b08800", bg: "rgba(255,214,0,0.12)", icon: "⚠️ " },
+    overdue: { color: "#d63232", bg: "rgba(220,50,50,0.12)", icon: "🚨 " },
+  }[status];
+  return (
+    <span style={{ background: cfg.bg, color: cfg.color, borderRadius: 6, padding: "2px 8px", fontSize: ".68rem", fontFamily: "Poppins", fontWeight: 600 }}>
+      {cfg.icon}Prazo: {new Date(`${deadline}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+    </span>
+  );
+}
+
 const STATUS_CFG: Record<Briefing["status"], { bg: string; color: string; label: string; dot: string }> = {
   aguardando: { bg: "rgba(255,214,0,0.10)",  color: "#b08800", label: "Aguardando entrega", dot: "#ffd600" },
   entregue:   { bg: "rgba(75,100,255,0.10)", color: "#4b6bff", label: "Entregue",           dot: "#4b6bff" },
@@ -66,7 +89,19 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         supabase.from("designers").select("*").order("name"),
         supabase.from("cases").select("id, name, color, logo_url, status").order("name"),
       ]);
-      if (mounted) { setDesigners(ds ?? []); setAllCases(cs ?? []); setLoading(false); }
+      if (mounted) {
+        setDesigners(ds ?? []);
+        setAllCases(cs ?? []);
+        // Busca profiles para avatar e nome correto
+        if (ds && ds.length > 0) {
+          const ids = ds.map((d: any) => d.id);
+          const { data: profs } = await supabase.from("profiles").select("id, name, avatar_url").in("id", ids);
+          const map: Record<string, { name: string; avatar_url?: string }> = {};
+          (profs ?? []).forEach((p: any) => { map[p.id] = { name: p.name, avatar_url: p.avatar_url }; });
+          setDesignerProfiles(map);
+        }
+        setLoading(false);
+      }
     }
     void load();
     return () => { mounted = false; };
@@ -228,6 +263,24 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     setBrandIdentity(brandForm); setEditingBrand(false); setSaving(false);
   }
 
+  async function saveBriefingEdit() {
+    if (!editingBriefing) return;
+    setSavingEdit(true);
+    const links = editBriefingForm.reference_links.split("\n").map(l => l.trim()).filter(Boolean);
+    const { data } = await supabase.from("briefings").update({
+      format: editBriefingForm.format,
+      reference_text: editBriefingForm.reference_text,
+      reference_links: links,
+      deadline: editBriefingForm.deadline,
+    }).eq("id", editingBriefing.id).select().single();
+    if (data) {
+      setBriefings(prev => prev.map(b => b.id === data.id ? data : b));
+      if (detailBriefing?.id === data.id) setDetailBriefing(data);
+    }
+    setEditingBriefing(null);
+    setSavingEdit(false);
+  }
+
   async function saveDesignerValue(b: Briefing) {
     const val = parseFloat(editingValue);
     if (isNaN(val)) return;
@@ -288,17 +341,17 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               >
                 <div style={{ height: 72, background: `linear-gradient(135deg, ${caseData.color}33, ${caseData.color}11)`, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: `1px solid ${caseData.color}22` }}>
                   <div style={{ width: 48, height: 48, borderRadius: 12, overflow: "hidden", border: `2px solid ${caseData.color}44`, flexShrink: 0 }}>
-                    {(d as any).avatar_url ? (
-                      <img src={(d as any).avatar_url} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {designerProfiles[d.id]?.avatar_url ? (
+                      <img src={designerProfiles[d.id].avatar_url} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}33)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem", color: caseData.color }}>
-                        {d.name.slice(0, 2).toUpperCase()}
+                        {(designerProfiles[d.id]?.name || d.name).slice(0, 2).toUpperCase()}
                       </div>
                     )}
                   </div>
                 </div>
                 <div style={{ padding: "12px 14px" }}>
-                  <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 2 }}>{d.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 2 }}>{designerProfiles[d.id]?.name || d.name}</div>
                   <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.email}</div>
                   {d.phone && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>{d.phone}</div>}
                   {!readonly && (
@@ -444,10 +497,10 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                           onMouseLeave={e => e.currentTarget.style.borderColor = "var(--ws-border)"}
                         >
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)" }}>{b.format}</div>
-                            <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 3 }}>
-                              Prazo: {new Date(`${b.deadline}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
-                              {" · "}{new Date(b.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                            <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 4 }}>{b.format}</div>
+                            <DeadlineBadge deadline={b.deadline} />
+                            <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 3 }}>
+                              Criado: {new Date(b.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                             </div>
                             {b.reference_links?.length > 0 && (
                               <div style={{ marginTop: 5, display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -624,7 +677,10 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 
             {!readonly && (
               <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 16, marginTop: 8 }}>
-                <div style={{ fontSize: ".68rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>Ações</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ fontSize: ".68rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase" }}>Ações</div>
+                  <button onClick={() => { setEditingBriefing(detailBriefing); setEditBriefingForm({ format: detailBriefing.format, reference_text: detailBriefing.reference_text ?? "", reference_links: (detailBriefing.reference_links ?? []).join("\n"), deadline: detailBriefing.deadline }); }} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", padding: "4px 10px", fontFamily: "Poppins" }}>✎ Editar briefing</button>
+                </div>
                 <textarea className="ws-input" rows={2} placeholder="Descreva o que precisa ser alterado (para solicitar revisão)..." value={revisionText} onChange={e => setRevisionText(e.target.value)} style={{ resize: "vertical", marginBottom: 10 }} />
                 <div style={{ display: "flex", gap: 10 }}>
                   <button className="ws-btn" onClick={() => void approveBriefing(detailBriefing)} style={{ flex: 1, background: "#00a864" }}>✓ Aprovar arte</button>
@@ -641,6 +697,36 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
       )}
 
     </div>
+
+      {/* MODAL — Editar Briefing */}
+      {editingBriefing && !readonly && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={e => e.target === e.currentTarget && setEditingBriefing(null)}>
+          <div style={{ background: "var(--ws-surface)", borderRadius: 16, padding: "28px", maxWidth: 500, width: "100%" }}>
+            <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)", marginBottom: 20 }}>Editar briefing</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+              <div>
+                <label className="ws-label">Formato *</label>
+                <select className="ws-input" value={editBriefingForm.format} onChange={e => setEditBriefingForm(p => ({ ...p, format: e.target.value }))}>
+                  {["Reels","Carrossel","Feed / Estático","Story","Banner","Outro"].map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="ws-label">Prazo *</label>
+                <input className="ws-input" type="date" value={editBriefingForm.deadline} onChange={e => setEditBriefingForm(p => ({ ...p, deadline: e.target.value }))} />
+              </div>
+            </div>
+            <label className="ws-label">Referência / Briefing</label>
+            <textarea className="ws-input" rows={3} value={editBriefingForm.reference_text} onChange={e => setEditBriefingForm(p => ({ ...p, reference_text: e.target.value }))} style={{ resize: "vertical", marginBottom: 12 }} />
+            <label className="ws-label">Links de referência (um por linha)</label>
+            <textarea className="ws-input" rows={2} value={editBriefingForm.reference_links} onChange={e => setEditBriefingForm(p => ({ ...p, reference_links: e.target.value }))} style={{ resize: "vertical", marginBottom: 16 }} />
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="ws-btn" onClick={() => void saveBriefingEdit()} disabled={savingEdit} style={{ flex: 1 }}>{savingEdit ? "Salvando..." : "Salvar alterações"}</button>
+              <button className="ws-btn-ghost" onClick={() => setEditingBriefing(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
   );
 }
 
