@@ -644,8 +644,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                     <div key={i} style={{ position: "relative" }}>
                       <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
                       {/* Admin: baixar */}
-                      <a href={url} download target="_blank" rel="noreferrer"
-                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.6)", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", textDecoration: "none" }}>↓</a>
+                      <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.6)", border: "none", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", cursor: "pointer" }}>↓</button>
                       {/* Admin: remover */}
                       {!readonly && (
                         <button onClick={async () => {
@@ -675,8 +675,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                   {detailBriefing.delivery_urls!.map((url, i) => (
                     <div key={i} style={{ position: "relative" }}>
                       <img src={url} alt="" style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44`, display: "block" }} />
-                      <a href={url} download target="_blank" rel="noreferrer"
-                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", textDecoration: "none", fontFamily: "Poppins" }}>↓ baixar</a>
+                      <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", cursor: "pointer", fontFamily: "Poppins" }}>↓ baixar</button>
                     </div>
                   ))}
                 </div>
@@ -745,6 +745,22 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 // ════════════════════════════════════════
 //  SUB-COMPONENTES
 // ════════════════════════════════════════
+
+async function downloadFile(url: string, filename?: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename || url.split("/").pop() || "arquivo";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
 
 function BSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (

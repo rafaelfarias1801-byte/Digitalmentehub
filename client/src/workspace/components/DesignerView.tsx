@@ -214,7 +214,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </div>
         </DesignerHeader>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
-        <div style={{ flex: 1, padding: "28px" }}>
+        <div style={{ flex: 1, padding: "28px", paddingTop: "80px" }}>
           <DesignerClientWorkspace
             profile={profile}
             caseData={activeCase}
@@ -233,7 +233,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
       <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme} />
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
 
-      <div style={{ flex: 1, padding: "32px 28px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
+      <div style={{ flex: 1, padding: "32px 28px", paddingTop: "84px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
 
         {closingPeriod.show && !alreadyClosed && (
           <div style={{ background: "linear-gradient(135deg, rgba(255,214,0,0.12), rgba(255,107,53,0.08))", border: "1px solid rgba(255,214,0,0.3)", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
@@ -486,7 +486,7 @@ function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAv
   children?: React.ReactNode;
 }) {
   return (
-    <div style={{ background: "var(--ws-surface)", borderBottom: "1px solid var(--ws-border)", padding: "0 28px", height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 20 }}>
+    <div style={{ background: "var(--ws-surface)", borderBottom: "1px solid var(--ws-border)", padding: "0 28px", height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", position: "fixed", top: 0, left: 0, right: 0, zIndex: 100 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ fontFamily: "Poppins", fontWeight: 900, fontSize: "1.05rem", color: "var(--ws-text)", letterSpacing: "-0.03em" }}>DIG<span style={{ color: "#e91e8c" }}>.</span></div>
         <div style={{ width: 1, height: 16, background: "var(--ws-border2)" }} />
@@ -737,8 +737,8 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                   {detailBriefing.reference_images.map((url, i) => (
                     <div key={i} style={{ position: "relative" }}>
                       <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
-                      <a href={url} download target="_blank" rel="noreferrer"
-                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", textDecoration: "none" }}>↓</a>
+                      <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", cursor: "pointer" }}>↓</button>
                     </div>
                   ))}
                 </div>
@@ -793,6 +793,22 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
       )}
     </div>
   );
+}
+
+async function downloadFile(url: string, filename?: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename || url.split("/").pop() || "arquivo";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch {
+    window.open(url, "_blank");
+  }
 }
 
 function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
@@ -861,25 +877,26 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
           ))}
         </div>
       )}
-      {/* Preview arquivos selecionados */}
-      {pendingFiles.length > 0 && (
+      {/* Selecionar + enviar — preview só aparece se nada enviado ainda ou em edição */}
+      {pendingFiles.length > 0 && !uploading && (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
           {pendingUrls.map((url, i) => (
             <div key={i} style={{ position: "relative" }}>
               <img src={url} alt="" style={{ width: 64, height: 64, borderRadius: 6, objectFit: "cover", border: "1px dashed var(--ws-border2)", display: "block", opacity: 0.7 }} />
+              <div style={{ position: "absolute", bottom: 2, left: 2, background: "rgba(0,0,0,.5)", borderRadius: 3, padding: "1px 4px", fontSize: ".5rem", color: "#fff", fontFamily: "Poppins" }}>novo</div>
             </div>
           ))}
         </div>
       )}
       <div style={{ display: "flex", gap: 8 }}>
         <div onClick={() => !uploading && fileRef.current?.click()}
-          style={{ flex: 1, border: "1px dashed var(--ws-border2)", borderRadius: 8, padding: "8px 12px", cursor: "pointer", color: "var(--ws-text3)", fontSize: ".74rem", fontFamily: "Poppins", textAlign: "center" }}>
-          {pendingFiles.length > 0 ? `${pendingFiles.length} arquivo(s) selecionado(s)` : "Selecionar arquivos"}
+          style={{ flex: 1, border: "1px dashed var(--ws-border2)", borderRadius: 8, padding: "8px 12px", cursor: uploading ? "default" : "pointer", color: "var(--ws-text3)", fontSize: ".74rem", fontFamily: "Poppins", textAlign: "center", opacity: uploading ? 0.5 : 1 }}>
+          {uploading ? "Enviando..." : pendingFiles.length > 0 ? `${pendingFiles.length} arquivo(s) selecionado(s)` : "Selecionar arquivos"}
         </div>
-        {pendingFiles.length > 0 && (
-          <button onClick={() => void handleSendForApproval()} disabled={uploading}
+        {pendingFiles.length > 0 && !uploading && (
+          <button onClick={() => void handleSendForApproval()}
             style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: ".76rem", fontWeight: 700, padding: "8px 14px", fontFamily: "Poppins", flexShrink: 0 }}>
-            {uploading ? "Enviando..." : "📤 Enviar para aprovação"}
+            📤 Enviar para aprovação
           </button>
         )}
       </div>
