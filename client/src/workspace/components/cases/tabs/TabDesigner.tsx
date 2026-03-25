@@ -636,17 +636,28 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               )}
             </BSection>
 
-            {detailBriefing.delivery_urls?.length > 0 && (
-              <BSection label="Arte entregue">
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {detailBriefing.delivery_urls.map((url, i) => (
+            {/* Arte entregue + upload pelo designer */}
+            <BSection label="Arte entregue">
+              {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                  {detailBriefing.delivery_urls!.map((url, i) => (
                     <a key={i} href={url} target="_blank" rel="noreferrer">
                       <img src={url} alt="" style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44` }} />
                     </a>
                   ))}
                 </div>
-              </BSection>
-            )}
+              )}
+              {/* Designer faz upload da arte entregue */}
+              <DeliveryUpload
+                briefing={detailBriefing}
+                caseData={activeCase}
+                r2base={R2}
+                onDelivered={(updatedBriefing) => {
+                  setBriefings(prev => prev.map(b => b.id === updatedBriefing.id ? updatedBriefing : b));
+                  setDetailBriefing(updatedBriefing);
+                }}
+              />
+            </BSection>
 
             {detailBriefing.revision_note && (
               <BSection label="Revisão solicitada"><p style={{ margin: 0, fontSize: ".82rem", color: "#ff6b35", lineHeight: 1.6 }}>{detailBriefing.revision_note}</p></BSection>
@@ -889,6 +900,72 @@ function BrandEditor({ form, setForm, caseData, onSave, onCancel, saving }: {
         <button className="ws-btn" onClick={onSave} disabled={saving} style={{ flex: 1 }}>{saving ? "Salvando..." : "Salvar identidade"}</button>
         <button className="ws-btn-ghost" onClick={onCancel}>Cancelar</button>
       </div>
+    </div>
+  );
+}
+
+function DeliveryUpload({ briefing, caseData, r2base, onDelivered }: {
+  briefing: Briefing;
+  caseData: Case;
+  r2base: string;
+  onDelivered: (b: Briefing) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFiles(files: File[]) {
+    if (!files.length) return;
+    setUploading(true);
+    const urls: string[] = [];
+    for (const file of files) {
+      const ext = file.name.split(".").pop();
+      const path = `deliveries/${caseData.id}/${briefing.id}/${Date.now()}.${ext}`;
+      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename: path, contentType: file.type } });
+      if (error || !data?.signedUrl) continue;
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) urls.push(`${r2base}/${path}`);
+    }
+    if (urls.length > 0) {
+      const newUrls = [...(briefing.delivery_urls ?? []), ...urls];
+      const { data } = await supabase
+        .from("briefings")
+        .update({ delivery_urls: newUrls, status: "entregue" })
+        .eq("id", briefing.id)
+        .select()
+        .single();
+      if (data) onDelivered(data);
+    }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  if (briefing.status === "aprovado") return null;
+
+  return (
+    <div>
+      <div
+        onClick={() => !uploading && fileRef.current?.click()}
+        style={{
+          border: `1px dashed ${caseData.color}55`,
+          borderRadius: 8, padding: "10px 14px",
+          cursor: uploading ? "default" : "pointer",
+          background: `${caseData.color}08`,
+          color: caseData.color, fontSize: ".76rem",
+          fontFamily: "Poppins", textAlign: "center",
+          fontWeight: 600, transition: "opacity .15s",
+          opacity: uploading ? 0.6 : 1,
+        }}
+      >
+        {uploading ? "Enviando arte..." : "📤 Enviar arte para aprovação"}
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,video/*,.pdf"
+        multiple
+        style={{ display: "none" }}
+        onChange={e => void handleFiles(Array.from(e.target.files ?? []))}
+      />
     </div>
   );
 }

@@ -207,7 +207,11 @@ export default function DesignerView({ profile }: DesignerViewProps) {
       <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
         <CasesGlobalStyle />
         <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme}>
-          <button onClick={() => setView("dashboard")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px" }}>← Dashboard</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button onClick={() => setView("dashboard")} style={{ background: "none", border: "none", color: "#e91e8c", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px" }}>← Dashboard</button>
+            <span style={{ color: "var(--ws-text3)", fontSize: ".72rem" }}>/</span>
+            <span style={{ color: "var(--ws-text2)", fontSize: ".76rem", fontFamily: "Poppins", fontWeight: 600 }}>{activeCase.name}</span>
+          </div>
         </DesignerHeader>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
         <div style={{ flex: 1, padding: "28px" }}>
@@ -726,6 +730,32 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
             )}
             {detailBriefing.revision_note && <BISection label="Revisão solicitada"><p style={{ margin: 0, fontSize: ".82rem", color: "#ff6b35", lineHeight: 1.6 }}>{detailBriefing.revision_note}</p></BISection>}
 
+            {/* Entrega de arte */}
+            <BISection label="Entregar arte">
+              {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                  {detailBriefing.delivery_urls!.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noreferrer">
+                      <img src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: `1px solid ${caseData.color}44` }} />
+                    </a>
+                  ))}
+                </div>
+              )}
+              <DesignerDeliveryUpload
+                briefing={detailBriefing}
+                caseData={caseData}
+                onDelivered={(updated) => { onBriefingUpdate(updated); setDetailBriefing(updated); }}
+              />
+              {detailBriefing.status === "aprovado" && (
+                <div style={{ marginTop: 8, fontSize: ".76rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>✓ Arte aprovada!</div>
+              )}
+              {detailBriefing.revision_note && detailBriefing.status === "revisao" && (
+                <div style={{ marginTop: 8, padding: "8px 10px", background: "rgba(255,107,53,0.1)", borderRadius: 7, fontSize: ".76rem", color: "#ff6b35", fontFamily: "Poppins" }}>
+                  ↩ Revisão: {detailBriefing.revision_note}
+                </div>
+              )}
+            </BISection>
+
             <BISection label="Meu valor para este briefing">
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <div style={{ position: "relative", flex: 1 }}>
@@ -747,6 +777,59 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
+  briefing: Briefing; caseData: Case;
+  onDelivered: (b: Briefing) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const R2 = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
+  async function handleFiles(files: File[]) {
+    if (!files.length) return;
+    setUploading(true);
+    const urls: string[] = [];
+    for (const file of files) {
+      const ext = file.name.split(".").pop();
+      const path = `deliveries/${caseData.id}/${briefing.id}/${Date.now()}.${ext}`;
+      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename: path, contentType: file.type } });
+      if (error || !data?.signedUrl) continue;
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) urls.push(`${R2}/${path}`);
+    }
+    if (urls.length > 0) {
+      const newUrls = [...(briefing.delivery_urls ?? []), ...urls];
+      const { data } = await supabase.from("briefings")
+        .update({ delivery_urls: newUrls, status: "entregue" })
+        .eq("id", briefing.id).select().single();
+      if (data) onDelivered(data);
+    }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  if (briefing.status === "aprovado") return null;
+
+  return (
+    <div>
+      <div
+        onClick={() => !uploading && fileRef.current?.click()}
+        style={{
+          border: `1px dashed ${caseData.color}55`, borderRadius: 8,
+          padding: "10px 14px", cursor: uploading ? "default" : "pointer",
+          background: `${caseData.color}08`, color: caseData.color,
+          fontSize: ".76rem", fontFamily: "Poppins", textAlign: "center",
+          fontWeight: 600, opacity: uploading ? 0.6 : 1,
+        }}
+      >
+        {uploading ? "Enviando arte..." : "📤 Enviar arte para aprovação"}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*,video/*,.pdf" multiple style={{ display: "none" }}
+        onChange={e => void handleFiles(Array.from(e.target.files ?? []))} />
     </div>
   );
 }
