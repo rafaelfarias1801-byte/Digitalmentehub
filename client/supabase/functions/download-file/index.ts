@@ -10,20 +10,25 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const { url, filename } = await req.json();
-  if (!url) return new Response("Missing url", { status: 400, headers: corsHeaders });
+  try {
+    const { url, filename } = await req.json();
+    if (!url) return new Response("Missing url", { status: 400, headers: corsHeaders });
 
-  const res = await fetch(url);
-  if (!res.ok) return new Response("Failed to fetch", { status: 502, headers: corsHeaders });
+    const res = await fetch(url);
+    if (!res.ok) return new Response("Failed to fetch", { status: 502, headers: corsHeaders });
 
-  const blob = await res.blob();
-  const name = filename || url.split("/").pop()?.split("?")[0] || "arquivo";
+    const contentType = res.headers.get("Content-Type") || "application/octet-stream";
+    const arrayBuffer = await res.arrayBuffer();
+    const name = filename || url.split("/").pop()?.split("?")[0] || "arquivo";
 
-  return new Response(blob, {
-    headers: {
-      ...corsHeaders,
-      "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${name}"`,
-    },
-  });
+    return new Response(arrayBuffer, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="${name}"`,
+      },
+    });
+  } catch (err) {
+    return new Response(String(err), { status: 500, headers: corsHeaders });
+  }
 });
