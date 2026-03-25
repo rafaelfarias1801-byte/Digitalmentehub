@@ -214,7 +214,8 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </div>
         </DesignerHeader>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
-        <div style={{ flex: 1, padding: "28px", paddingTop: "80px" }}>
+        <div style={{ height: 52, flexShrink: 0 }} />{/* spacer header */}
+        <div style={{ flex: 1, padding: "28px" }}>
           <DesignerClientWorkspace
             profile={profile}
             caseData={activeCase}
@@ -233,7 +234,8 @@ export default function DesignerView({ profile }: DesignerViewProps) {
       <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme} />
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
 
-      <div style={{ flex: 1, padding: "32px 28px", paddingTop: "84px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
+      <div style={{ height: 52, flexShrink: 0 }} />{/* spacer header */}
+      <div style={{ flex: 1, padding: "32px 28px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
 
         {closingPeriod.show && !alreadyClosed && (
           <div style={{ background: "linear-gradient(135deg, rgba(255,214,0,0.12), rgba(255,107,53,0.08))", border: "1px solid rgba(255,214,0,0.3)", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
@@ -796,16 +798,22 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
 }
 
 async function downloadFile(url: string, filename?: string) {
+  const name = filename || url.split("/").pop()?.split("?")[0] || "arquivo";
   try {
-    const res = await fetch(url);
-    const blob = await res.blob();
+    const { data, error } = await supabase.functions.invoke("download-file", {
+      body: { url, filename: name },
+    });
+    if (error) throw error;
+    const blob = new Blob([data], { type: "application/octet-stream" });
+    const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename || url.split("/").pop() || "arquivo";
+    a.href = blobUrl;
+    a.download = name;
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
   } catch {
     window.open(url, "_blank");
   }

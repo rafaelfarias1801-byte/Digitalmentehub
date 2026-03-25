@@ -747,16 +747,22 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 // ════════════════════════════════════════
 
 async function downloadFile(url: string, filename?: string) {
+  const name = filename || url.split("/").pop()?.split("?")[0] || "arquivo";
   try {
-    const res = await fetch(url);
-    const blob = await res.blob();
+    const { data, error } = await supabase.functions.invoke("download-file", {
+      body: { url, filename: name },
+    });
+    if (error) throw error;
+    const blob = new Blob([data], { type: "application/octet-stream" });
+    const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename || url.split("/").pop() || "arquivo";
+    a.href = blobUrl;
+    a.download = name;
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
   } catch {
     window.open(url, "_blank");
   }
