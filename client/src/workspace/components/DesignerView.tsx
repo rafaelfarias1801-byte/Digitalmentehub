@@ -317,29 +317,28 @@ export default function DesignerView({ profile }: DesignerViewProps) {
                       onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-2px)"; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = overdue > 0 ? "rgba(220,50,50,0.4)" : "var(--ws-border)"; e.currentTarget.style.transform = "translateY(0)"; }}
                     >
-                      {/* AJUSTE NA LOGO AQUI */}
-                      <div style={{ height: 72, background: `linear-gradient(135deg, ${c.color}33, ${c.color}08)`, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: `1px solid ${c.color}15`, position: "relative", padding: "8px" }}>
+                      {/* LOGO AJUSTADA PARA PREENCHER O TOPO DO CARD */}
+                      <div style={{ height: 110, background: c.color, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", padding: "16px" }}>
                         {c.logo_url ? 
                           <img src={c.logo_url} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                          : <div style={{ width: 44, height: 44, borderRadius: 10, background: `${c.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "1rem", color: c.color }}>{c.name.slice(0, 2).toUpperCase()}</div>
+                          : <div style={{ color: "#fff", fontWeight: 900, fontSize: "1.4rem", textAlign: "center" }}>{c.name}</div>
                         }
-                        {overdue > 0 && <div style={{ position: "absolute", top: 8, right: 10, background: "#d63232", color: "#fff", borderRadius: 20, padding: "2px 8px", fontSize: ".6rem", fontFamily: "Poppins", fontWeight: 700 }}>🚨 {overdue} atrasado{overdue > 1 ? "s" : ""}</div>}
-                        {overdue === 0 && pending > 0 && <div style={{ position: "absolute", top: 8, right: 10, background: "#e91e8c", color: "#fff", borderRadius: 20, padding: "2px 8px", fontSize: ".6rem", fontFamily: "Poppins", fontWeight: 700 }}>{pending} pendente{pending > 1 ? "s" : ""}</div>}
+                        {overdue > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: "#d63232", color: "#fff", borderRadius: 20, padding: "3px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700 }}>🚨 {overdue} atrasado{overdue > 1 ? "s" : ""}</div>}
+                        {overdue === 0 && pending > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: "#e91e8c", color: "#fff", borderRadius: 20, padding: "3px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700 }}>{pending} pendente{pending > 1 ? "s" : ""}</div>}
                       </div>
-                      <div style={{ padding: "12px 14px" }}>
-                        <div style={{ fontWeight: 700, fontSize: ".9rem", color: "var(--ws-text)", marginBottom: 6 }}>{c.name}</div>
-                        {cb.length === 0 ? <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Nenhum briefing ainda</div> : (
+                      <div style={{ padding: "14px", borderTop: `2px solid ${c.color}33` }}>
+                        <div style={{ fontWeight: 700, fontSize: ".95rem", color: "var(--ws-text)", marginBottom: 8 }}>{c.name}</div>
+                        {cb.length === 0 ? <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Nenhum briefing ainda</div> : (
                           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                             {cb.slice(0, 2).map(b => {
                               const cfg = STATUS_CFG[b.status];
                               return (
                                 <div key={b.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                                  <span style={{ fontSize: ".7rem", color: "var(--ws-text2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.format}</span>
-                                  <span style={{ fontSize: ".6rem", color: cfg.color, fontFamily: "Poppins", fontWeight: 700, flexShrink: 0 }}>● {cfg.label}</span>
+                                  <span style={{ fontSize: ".72rem", color: "var(--ws-text2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.format}</span>
+                                  <span style={{ fontSize: ".62rem", color: cfg.color, fontFamily: "Poppins", fontWeight: 700, flexShrink: 0 }}>● {cfg.label}</span>
                                 </div>
                               );
                             })}
-                            {cb.length > 2 && <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>+{cb.length - 2} mais</div>}
                           </div>
                         )}
                       </div>
@@ -427,7 +426,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
                   {briefingsThisMonth.map(b => (
                     <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--ws-surface2)", borderRadius: 7, gap: 10 }}>
                       <span style={{ fontSize: ".78rem", color: "var(--ws-text2)" }}>{b.format} — {cases.find(c => c.id === b.case_id)?.name ?? "—"}</span>
-                      <span style={{ fontSize: ".78rem", fontFamily: "Poppins", fontWeight: 600, color: b.designer_value ? "var(--ws-text)" : "var(--ws-text3)", flexShrink: 0 }}>
+                      <span style={{ fontSize: ".78rem", fontFamily: "Poppins", fontWeight: 600, color: b.designer_value ? "var(--ws-text)" : "var(--ws-text3)", flex_shrink: 0 }}>
                         {b.designer_value ? fmt(b.designer_value) : "sem valor"}
                       </span>
                     </div>
@@ -591,16 +590,6 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 4 }}>{b.format}</div>
                       <DeadlineBadge deadline={b.deadline} />
-                      {b.reference_links?.length > 0 && (
-                        <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                          {b.reference_links.map((link, i) => (
-                            <a key={i} href={link} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                              style={{ fontSize: ".62rem", color: caseData.color, background: `${caseData.color}15`, borderRadius: 4, padding: "2px 7px", textDecoration: "none", fontFamily: "Poppins", whiteSpace: "nowrap", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
-                              ↗ {link.replace(/^https?:\/\//, "").slice(0, 30)}
-                            </a>
-                          ))}
-                        </div>
-                      )}
                     </div>
                     <div style={{ textAlign: "right", flex_shrink: 0 }}>
                       <div style={{ background: `${cfg.color}18`, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5, marginBottom: b.designer_value ? 4 : 0 }}>
@@ -719,7 +708,6 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                 </div>
               </BISection>
             )}
-            {detailBriefing.revision_note && <BISection label="Revisão solicitada"><p style={{ margin: 0, fontSize: ".82rem", color: "#ff6b35", lineHeight: 1.6 }}>{detailBriefing.revision_note}</p></BISection>}
 
             <BISection label="Meu valor para este briefing">
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -731,9 +719,6 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                   {savingValue ? "..." : "Salvar"}
                 </button>
               </div>
-              {detailBriefing.designer_value > 0 && (
-                <div style={{ marginTop: 6, fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>✓ {fmt(detailBriefing.designer_value)} registrado</div>
-              )}
             </BISection>
 
             <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
