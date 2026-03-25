@@ -1,21 +1,29 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-serve(async (req) => {
-  const { url, filename } = await req.json();
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
-  if (!url) return new Response("Missing url", { status: 400 });
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  const { url, filename } = await req.json();
+  if (!url) return new Response("Missing url", { status: 400, headers: corsHeaders });
 
   const res = await fetch(url);
-  if (!res.ok) return new Response("Failed to fetch file", { status: 502 });
+  if (!res.ok) return new Response("Failed to fetch", { status: 502, headers: corsHeaders });
 
   const blob = await res.blob();
   const name = filename || url.split("/").pop()?.split("?")[0] || "arquivo";
 
   return new Response(blob, {
     headers: {
+      ...corsHeaders,
       "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
       "Content-Disposition": `attachment; filename="${name}"`,
-      "Access-Control-Allow-Origin": "*",
     },
   });
 });

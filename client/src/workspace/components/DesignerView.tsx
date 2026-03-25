@@ -750,15 +750,6 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
 
             {/* Entrega de arte */}
             <BISection label="Entregar arte">
-              {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-                  {detailBriefing.delivery_urls!.map((url, i) => (
-                    <a key={i} href={url} target="_blank" rel="noreferrer">
-                      <img src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: `1px solid ${caseData.color}44` }} />
-                    </a>
-                  ))}
-                </div>
-              )}
               <DesignerDeliveryUpload
                 briefing={detailBriefing}
                 caseData={caseData}
