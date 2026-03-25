@@ -696,7 +696,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         </div>
       )}
 
-    </div>
 
       {/* MODAL — Editar Briefing */}
       {editingBriefing && !readonly && (
@@ -727,6 +726,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
           </div>
         </div>
       )}
+
+    </div>
   );
 }
 
