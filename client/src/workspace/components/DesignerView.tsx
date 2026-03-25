@@ -98,7 +98,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   const [discount, setDiscount]         = useState("");
   const [closingNotes, setClosingNotes] = useState("");
 
-  // Nome correto — pega do profile
   const displayName = profile.name || (profile as any)?.raw_user_meta_data?.name || profile.email?.split("@")[0] || "Designer";
   const firstName   = displayName.split(" ")[0];
   const hora        = new Date().getHours();
@@ -107,7 +106,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   const currentClosing = closings.find(c => c.month === closingPeriod.month && c.year === closingPeriod.year);
   const alreadyClosed  = !!currentClosing?.closed_at;
 
-  // Primeiro acesso — must_change_password
   const mustChangePwd = !!(profile as any).must_change_password;
   if (mustChangePwd) {
     return <DesignerChangePassword isFirstAccess onDone={() => window.location.reload()} />;
@@ -158,14 +156,11 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     setUploadingAvatar(false);
   }
 
-  // Stats
   const overdueB   = briefings.filter(b => b.status !== "aprovado" && deadlineStatus(b.deadline) === "overdue");
   const pendentes  = briefings.filter(b => b.status === "aguardando").length;
   const emRevisao  = briefings.filter(b => b.status === "revisao").length;
   const aprovados  = briefings.filter(b => b.status === "aprovado").length;
 
-  // Fechamento
-  const now = new Date();
   const briefingsThisMonth = briefings.filter(b => {
     const d = new Date(b.created_at);
     return d.getMonth() + 1 === closingPeriod.month && d.getFullYear() === closingPeriod.year;
@@ -196,7 +191,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
         if (idx >= 0) { const n = [...prev]; n[idx] = data; return n; }
         return [data, ...prev];
       });
-      // NÃO lança no financeiro ainda — aguarda aprovação do admin
     }
     setSavingClosing(false);
     setClosingModal(false);
@@ -208,7 +202,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     </div>
   );
 
-  // ── WORKSPACE POR CLIENTE ──
   if (view === "workspace" && activeCase) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
@@ -230,7 +223,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     );
   }
 
-  // ── DASHBOARD ──
   return (
     <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
       <CasesGlobalStyle />
@@ -239,7 +231,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
 
       <div style={{ flex: 1, padding: "32px 28px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
 
-        {/* Banner aviso fechamento */}
         {closingPeriod.show && !alreadyClosed && (
           <div style={{ background: "linear-gradient(135deg, rgba(255,214,0,0.12), rgba(255,107,53,0.08))", border: "1px solid rgba(255,214,0,0.3)", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -267,7 +258,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </div>
         )}
 
-        {/* Quadro de atrasos */}
         {overdueB.length > 0 && (
           <div style={{ background: "rgba(220,50,50,0.07)", border: "1px solid rgba(220,50,50,0.25)", borderRadius: 14, padding: "16px 20px", marginBottom: 20 }}>
             <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".82rem", color: "#d63232", marginBottom: 12 }}>
@@ -287,7 +277,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </div>
         )}
 
-        {/* Saudação + tabs */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ fontFamily: "Poppins", fontWeight: 900, fontSize: "1.8rem", color: "var(--ws-text)", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
@@ -304,7 +293,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </div>
         </div>
 
-        {/* ── OVERVIEW ── */}
         {dashTab === "overview" && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 32 }}>
@@ -329,9 +317,11 @@ export default function DesignerView({ profile }: DesignerViewProps) {
                       onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-2px)"; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = overdue > 0 ? "rgba(220,50,50,0.4)" : "var(--ws-border)"; e.currentTarget.style.transform = "translateY(0)"; }}
                     >
-                      <div style={{ height: 72, background: `linear-gradient(135deg, ${c.color}44, ${c.color}11)`, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: `1px solid ${c.color}22`, position: "relative" }}>
-                        {c.logo_url ? <img src={c.logo_url} alt={c.name} style={{ height: 44, maxWidth: 120, objectFit: "contain" }} />
-                          : <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "1.1rem", color: c.color }}>{c.name.slice(0, 2).toUpperCase()}</div>
+                      {/* AJUSTE NA LOGO AQUI */}
+                      <div style={{ height: 72, background: `linear-gradient(135deg, ${c.color}33, ${c.color}08)`, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: `1px solid ${c.color}15`, position: "relative", padding: "8px" }}>
+                        {c.logo_url ? 
+                          <img src={c.logo_url} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                          : <div style={{ width: 44, height: 44, borderRadius: 10, background: `${c.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "1rem", color: c.color }}>{c.name.slice(0, 2).toUpperCase()}</div>
                         }
                         {overdue > 0 && <div style={{ position: "absolute", top: 8, right: 10, background: "#d63232", color: "#fff", borderRadius: 20, padding: "2px 8px", fontSize: ".6rem", fontFamily: "Poppins", fontWeight: 700 }}>🚨 {overdue} atrasado{overdue > 1 ? "s" : ""}</div>}
                         {overdue === 0 && pending > 0 && <div style={{ position: "absolute", top: 8, right: 10, background: "#e91e8c", color: "#fff", borderRadius: 20, padding: "2px 8px", fontSize: ".6rem", fontFamily: "Poppins", fontWeight: 700 }}>{pending} pendente{pending > 1 ? "s" : ""}</div>}
@@ -361,7 +351,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </>
         )}
 
-        {/* ── FINANCEIRO ── */}
         {dashTab === "financeiro" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 14, overflow: "hidden" }}>
@@ -424,7 +413,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
         )}
       </div>
 
-      {/* Modal fechar mês */}
       {closingModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => e.target === e.currentTarget && setClosingModal(false)}>
@@ -482,7 +470,6 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   );
 }
 
-// ── Header do designer ───────────────────────────────────────
 function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAvatarClick, onLogout, onChangePwd, showMenu, onToggleMenu, isDark, onToggleTheme, children }: {
   displayName: string; avatarUrl: string | null; uploadingAvatar: boolean;
   fileRef: React.RefObject<HTMLInputElement>; onAvatarClick: () => void;
@@ -500,7 +487,7 @@ function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAv
         {children && <><div style={{ width: 1, height: 16, background: "var(--ws-border2)" }} />{children}</>}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, position: "relative" }}>
-        <div onClick={onAvatarClick} title="Clique para trocar sua foto" style={{ width: 30, height: 30, borderRadius: 8, overflow: "hidden", cursor: uploadingAvatar ? "default" : "pointer", flexShrink: 0, border: "1.5px solid #e91e8c44" }}>
+        <div onClick={onAvatarClick} title="Clique para trocar sua foto" style={{ width: 30, height: 30, borderRadius: 8, overflow: "hidden", cursor: uploadingAvatar ? "default" : "pointer", flex_shrink: 0, border: "1.5px solid #e91e8c44" }}>
           {avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (
             <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #e91e8c44, #e91e8c22)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: ".65rem", color: "#e91e8c" }}>
               {uploadingAvatar ? "..." : displayName.slice(0, 2).toUpperCase()}
@@ -521,7 +508,7 @@ function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAv
             </button>
             <button onClick={() => { onToggleTheme(); onToggleMenu(); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", borderRadius: 7, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 12px", textAlign: "left", fontFamily: "Poppins" }}>
               <span>{isDark ? "🌙 Escuro" : "☀️ Claro"}</span>
-              <span style={{ width: 32, height: 18, borderRadius: 999, background: isDark ? "var(--ws-surface3, #333)" : "var(--ws-accent, #e91e8c)", position: "relative", flexShrink: 0, transition: "background .2s", display: "inline-block" }}>
+              <span style={{ width: 32, height: 18, borderRadius: 999, background: isDark ? "var(--ws-surface3, #333)" : "var(--ws-accent, #e91e8c)", position: "relative", flex_shrink: 0, transition: "background .2s", display: "inline-block" }}>
                 <span style={{ position: "absolute", top: 2, left: isDark ? 2 : 16, width: 14, height: 14, borderRadius: "50%", background: isDark ? "var(--ws-text3)" : "#fff", transition: "left .2s" }} />
               </span>
             </button>
@@ -536,7 +523,6 @@ function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAv
   );
 }
 
-// ── Workspace por cliente ────────────────────────────────────
 function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdate }: {
   profile: Profile; caseData: Case; briefings: Briefing[];
   onBriefingUpdate: (b: Briefing) => void;
@@ -616,7 +602,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                         </div>
                       )}
                     </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ textAlign: "right", flex_shrink: 0 }}>
                       <div style={{ background: `${cfg.color}18`, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5, marginBottom: b.designer_value ? 4 : 0 }}>
                         <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color }} />{cfg.label}
                       </div>
@@ -696,7 +682,6 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
         )}
       </div>
 
-      {/* Modal detalhe briefing */}
       {detailBriefing && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => e.target === e.currentTarget && setDetailBriefing(null)}>
@@ -742,7 +727,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                   <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>R$</span>
                   <input className="ws-input" type="number" placeholder="0,00" value={editingValue} onChange={e => setEditingValue(e.target.value)} style={{ paddingLeft: 30, marginBottom: 0 }} />
                 </div>
-                <button onClick={() => void saveValue(detailBriefing)} disabled={savingValue} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", padding: "8px 14px", fontSize: ".76rem", fontFamily: "Poppins", flexShrink: 0 }}>
+                <button onClick={() => void saveValue(detailBriefing)} disabled={savingValue} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", padding: "8px 14px", fontSize: ".76rem", fontFamily: "Poppins", flex_shrink: 0 }}>
                   {savingValue ? "..." : "Salvar"}
                 </button>
               </div>
