@@ -39,6 +39,7 @@ export default function Dashboard({ profile, onNavigateToPost }: Props & { onNav
   const [recentApprovals, setRecentApprovals] = useState<{ title: string; caseName: string; status: string; date: string; postId: string; caseId: string }[]>([]);
   const [nextEvents, setNextEvents] = useState<{ title: string; date: string; type: string }[]>([]);
   const [upcomingFinance, setUpcomingFinance] = useState<{ id: string; amount: number; due_date: string; description: string; caseName: string; overdue: boolean }[]>([]);
+  const [pendingDeliveries, setPendingDeliveries] = useState<{ id: string; format: string; designerName: string; caseName: string; caseId: string; deliveredAt: string }[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -55,12 +56,14 @@ export default function Dashboard({ profile, onNavigateToPost }: Props & { onNav
       in7Days.setDate(in7Days.getDate() + 7);
       const in7DaysStr = `${in7Days.getFullYear()}-${String(in7Days.getMonth() + 1).padStart(2, "0")}-${String(in7Days.getDate()).padStart(2, "0")}`;
 
-      const [tasksRes, casesRes, paymentsRes, postsRes, eventsRes] = await Promise.all([
+      const [tasksRes, casesRes, paymentsRes, postsRes, eventsRes, briefingsRes, designersRes] = await Promise.all([
         supabase.from("tasks").select("*"),
         supabase.from("cases").select("id, name"),
         supabase.from("payments").select("id, amount, paid, due_date, description, case_id"),
         supabase.from("posts").select("id, slug, title, approval_status, scheduled_date, case_id, rejection_reason_at, status_changed_at, created_at, comments"),
         supabase.from("events").select("title, date, type").gte("date", todayStr).order("date").limit(6),
+        supabase.from("briefings").select("id, format, status, case_id, designer_id, created_at").eq("status", "entregue").order("created_at", { ascending: false }).limit(10),
+        supabase.from("designers").select("id, name"),
       ]);
 
       const tasks = tasksRes.data ?? [];
@@ -69,6 +72,15 @@ export default function Dashboard({ profile, onNavigateToPost }: Props & { onNav
       const posts = postsRes.data ?? [];
       const events = eventsRes.data ?? [];
       const caseMap = Object.fromEntries(cases.map(c => [c.id, c.name]));
+      const designerMap = Object.fromEntries((designersRes.data ?? []).map((d: any) => [d.id, d.name]));
+      const deliveredBriefings = (briefingsRes.data ?? []).map((b: any) => ({
+        id: b.id, format: b.format,
+        designerName: designerMap[b.designer_id] ?? "Designer",
+        caseName: caseMap[b.case_id] ?? "—",
+        caseId: b.case_id,
+        deliveredAt: b.created_at ? new Date(b.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }) : "",
+      }));
+      setPendingDeliveries(deliveredBriefings);
 
       const pending = tasks.filter(t => t.status !== "concluido" && !t.done);
       const overdue = pending.filter(t => t.due_date && t.due_date < todayStr);
@@ -227,6 +239,27 @@ export default function Dashboard({ profile, onNavigateToPost }: Props & { onNav
             </div>}
         </div>
       </div>
+
+      {/* Briefings entregues aguardando aprovação */}
+      {pendingDeliveries.length > 0 && (
+        <div className="ws-card" style={{ marginBottom: 12 }}>
+          <div className="ws-card-title">
+            Artes aguardando aprovação
+            <span className="ws-badge" style={{ background: "#4b6bff22", color: "#4b6bff" }}>{pendingDeliveries.length}</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {pendingDeliveries.map(d => (
+              <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "var(--ws-surface2)", borderRadius: 10, borderLeft: "3px solid #4b6bff" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: ".84rem", fontWeight: 600, color: "var(--ws-text)" }}>{d.format}</div>
+                  <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 1 }}>{d.designerName} · {d.caseName} · {d.deliveredAt}</div>
+                </div>
+                <span style={{ fontSize: ".72rem", color: "#4b6bff", fontFamily: "Poppins", fontWeight: 700, flexShrink: 0 }}>Entregue ●</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="ws-cols2">
         <div className="ws-card">

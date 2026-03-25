@@ -695,17 +695,31 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => e.target === e.currentTarget && setDetailBriefing(null)}>
           <div style={{ background: "var(--ws-surface)", borderRadius: 16, padding: "24px", maxWidth: 520, width: "100%", maxHeight: "90dvh", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <div>
+            {/* Header fixo com X */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, position: "sticky", top: 0, background: "var(--ws-surface)", paddingBottom: 12, borderBottom: "1px solid var(--ws-border)", zIndex: 2 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{detailBriefing.format}</div>
                 <div style={{ marginTop: 4 }}><DeadlineBadge deadline={detailBriefing.deadline} /></div>
               </div>
-              {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
-                <div style={{ background: `${cfg.color}18`, color: cfg.color, borderRadius: 20, padding: "4px 12px", fontSize: ".68rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.color }} />{cfg.label}
-                </div>
-              ); })()}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
+                  <div style={{ background: `${cfg.color}18`, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.color }} />{cfg.label}
+                  </div>
+                ); })()}
+                <button onClick={() => setDetailBriefing(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.3rem", lineHeight: 1, padding: "2px 4px" }}>×</button>
+              </div>
             </div>
+            {/* Revisão no topo */}
+            {detailBriefing.revision_note && detailBriefing.status === "revisao" && (
+              <div style={{ background: "rgba(255,107,53,0.10)", border: "1px solid rgba(255,107,53,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                <span>↩</span>
+                <div>
+                  <div style={{ fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 }}>Revisão solicitada</div>
+                  <div style={{ fontSize: ".82rem", color: "#ff6b35" }}>{detailBriefing.revision_note}</div>
+                </div>
+              </div>
+            )}
 
             {detailBriefing.reference_text && <BISection label="Briefing / Referência"><p style={{ margin: 0, fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6 }}>{detailBriefing.reference_text}</p></BISection>}
             {detailBriefing.reference_links?.length > 0 && (
@@ -721,9 +735,11 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
               <BISection label="Imagens de referência">
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {detailBriefing.reference_images.map((url, i) => (
-                    <a key={i} href={url} target="_blank" rel="noreferrer">
-                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)" }} />
-                    </a>
+                    <div key={i} style={{ position: "relative" }}>
+                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
+                      <a href={url} download target="_blank" rel="noreferrer"
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", textDecoration: "none" }}>↓</a>
+                    </div>
                   ))}
                 </div>
               </BISection>
@@ -771,9 +787,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
               )}
             </BISection>
 
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setDetailBriefing(null)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 16px", fontFamily: "Poppins" }}>Fechar</button>
-            </div>
+
           </div>
         </div>
       )}
@@ -787,11 +801,11 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingUrls, setPendingUrls] = useState<string[]>([]);
   const R2 = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
 
-  async function handleFiles(files: File[]) {
-    if (!files.length) return;
-    setUploading(true);
+  async function uploadFiles(files: File[]): Promise<string[]> {
     const urls: string[] = [];
     for (const file of files) {
       const ext = file.name.split(".").pop();
@@ -801,6 +815,13 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
       const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
       if (res.ok) urls.push(`${R2}/${path}`);
     }
+    return urls;
+  }
+
+  async function handleSendForApproval() {
+    if (pendingFiles.length === 0) return;
+    setUploading(true);
+    const urls = await uploadFiles(pendingFiles);
     if (urls.length > 0) {
       const newUrls = [...(briefing.delivery_urls ?? []), ...urls];
       const { data } = await supabase.from("briefings")
@@ -808,28 +829,66 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
         .eq("id", briefing.id).select().single();
       if (data) onDelivered(data);
     }
+    setPendingFiles([]);
+    setPendingUrls([]);
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  if (briefing.status === "aprovado") return null;
+  async function removeDelivery(i: number) {
+    const newUrls = (briefing.delivery_urls ?? []).filter((_, idx) => idx !== i);
+    const { data } = await supabase.from("briefings")
+      .update({ delivery_urls: newUrls, status: newUrls.length === 0 ? "aguardando" : "entregue" })
+      .eq("id", briefing.id).select().single();
+    if (data) onDelivered(data);
+  }
+
+  if (briefing.status === "aprovado") return (
+    <div style={{ fontSize: ".76rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>✓ Arte aprovada!</div>
+  );
 
   return (
     <div>
-      <div
-        onClick={() => !uploading && fileRef.current?.click()}
-        style={{
-          border: `1px dashed ${caseData.color}55`, borderRadius: 8,
-          padding: "10px 14px", cursor: uploading ? "default" : "pointer",
-          background: `${caseData.color}08`, color: caseData.color,
-          fontSize: ".76rem", fontFamily: "Poppins", textAlign: "center",
-          fontWeight: 600, opacity: uploading ? 0.6 : 1,
-        }}
-      >
-        {uploading ? "Enviando arte..." : "📤 Enviar arte para aprovação"}
+      {/* Artes já enviadas — designer pode remover */}
+      {(briefing.delivery_urls?.length ?? 0) > 0 && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          {briefing.delivery_urls!.map((url, i) => (
+            <div key={i} style={{ position: "relative" }}>
+              <img src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: `1px solid ${caseData.color}44`, display: "block" }} />
+              <button onClick={() => void removeDelivery(i)}
+                style={{ position: "absolute", top: 3, right: 3, background: "rgba(220,50,50,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".65rem", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {/* Preview arquivos selecionados */}
+      {pendingFiles.length > 0 && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          {pendingUrls.map((url, i) => (
+            <div key={i} style={{ position: "relative" }}>
+              <img src={url} alt="" style={{ width: 64, height: 64, borderRadius: 6, objectFit: "cover", border: "1px dashed var(--ws-border2)", display: "block", opacity: 0.7 }} />
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8 }}>
+        <div onClick={() => !uploading && fileRef.current?.click()}
+          style={{ flex: 1, border: "1px dashed var(--ws-border2)", borderRadius: 8, padding: "8px 12px", cursor: "pointer", color: "var(--ws-text3)", fontSize: ".74rem", fontFamily: "Poppins", textAlign: "center" }}>
+          {pendingFiles.length > 0 ? `${pendingFiles.length} arquivo(s) selecionado(s)` : "Selecionar arquivos"}
+        </div>
+        {pendingFiles.length > 0 && (
+          <button onClick={() => void handleSendForApproval()} disabled={uploading}
+            style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: ".76rem", fontWeight: 700, padding: "8px 14px", fontFamily: "Poppins", flexShrink: 0 }}>
+            {uploading ? "Enviando..." : "📤 Enviar para aprovação"}
+          </button>
+        )}
       </div>
       <input ref={fileRef} type="file" accept="image/*,video/*,.pdf" multiple style={{ display: "none" }}
-        onChange={e => void handleFiles(Array.from(e.target.files ?? []))} />
+        onChange={e => {
+          const files = Array.from(e.target.files ?? []);
+          setPendingFiles(files);
+          setPendingUrls(files.map(f => URL.createObjectURL(f)));
+        }} />
     </div>
   );
 }

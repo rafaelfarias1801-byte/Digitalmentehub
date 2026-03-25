@@ -591,18 +591,39 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
       {/* MODAL — Detalhe Briefing */}
       {detailBriefing && (
         <div style={getOverlayStyle(isMobile)} onClick={e => e.target === e.currentTarget && setDetailBriefing(null)}>
-          <div style={{ ...modalBoxStyle, maxWidth: 560, width: "100%", maxHeight: "90dvh", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-              <div>
-                <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.05rem", color: "var(--ws-text)" }}>{detailBriefing.format}</div>
-                <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>Prazo: {new Date(`${detailBriefing.deadline}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}</div>
-              </div>
-              {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
-                <div style={{ background: cfg.bg, color: cfg.color, borderRadius: 20, padding: "4px 12px", fontSize: ".68rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot }} />{cfg.label}
+          <div style={{ ...modalBoxStyle, maxWidth: 560, width: "100%", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
+            {/* Header fixo com X */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--ws-border)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+                <div>
+                  <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{detailBriefing.format}</div>
+                  <DeadlineBadge deadline={detailBriefing.deadline} />
                 </div>
-              ); })()}
+                {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
+                  <div style={{ background: cfg.bg, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.dot }} />{cfg.label}
+                  </div>
+                ); })()}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                {!readonly && (
+                  <button onClick={() => { setEditingBriefing(detailBriefing); setEditBriefingForm({ format: detailBriefing.format, reference_text: detailBriefing.reference_text ?? "", reference_links: (detailBriefing.reference_links ?? []).join("\n"), deadline: detailBriefing.deadline }); }}
+                    style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".72rem", padding: "5px 12px", fontFamily: "Poppins" }}>✎ Editar</button>
+                )}
+                <button onClick={() => setDetailBriefing(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.3rem", lineHeight: 1, padding: "2px 4px" }}>×</button>
+              </div>
             </div>
+            {/* Corpo com scroll */}
+            <div style={{ overflowY: "auto", flex: 1, padding: "16px 20px" }}>
+            {detailBriefing.revision_note && detailBriefing.status === "revisao" && (
+              <div style={{ background: "rgba(255,107,53,0.10)", border: "1px solid rgba(255,107,53,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "1rem" }}>↩</span>
+                <div>
+                  <div style={{ fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 }}>Revisão solicitada</div>
+                  <div style={{ fontSize: ".82rem", color: "#ff6b35" }}>{detailBriefing.revision_note}</div>
+                </div>
+              </div>
+            )}
 
             {detailBriefing.reference_text && <BSection label="Briefing / Referência"><p style={{ margin: 0, fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6 }}>{detailBriefing.reference_text}</p></BSection>}
 
@@ -620,9 +641,20 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               {(detailBriefing.reference_images?.length ?? 0) > 0 && (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                   {detailBriefing.reference_images.map((url, i) => (
-                    <a key={i} href={url} target="_blank" rel="noreferrer">
-                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)" }} />
-                    </a>
+                    <div key={i} style={{ position: "relative" }}>
+                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
+                      {/* Admin: baixar */}
+                      <a href={url} download target="_blank" rel="noreferrer"
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.6)", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", textDecoration: "none" }}>↓</a>
+                      {/* Admin: remover */}
+                      {!readonly && (
+                        <button onClick={async () => {
+                          const newImgs = detailBriefing.reference_images.filter((_, idx) => idx !== i);
+                          const { data } = await supabase.from("briefings").update({ reference_images: newImgs }).eq("id", detailBriefing.id).select().single();
+                          if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                        }} style={{ position: "absolute", top: 3, right: 3, background: "rgba(220,50,50,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".65rem", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
@@ -636,79 +668,41 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               )}
             </BSection>
 
-            {/* Arte entregue + upload pelo designer */}
-            <BSection label="Arte entregue">
-              {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+            {/* Arte entregue — admin só baixa */}
+            {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
+              <BSection label="Arte entregue">
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {detailBriefing.delivery_urls!.map((url, i) => (
-                    <a key={i} href={url} target="_blank" rel="noreferrer">
-                      <img src={url} alt="" style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44` }} />
-                    </a>
+                    <div key={i} style={{ position: "relative" }}>
+                      <img src={url} alt="" style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44`, display: "block" }} />
+                      <a href={url} download target="_blank" rel="noreferrer"
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", textDecoration: "none", fontFamily: "Poppins" }}>↓ baixar</a>
+                    </div>
                   ))}
                 </div>
-              )}
-              {/* Designer faz upload da arte entregue */}
-              <DeliveryUpload
-                briefing={detailBriefing}
-                caseData={activeCase}
-                r2base={R2}
-                onDelivered={(updatedBriefing) => {
-                  setBriefings(prev => prev.map(b => b.id === updatedBriefing.id ? updatedBriefing : b));
-                  setDetailBriefing(updatedBriefing);
-                }}
-              />
-            </BSection>
-
-            {detailBriefing.revision_note && (
-              <BSection label="Revisão solicitada"><p style={{ margin: 0, fontSize: ".82rem", color: "#ff6b35", lineHeight: 1.6 }}>{detailBriefing.revision_note}</p></BSection>
+              </BSection>
             )}
 
-            {/* Valor da entrega — designer define */}
-            <BSection label="Valor cobrado">
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>R$</span>
-                  <input
-                    className="ws-input"
-                    type="number"
-                    placeholder="0,00"
-                    defaultValue={detailBriefing.designer_value ?? ""}
-                    onChange={e => setEditingValue(e.target.value)}
-                    style={{ paddingLeft: 30, marginBottom: 0 }}
-                  />
+            {/* Valor cobrado — admin só lê */}
+            {detailBriefing.designer_value > 0 && (
+              <BSection label="Valor cobrado pelo designer">
+                <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: "1rem", color: "var(--ws-text)" }}>
+                  R$ {detailBriefing.designer_value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </div>
-                <button
-                  onClick={() => void saveDesignerValue(detailBriefing)}
-                  disabled={savingValue}
-                  style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", padding: "8px 14px", fontSize: ".76rem", fontFamily: "Poppins", flexShrink: 0 }}
-                >
-                  {savingValue ? "..." : "Salvar"}
-                </button>
-              </div>
-              {detailBriefing.designer_value > 0 && (
-                <div style={{ marginTop: 6, fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 600 }}>
-                  ✓ R$ {detailBriefing.designer_value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} registrado
-                </div>
-              )}
-            </BSection>
+              </BSection>
+            )}
 
             {!readonly && (
               <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 16, marginTop: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div style={{ fontSize: ".68rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase" }}>Ações</div>
-                  <button onClick={() => { setEditingBriefing(detailBriefing); setEditBriefingForm({ format: detailBriefing.format, reference_text: detailBriefing.reference_text ?? "", reference_links: (detailBriefing.reference_links ?? []).join("\n"), deadline: detailBriefing.deadline }); }} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".7rem", padding: "4px 10px", fontFamily: "Poppins" }}>✎ Editar briefing</button>
-                </div>
+                <div style={{ fontSize: ".65rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>Ações</div>
                 <textarea className="ws-input" rows={2} placeholder="Descreva o que precisa ser alterado (para solicitar revisão)..." value={revisionText} onChange={e => setRevisionText(e.target.value)} style={{ resize: "vertical", marginBottom: 10 }} />
                 <div style={{ display: "flex", gap: 10 }}>
-                  <button className="ws-btn" onClick={() => void approveBriefing(detailBriefing)} style={{ flex: 1, background: "#00a864" }}>✓ Aprovar arte</button>
+                  <button className="ws-btn" onClick={() => void approveBriefing(detailBriefing)} style={{ flex: 1, background: "#00a864" }} disabled={detailBriefing.status !== "entregue"}>✓ Aprovar arte</button>
                   <button className="ws-btn-ghost" onClick={() => void requestRevision(detailBriefing)} disabled={!revisionText.trim()} style={{ flex: 1 }}>↩ Solicitar alteração</button>
                 </div>
               </div>
             )}
-
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-              <button className="ws-btn-ghost" onClick={() => setDetailBriefing(null)}>Fechar</button>
-            </div>
+            </div>{/* fim scroll body */}
           </div>
         </div>
       )}
