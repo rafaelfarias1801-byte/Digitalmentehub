@@ -13,6 +13,18 @@ type DashTab = "overview" | "financeiro";
 
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
+function getSavedTheme(): "dark" | "light" {
+  try { return (localStorage.getItem("ws_theme") as "dark" | "light") || "dark"; }
+  catch { return "dark"; }
+}
+
+function applyTheme(theme: "dark" | "light") {
+  const root = document.documentElement;
+  if (theme === "light") root.setAttribute("data-theme", "light");
+  else root.removeAttribute("data-theme");
+  try { localStorage.setItem("ws_theme", theme); } catch {}
+}
+
 const STATUS_CFG: Record<Briefing["status"], { color: string; label: string }> = {
   aguardando: { color: "#ffd600", label: "Aguardando" },
   entregue:   { color: "#4b6bff", label: "Entregue"   },
@@ -66,6 +78,8 @@ function isClosingPeriod(): { show: boolean; daysLeft: number; month: number; ye
 export default function DesignerView({ profile }: DesignerViewProps) {
   const [view, setView]               = useState<View>("dashboard");
   const [dashTab, setDashTab]         = useState<DashTab>("overview");
+  const [theme, setTheme]             = useState<"dark" | "light">(getSavedTheme);
+  const isDark = theme === "dark";
   const [activeCase, setActiveCase]   = useState<Case | null>(null);
   const [cases, setCases]             = useState<Case[]>([]);
   const [briefings, setBriefings]     = useState<Briefing[]>([]);
@@ -116,6 +130,14 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     }
     void load();
   }, [profile.id]);
+
+  useEffect(() => { applyTheme(theme); }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    applyTheme(next);
+  }
 
   async function handleLogout() { await supabase.auth.signOut(); }
 
@@ -191,7 +213,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
         <CasesGlobalStyle />
-        <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)}>
+        <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme}>
           <button onClick={() => setView("dashboard")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px" }}>← Dashboard</button>
         </DesignerHeader>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
@@ -212,7 +234,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
       <CasesGlobalStyle />
-      <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} />
+      <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme} />
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
 
       <div style={{ flex: 1, padding: "32px 28px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
@@ -461,11 +483,12 @@ export default function DesignerView({ profile }: DesignerViewProps) {
 }
 
 // ── Header do designer ───────────────────────────────────────
-function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAvatarClick, onLogout, onChangePwd, showMenu, onToggleMenu, children }: {
+function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAvatarClick, onLogout, onChangePwd, showMenu, onToggleMenu, isDark, onToggleTheme, children }: {
   displayName: string; avatarUrl: string | null; uploadingAvatar: boolean;
   fileRef: React.RefObject<HTMLInputElement>; onAvatarClick: () => void;
   onLogout: () => void; onChangePwd: () => void;
   showMenu: boolean; onToggleMenu: () => void;
+  isDark: boolean; onToggleTheme: () => void;
   children?: React.ReactNode;
 }) {
   return (
@@ -495,6 +518,12 @@ function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAv
             </button>
             <button onClick={() => { onChangePwd(); onToggleMenu(); }} style={{ display: "block", width: "100%", background: "none", border: "none", borderRadius: 7, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 12px", textAlign: "left", fontFamily: "Poppins" }}>
               🔑 Alterar senha
+            </button>
+            <button onClick={() => { onToggleTheme(); onToggleMenu(); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", borderRadius: 7, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 12px", textAlign: "left", fontFamily: "Poppins" }}>
+              <span>{isDark ? "🌙 Escuro" : "☀️ Claro"}</span>
+              <span style={{ width: 32, height: 18, borderRadius: 999, background: isDark ? "var(--ws-surface3, #333)" : "var(--ws-accent, #e91e8c)", position: "relative", flexShrink: 0, transition: "background .2s", display: "inline-block" }}>
+                <span style={{ position: "absolute", top: 2, left: isDark ? 2 : 16, width: 14, height: 14, borderRadius: "50%", background: isDark ? "var(--ws-text3)" : "#fff", transition: "left .2s" }} />
+              </span>
             </button>
             <div style={{ height: 1, background: "var(--ws-border)", margin: "4px 0" }} />
             <button onClick={onLogout} style={{ display: "block", width: "100%", background: "none", border: "none", borderRadius: 7, color: "#d63232", cursor: "pointer", fontSize: ".78rem", padding: "8px 12px", textAlign: "left", fontFamily: "Poppins" }}>

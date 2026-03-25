@@ -57,6 +57,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [activeSubTab, setActiveSubTab]       = useState<"identidade" | "briefings">("briefings");
 
   const [designers, setDesigners]             = useState<Designer[]>([]);
+  const [designerProfiles, setDesignerProfiles] = useState<Record<string, { name: string; avatar_url?: string }>>({});
   const [briefings, setBriefings]             = useState<Briefing[]>([]);
   const [brandIdentity, setBrandIdentity]     = useState<BrandIdentity>(EMPTY_BRAND);
   const [designerCases, setDesignerCases]     = useState<Case[]>([]);
@@ -77,6 +78,11 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [brandForm, setBrandForm]             = useState<BrandIdentity>(EMPTY_BRAND);
   const [editingBrand, setEditingBrand]       = useState(false);
   const [revisionText, setRevisionText]       = useState("");
+  const [editingBriefing, setEditingBriefing] = useState<Briefing | null>(null);
+  const [editBriefingForm, setEditBriefingForm] = useState(EMPTY_BRIEFING);
+  const [savingEdit, setSavingEdit]           = useState(false);
+  const [editingValue, setEditingValue]       = useState("");
+  const [savingValue, setSavingValue]         = useState(false);
 
   const imgInputRef = useRef<HTMLInputElement>(null);
   const R2 = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
