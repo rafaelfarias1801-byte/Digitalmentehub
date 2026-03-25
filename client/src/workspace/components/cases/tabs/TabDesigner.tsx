@@ -77,6 +77,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [briefingImages, setBriefingImages]   = useState<File[]>([]);
   const [brandForm, setBrandForm]             = useState<BrandIdentity>(EMPTY_BRAND);
   const [editingBrand, setEditingBrand]       = useState(false);
+  const [previewImg, setPreviewImg]         = useState<string | null>(null);
   const [revisionText, setRevisionText]       = useState("");
   const [editingBriefing, setEditingBriefing] = useState<Briefing | null>(null);
   const [editBriefingForm, setEditBriefingForm] = useState(EMPTY_BRIEFING);
@@ -674,9 +675,9 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {detailBriefing.delivery_urls!.map((url, i) => (
                     <div key={i} style={{ position: "relative" }}>
-                      <img src={url} alt="" style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44`, display: "block" }} />
-                      <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
-                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", cursor: "pointer", fontFamily: "Poppins" }}>↓ baixar</button>
+                      <img src={url} alt="" onClick={() => setPreviewImg(url)} style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44`, display: "block", cursor: "pointer" }} />
+                      <button onClick={e => { e.stopPropagation(); void downloadFile(url); }}
+                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", cursor: "pointer", fontFamily: "Poppins" }}>↓</button>
                     </div>
                   ))}
                 </div>
@@ -707,6 +708,15 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
         </div>
       )}
 
+
+      {/* MODAL — Preview de imagem */}
+      {previewImg && (
+        <div onClick={() => setPreviewImg(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <button onClick={() => setPreviewImg(null)} style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 36, height: 36, color: "#fff", fontSize: "1.2rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <button onClick={e => { e.stopPropagation(); void downloadFile(previewImg); }} style={{ position: "absolute", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "rgba(255,255,255,.15)", border: "1px solid rgba(255,255,255,.3)", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: ".78rem", padding: "8px 20px", fontFamily: "Poppins" }}>↓ Baixar</button>
+          <img src={previewImg} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: "92vw", maxHeight: "85dvh", borderRadius: 10, objectFit: "contain" }} />
+        </div>
+      )}
 
       {/* MODAL — Editar Briefing */}
       {editingBriefing && !readonly && (

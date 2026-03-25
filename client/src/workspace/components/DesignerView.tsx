@@ -537,6 +537,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
   profile: Profile; caseData: Case; briefings: Briefing[];
   onBriefingUpdate: (b: Briefing) => void;
 }) {
+  const [previewImg, setPreviewImg]         = useState<string | null>(null);
   const [subTab, setSubTab]               = useState<"briefings" | "identidade">("briefings");
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
   const [loadingBrand, setLoadingBrand]   = useState(false);
@@ -738,8 +739,8 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {detailBriefing.reference_images.map((url, i) => (
                     <div key={i} style={{ position: "relative" }}>
-                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
-                      <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
+                      <img src={url} alt="" onClick={() => setPreviewImg(url)} style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block", cursor: "pointer" }} />
+                      <button onClick={e => { e.stopPropagation(); void downloadFile(url); }}
                         style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", cursor: "pointer" }}>↓</button>
                     </div>
                   ))}
@@ -879,8 +880,8 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
           {briefing.delivery_urls!.map((url, i) => (
             <div key={i} style={{ position: "relative" }}>
-              <img src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: `1px solid ${caseData.color}44`, display: "block" }} />
-              <button onClick={() => void removeDelivery(i)}
+              <img src={url} alt="" onClick={() => setPreviewImg(url)} style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: `1px solid ${caseData.color}44`, display: "block", cursor: "pointer" }} />
+              <button onClick={e => { e.stopPropagation(); void removeDelivery(i); }}
                 style={{ position: "absolute", top: 3, right: 3, background: "rgba(220,50,50,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".65rem", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             </div>
           ))}
@@ -915,6 +916,14 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: {
           setPendingFiles(files);
           setPendingUrls(files.map(f => URL.createObjectURL(f)));
         }} />
+    {/* Preview imagem fullscreen */}
+    {previewImg && (
+      <div onClick={() => setPreviewImg(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <button onClick={() => setPreviewImg(null)} style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 36, height: 36, color: "#fff", fontSize: "1.2rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+        <button onClick={e => { e.stopPropagation(); void downloadFile(previewImg); }} style={{ position: "absolute", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "rgba(255,255,255,.15)", border: "1px solid rgba(255,255,255,.3)", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: ".78rem", padding: "8px 20px", fontFamily: "Poppins" }}>↓ Baixar</button>
+        <img src={previewImg} alt="" onClick={e => e.stopPropagation()} style={{ maxWidth: "92vw", maxHeight: "85dvh", borderRadius: 10, objectFit: "contain" }} />
+      </div>
+    )}
     </div>
   );
 }
