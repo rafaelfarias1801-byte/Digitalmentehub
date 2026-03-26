@@ -5,12 +5,13 @@ import { formatDateBR, isOverdueDate } from "../utils";
 
 interface PaymentRowProps {
   p: Payment;
-  onToggle: (payment: Payment) => void;
-  onRemove: (id: string) => void;
+  onToggle?: (payment: Payment) => void;
+  onRemove?: (id: string) => void;
   onEdit?: (payment: Payment) => void;
+  readonly?: boolean;
 }
 
-export default function PaymentRow({ p, onToggle, onRemove, onEdit }: PaymentRowProps) {
+export default function PaymentRow({ p, onToggle, onRemove, onEdit, readonly = false }: PaymentRowProps) {
   const [confirming, setConfirming] = useState(false);
   const overdue = !p.paid && isOverdueDate(p.due_date);
 
@@ -35,8 +36,10 @@ export default function PaymentRow({ p, onToggle, onRemove, onEdit }: PaymentRow
       gap: 12,
       opacity: p.paid ? 0.7 : 1,
     }}>
-      <input type="checkbox" checked={p.paid} onChange={() => onToggle(p)}
-        style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#00e676" }} />
+      {!readonly && (
+        <input type="checkbox" checked={p.paid} onChange={() => onToggle?.(p)}
+          style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#00e676" }} />
+      )}
 
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: ".87rem", color: "var(--ws-text)", fontWeight: 600, textDecoration: p.paid ? "line-through" : "none" }}>
@@ -61,7 +64,7 @@ export default function PaymentRow({ p, onToggle, onRemove, onEdit }: PaymentRow
       </div>
 
       {/* Botão editar */}
-      {onEdit && (
+      {!readonly && onEdit && (
         <button onClick={() => onEdit(p)} title="Editar" style={{
           background: "none", border: "1px solid var(--ws-border)", borderRadius: 6,
           color: "var(--ws-text3)", cursor: "pointer", fontSize: ".75rem",
@@ -73,7 +76,7 @@ export default function PaymentRow({ p, onToggle, onRemove, onEdit }: PaymentRow
       )}
 
       {/* Botão excluir com confirmação */}
-      {confirming ? (
+      {!readonly && (confirming ? (
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           <span style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", whiteSpace: "nowrap" }}>Excluir?</span>
           <button onClick={handleRemove} style={{
@@ -89,7 +92,7 @@ export default function PaymentRow({ p, onToggle, onRemove, onEdit }: PaymentRow
         <button onClick={handleRemove} title="Excluir" style={{
           background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem",
         }}>×</button>
-      )}
+      ))}
     </div>
   );
 }
