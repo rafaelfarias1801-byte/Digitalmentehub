@@ -19,10 +19,29 @@ import CheckoutPack from "@/pages/CheckoutPack";
 import WorkspaceApp from "./workspace/WorkspaceApp";
 import AnalisePerfilLanding from "@/pages/AnalisePerfilLanding";
 
+const ROUTE_TITLES: Record<string, string> = {
+  "/": "Dig | Agência de Marketing Digital, Conteúdo e Performance",
+  "/produtos": "Produtos | Dig",
+  "/produtos/packs": "Packs de Conteúdo | Dig",
+  "/produtos/consultoria": "Consultoria | Dig",
+  "/produtos/diagnostico-estrategico": "Diagnóstico Estratégico | Dig",
+  "/obrigado-briefing": "Obrigado | Dig",
+  "/obrigado-compra": "Obrigado pela Compra | Dig",
+  "/analise-obrigado-compra": "Obrigado pela Compra | Dig",
+  "/analise-obrigado-briefing": "Obrigado | Dig",
+  "/checkout-start": "Checkout Start | Dig",
+  "/checkout-pro": "Checkout Pro | Dig",
+  "/checkout-elite": "Checkout Elite | Dig",
+  "/checkout-pack": "Pack | Dig",
+  "/workspace": "Workspace Dig",
+  "/analise-perfil": "Análise de Perfil | Dig",
+};
+
 function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    document.title = ROUTE_TITLES[location] ?? "Dig | Agência de Marketing Digital";
   }, [location]);
   return null;
 }
