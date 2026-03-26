@@ -178,6 +178,7 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
   }
 
   async function togglePaid(payment: Payment) {
+    if (readonly) return;
     const nextPaid = !payment.paid;
 
     const { data } = await supabase
@@ -213,6 +214,7 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
   }
 
   function openEdit(payment: Payment) {
+    if (readonly) return;
     setEditingPayment(payment);
     setForm({
       description: payment.description,
@@ -225,6 +227,7 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
   }
 
   async function removePayment(id: string) {
+    if (readonly) return;
     const payment = payments.find(p => p.id === id);
     setPayments((prev) => prev.filter((item) => item.id !== id));
     await supabase.from("payments").delete().eq("id", id);

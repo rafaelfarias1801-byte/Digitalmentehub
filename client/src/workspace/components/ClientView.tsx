@@ -16,8 +16,8 @@ interface Props {
   profile: Profile;
 }
 
-// Tabs que o cliente pode acessar (todas, mas readonly onde necessário)
-const CLIENT_TABS = SUB_TABS;
+// Tabs que o cliente pode acessar (designer é exclusivo para admin/designer)
+const CLIENT_TABS = SUB_TABS.filter(t => t.id !== "designer");
 
 function getSavedTheme(): "dark" | "light" {
   try { return (localStorage.getItem("ws_theme") as "dark" | "light") || "dark"; }
