@@ -69,6 +69,23 @@ function sortPayments(list: Payment[]) {
   });
 }
 
+
+async function notifyClientPush(caseId: string, caseName: string, body: object) {
+  try {
+    await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-client`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ case_id: caseId, case_name: caseName, ...body }),
+      }
+    );
+  } catch { /* silently ignore push errors */ }
+}
+
 export default function TabFinanceiro({ caseData, readonly = false }: TabFinanceiroProps) {
   const isMobile = useIsMobile();
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -171,6 +188,14 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
 
         setModal(false);
         setForm(EMPTY_FORM);
+
+        // Notifica cliente sobre nova cobrança
+        void notifyClientPush(caseData.id, caseData.name, {
+          type: "cobranca_criada",
+          description: payload.description,
+          amount: payload.amount,
+          due_date: payload.due_date,
+        });
       }
     }
 
@@ -209,6 +234,16 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
           .from("financial")
           .update({ status: nextPaid ? "pago" : "pendente" })
           .eq("id", finEntry.id);
+      }
+
+      // Notifica cliente quando pagamento confirmado
+      if (nextPaid) {
+        void notifyClientPush(caseData.id, caseData.name, {
+          type: "pagamento_confirmado",
+          description: payment.description,
+          amount: payment.amount,
+          due_date: payment.due_date,
+        });
       }
     }
   }

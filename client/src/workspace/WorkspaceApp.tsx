@@ -14,10 +14,11 @@ import Notas from "./components/Notas";
 import IA from "./components/IA";
 import Pomodoro from "./components/Pomodoro";
 import ClientView from "./components/ClientView";
+import Notificacoes from "./components/Notificacoes";
 import DesignerView from "./components/DesignerView";
 import "./workspace.css";
 
-export type PageId = "dashboard" | "checklist" | "agenda" | "financeiro" | "cases" | "notas" | "ia" | "pomodoro";
+export type PageId = "dashboard" | "checklist" | "agenda" | "financeiro" | "cases" | "notas" | "ia" | "pomodoro" | "notificacoes";
 
 const PAGES: Record<PageId, React.ComponentType<any>> = {
   dashboard:  Dashboard,
@@ -28,6 +29,7 @@ const PAGES: Record<PageId, React.ComponentType<any>> = {
   notas:      Notas,
   ia:         IA,
   pomodoro:   Pomodoro,
+  notificacoes: Notificacoes,
 };
 
 const VALID_PAGES = Object.keys(PAGES) as PageId[];

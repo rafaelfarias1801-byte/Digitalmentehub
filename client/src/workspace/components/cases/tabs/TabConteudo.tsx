@@ -267,6 +267,8 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     setNotifying(true);
     setNotifyResult(null);
     try {
+      const monthLabel = getMonthLabel(currentMonth);
+      const postCount = currentPosts.length;
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-client`,
         {
@@ -275,7 +277,13 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             "Content-Type": "application/json",
             "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
-          body: JSON.stringify({ case_id: caseData.id, case_name: caseData.name }),
+          body: JSON.stringify({
+            case_id: caseData.id,
+            case_name: caseData.name,
+            type: "conteudo_pronto",
+            month_label: monthLabel,
+            post_count: postCount,
+          }),
         }
       );
       const json = await res.json();

@@ -21,8 +21,9 @@ const NAV = [
     { id: "agenda",    icon: "▦", label: "Agenda" },
   ]},
   { section: "Gestão", items: [
-    { id: "financeiro", icon: "◈", label: "Financeiro" },
-    { id: "cases",      icon: "◉", label: "Clientes" },
+    { id: "financeiro",   icon: "◈", label: "Financeiro" },
+    { id: "cases",        icon: "◉", label: "Clientes" },
+    { id: "notificacoes", icon: "🔔", label: "Notificações" },
   ]},
   { section: "Conteúdo", items: [
     { id: "notas", icon: "▤", label: "Notas" },
@@ -33,7 +34,7 @@ const NAV = [
   ]},
 ];
 
-const ADMIN_ONLY: PageId[] = ["financeiro", "notas", "ia"];
+const ADMIN_ONLY: PageId[] = ["financeiro", "notas", "ia", "notificacoes"];
 
 function getIsMobile() {
   return typeof window !== "undefined" && window.innerWidth < 768;
