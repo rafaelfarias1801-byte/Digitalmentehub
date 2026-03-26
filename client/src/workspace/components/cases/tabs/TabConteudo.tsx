@@ -87,6 +87,8 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [activeMonth, setActiveMonth] = useState<string>("");
+  const [notifying, setNotifying] = useState(false);
+  const [notifyResult, setNotifyResult] = useState<"ok" | "error" | "notoken" | null>(null);
 
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const dragIdx = useRef<number | null>(null);
@@ -261,10 +263,62 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     return `${MONTHS_FULL[parseInt(month, 10) - 1]} ${year}`;
   }
 
+  async function notifyClient() {
+    setNotifying(true);
+    setNotifyResult(null);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-client`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ case_id: caseData.id, case_name: caseData.name }),
+        }
+      );
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        setNotifyResult(json.error?.includes("sem token") ? "notoken" : "error");
+      } else {
+        setNotifyResult("ok");
+      }
+    } catch {
+      setNotifyResult("error");
+    } finally {
+      setNotifying(false);
+      setTimeout(() => setNotifyResult(null), 4000);
+    }
+  }
+
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        {!readonly && <button className="ws-btn" onClick={openModal}>+ Novo post</button>}
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 16 }}>
+        {!readonly && (
+          <>
+            {notifyResult && (
+              <span style={{
+                fontSize: ".75rem", fontFamily: "Poppins",
+                color: notifyResult === "ok" ? "#00e676" : notifyResult === "notoken" ? "#ffd600" : "#ff5c7a",
+              }}>
+                {notifyResult === "ok"      && "✅ Notificação enviada!"}
+                {notifyResult === "notoken" && "⚠ Cliente ainda não habilitou notificações"}
+                {notifyResult === "error"   && "❌ Erro ao enviar notificação"}
+              </span>
+            )}
+            <button
+              className="ws-btn-ghost"
+              onClick={() => void notifyClient()}
+              disabled={notifying}
+              title="Notificar cliente que o conteúdo está pronto"
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
+              {notifying ? "Enviando..." : "🔔 Notificar cliente"}
+            </button>
+            <button className="ws-btn" onClick={openModal}>+ Novo post</button>
+          </>
+        )}
       </div>
 
       {loading ? <Loader /> : posts.length === 0 ? <Empty label="Nenhum post cadastrado ainda." /> : (

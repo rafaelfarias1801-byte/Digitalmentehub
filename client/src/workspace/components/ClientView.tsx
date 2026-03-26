@@ -11,6 +11,7 @@ import TabFinanceiro from "./cases/tabs/TabFinanceiro";
 import TabDocumentos from "./cases/tabs/TabDocumentos";
 import TabNotas from "./cases/tabs/TabNotas";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { usePushNotification } from "../hooks/usePushNotification";
 
 interface Props {
   profile: Profile;
@@ -38,6 +39,7 @@ export default function ClientView({ profile }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
   const isMobile = useIsMobile();
+  usePushNotification(profile.id);
 
   useEffect(() => { applyTheme(theme); }, []);
 

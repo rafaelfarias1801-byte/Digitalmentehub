@@ -146,7 +146,7 @@ export default function Dashboard({ profile, onNavigateToPost }: Props & { onNav
       }
 
       activities.sort((a, b) => b.ts.localeCompare(a.ts));
-      setRecentApprovals(activities.slice(0, 5).map(({ ts: _ts, ...rest }) => rest));
+      setRecentApprovals(activities.slice(0, 3).map(({ ts: _ts, ...rest }) => rest));
       setNextEvents(events.map(e => ({ title: e.title, date: e.date, type: e.type })));
       setLoading(false);
     }
