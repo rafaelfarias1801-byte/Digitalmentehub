@@ -101,6 +101,10 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const isMobile = useIsMobile();
   const isClient = profile.role === "cliente";
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const fileInputRef = useState<HTMLInputElement | null>(null);
+  const attachFileRef = { current: null as HTMLInputElement | null };
 
   async function save(updates: Partial<NoteCard>) {
     const merged = { ...currentCard, ...updates };
@@ -129,6 +133,60 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
     setEditingCommentId(null); setEditingCommentText("");
   }
   function isOwnComment(author: string) { return (author || "").trim() === (profile.name || "").trim(); }
+
+  async function uploadAttachment(files: FileList) {
+    setUploading(true);
+    const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+    const uploaded: { id: string; name: string; url: string; type: string; cover: boolean }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setUploadProgress(`Enviando ${i + 1}/${files.length}...`);
+      const ext = file.name.split(".").pop() ?? "bin";
+      const key = `notes/${caseData.id}/${card.id}/${Date.now()}_${i}.${ext}`;
+
+      const { data: urlData } = await supabase.functions.invoke("get-r2-upload-url", {
+        body: { key, contentType: file.type },
+      });
+      if (!urlData?.url) continue;
+
+      await fetch(urlData.url, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+
+      const existingAttachments = currentCard.attachments || [];
+      const isCover = existingAttachments.length === 0 && i === 0;
+
+      uploaded.push({
+        id: Date.now().toString() + i,
+        name: file.name,
+        url: `${R2_PUBLIC_URL}/${key}`,
+        type: file.type,
+        cover: isCover,
+      });
+    }
+
+    if (uploaded.length > 0) {
+      const newAttachments = [...(currentCard.attachments || []), ...uploaded];
+      await save({ attachments: newAttachments });
+    }
+
+    setUploading(false);
+    setUploadProgress("");
+  }
+
+  async function removeAttachment(id: string) {
+    if (!window.confirm("Remover este anexo?")) return;
+    const newAttachments = (currentCard.attachments || []).filter((a: any) => a.id !== id);
+    await save({ attachments: newAttachments });
+  }
+
+  async function setCover(id: string) {
+    const newAttachments = (currentCard.attachments || []).map((a: any) => ({ ...a, cover: a.id === id }));
+    await save({ attachments: newAttachments });
+  }
+
+  function isImage(url: string) {
+    return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+  }
 
   let labelColor = ""; let labelName = "";
   if (currentCard.label_color) { try { const p = JSON.parse(currentCard.label_color); labelColor = p.color || ""; labelName = p.name || ""; } catch { labelColor = currentCard.label_color; } }
@@ -212,6 +270,70 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
             {isClient && total === 0 && (
               <div style={{ fontSize: ".82rem", color: "var(--ws-text3)", padding: "8px 0" }}>
                 Ainda não temos itens por aqui.
+              </div>
+            )}
+          </div>
+
+          {/* ── Anexos ── */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={labelStyle}>📎 Anexos {(currentCard.attachments || []).length > 0 && `(${(currentCard.attachments || []).length})`}</div>
+              {!isClient && (
+                <>
+                  <button
+                    onClick={() => attachFileRef.current?.click()}
+                    disabled={uploading}
+                    style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "5px 12px", fontFamily: "inherit" }}
+                  >
+                    {uploading ? uploadProgress : "Adicionar"}
+                  </button>
+                  <input
+                    ref={el => { attachFileRef.current = el; }}
+                    type="file"
+                    accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={e => { if (e.target.files?.length) void uploadAttachment(e.target.files); e.target.value = ""; }}
+                  />
+                </>
+              )}
+            </div>
+
+            {(currentCard.attachments || []).length === 0 ? (
+              <div style={{ fontSize: ".82rem", color: "var(--ws-text3)" }}>Nenhum anexo.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {(currentCard.attachments || []).map((att: any) => (
+                  <div key={att.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "var(--ws-surface2)", borderRadius: 10, border: "1px solid var(--ws-border)" }}>
+                    {/* Thumbnail */}
+                    <div style={{ width: 48, height: 48, borderRadius: 6, overflow: "hidden", flexShrink: 0, background: "var(--ws-surface3)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                      {isImage(att.url) ? (
+                        <img src={att.url} alt={att.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span style={{ fontSize: "1.4rem" }}>📄</span>
+                      )}
+                      {att.cover && <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,.6)", fontSize: ".45rem", color: "#fff", textAlign: "center", padding: "1px 0", fontFamily: "Poppins", letterSpacing: "0.5px" }}>CAPA</div>}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--ws-text)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{att.name}</div>
+                      {!isClient && isImage(att.url) && (
+                        <button onClick={() => void setCover(att.id)} style={{ background: "none", border: "none", color: att.cover ? caseData.color : "var(--ws-text3)", cursor: "pointer", fontSize: ".68rem", padding: 0, fontFamily: "inherit" }}>
+                          {att.cover ? "✓ Capa" : "Definir como capa"}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Ações */}
+                    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                      <a href={att.url} target="_blank" rel="noopener noreferrer" title="Abrir" style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".75rem", padding: "4px 8px", textDecoration: "none", display: "flex", alignItems: "center" }}>↗</a>
+                      {!isClient && (
+                        <button onClick={() => void removeAttachment(att.id)} title="Remover" style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text3)", cursor: "pointer", fontSize: ".75rem", padding: "4px 8px" }}>×</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

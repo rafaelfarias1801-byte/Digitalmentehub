@@ -120,6 +120,15 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
                       {card.completed && <span style={{ color: "#fff", fontSize: "11px", fontWeight: 900 }}>✓</span>}
                     </div>
 
+                    {/* Cover image preview */}
+                    {(() => {
+                      const cover = (card.attachments || []).find((a: any) => a.cover && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(a.url));
+                      return cover ? (
+                        <div style={{ width: "100%", height: 120, borderRadius: "6px 6px 0 0", overflow: "hidden", margin: "-10px -12px 10px", width: "calc(100% + 24px)" }}>
+                          <img src={cover.url} alt={cover.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </div>
+                      ) : null;
+                    })()}
                     {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "2px 8px" : "3px 20px", marginBottom: 6, fontSize: ".62rem", fontWeight: 700, color: "#fff", textShadow: "0 1px 2px #00000040" }}>{labelName}</div>}
 
                     <div style={{ fontSize: ".83rem", color: "var(--ws-text)", paddingRight: 22 }}>{card.title}</div>
