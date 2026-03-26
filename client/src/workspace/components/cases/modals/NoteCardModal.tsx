@@ -146,11 +146,11 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
       const key = `notes/${caseData.id}/${card.id}/${Date.now()}_${i}.${ext}`;
 
       const { data: urlData } = await supabase.functions.invoke("get-r2-upload-url", {
-        body: { key, contentType: file.type },
+        body: { filename: key, contentType: file.type },
       });
-      if (!urlData?.url) continue;
+      if (!urlData?.signedUrl) continue;
 
-      await fetch(urlData.url, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      await fetch(urlData.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
 
       const existingAttachments = currentCard.attachments || [];
       const isCover = existingAttachments.length === 0 && i === 0;
