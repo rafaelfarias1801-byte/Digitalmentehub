@@ -12,7 +12,14 @@ const globalForSupabase = globalThis as unknown as {
 
 // Se já existir uma instância (ex: durante o Hot Reload do Vite), ele usa a existente.
 // Se não existir, ele cria uma nova.
-export const supabase = globalForSupabase.supabase ?? createClient(SUPABASE_URL, SUPABASE_KEY);
+export const supabase = globalForSupabase.supabase ?? createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,        // mantém sessão no localStorage
+    autoRefreshToken: true,      // renova token automaticamente
+    detectSessionInUrl: false,   // evita conflito com rotas do React
+    storageKey: "dig-workspace-auth", // chave única no localStorage
+  },
+});
 
 // Salva a instância na memória global apenas em ambiente de desenvolvimento
 if (import.meta.env?.DEV) {
