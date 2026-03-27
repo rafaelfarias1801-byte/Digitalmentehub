@@ -171,6 +171,57 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   }
   function isOwnComment(c: Comment) { return (c.author || "").trim() === (profile.name || "").trim(); }
 
+  const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
+  async function deleteFromR2(url: string) {
+    if (!url.startsWith(R2_PUBLIC_URL)) return;
+    const filename = url.replace(R2_PUBLIC_URL + "/", "");
+    await supabase.functions.invoke("delete-r2-file", { body: { filename } });
+  }
+
+  async function removeSlide(idx: number) {
+    if (!window.confirm("Remover esta mídia do post?")) return;
+    const urlToRemove = allSlides[idx];
+    const newSlides = allSlides.filter((_, i) => i !== idx);
+    const newMediaUrl = newSlides[0] ?? "";
+    const newMediaUrls = newSlides;
+    const userText = stripMediaTag(currentPost.extra_info);
+    const extraUrls = newSlides.slice(1);
+    const newExtraInfo = encodeExtraUrls(extraUrls, userText);
+    await save({ media_url: newMediaUrl, media_urls: newMediaUrls, extra_info: newExtraInfo });
+    setSlideIdx(Math.min(idx, newSlides.length - 1));
+    void deleteFromR2(urlToRemove);
+  }
+
+  const [uploadingSlide, setUploadingSlide] = useState(false);
+  const slideFileRef = { current: null as HTMLInputElement | null };
+
+  async function addSlides(files: FileList) {
+    if (readonly) return;
+    setUploadingSlide(true);
+    const uploaded: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.split(".").pop();
+      const filename = `posts/${caseData.id}/${Date.now()}-${i}.${ext}`;
+      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", {
+        body: { filename, contentType: file.type },
+      });
+      if (error || !data?.signedUrl) continue;
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) uploaded.push(`${R2_PUBLIC_URL}/${filename}`);
+    }
+    if (uploaded.length > 0) {
+      const newSlides = [...allSlides, ...uploaded];
+      const newMediaUrl = newSlides[0] ?? "";
+      const userText = stripMediaTag(currentPost.extra_info);
+      const extraUrls = newSlides.slice(1);
+      const newExtraInfo = encodeExtraUrls(extraUrls, userText);
+      await save({ media_url: newMediaUrl, media_urls: newSlides, extra_info: newExtraInfo });
+    }
+    setUploadingSlide(false);
+  }
+
   // ── WhatsApp ────────────────────────────────────────────────────
   function sendToWhatsApp() {
     const phone = normalizeWhatsAppPhone(caseData.phone);
@@ -375,12 +426,12 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 }}>⤢</button>
               </div>
 
-              {/* Thumbnails clicáveis */}
-              {allSlides.length > 1 && (
-                <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
-                  {allSlides.map((url, i) => (
-                    <div key={i} onClick={() => setSlideIdx(i)} style={{
-                      width: 44, height: 44, flexShrink: 0, borderRadius: 6, overflow: "hidden",
+              {/* Thumbnails + gerenciamento de mídias */}
+              <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, alignItems: "center" }}>
+                {allSlides.map((url, i) => (
+                  <div key={i} style={{ position: "relative", flexShrink: 0 }}>
+                    <div onClick={() => setSlideIdx(i)} style={{
+                      width: 44, height: 44, borderRadius: 6, overflow: "hidden",
                       border: i === slideIdx ? `2px solid ${caseData.color}` : "2px solid transparent",
                       cursor: "pointer", opacity: i === slideIdx ? 1 : 0.55, transition: "all .15s",
                     }}>
@@ -389,9 +440,49 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                         : <img src={url} alt={`thumb ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       }
                     </div>
-                  ))}
-                </div>
-              )}
+                    {/* Botão remover mídia — só admin */}
+                    {!readonly && (
+                      <button
+                        onClick={e => { e.stopPropagation(); void removeSlide(i); }}
+                        title="Remover mídia"
+                        style={{
+                          position: "absolute", top: -6, right: -6,
+                          width: 16, height: 16, borderRadius: "50%",
+                          background: "#ff4433", border: "none",
+                          color: "#fff", cursor: "pointer", fontSize: ".55rem",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontWeight: 800, lineHeight: 1, zIndex: 5,
+                        }}
+                      >×</button>
+                    )}
+                  </div>
+                ))}
+
+                {/* Botão adicionar mídia — só admin */}
+                {!readonly && (
+                  <>
+                    <button
+                      onClick={() => slideFileRef.current?.click()}
+                      disabled={uploadingSlide}
+                      title="Adicionar mídia"
+                      style={{
+                        width: 44, height: 44, flexShrink: 0, borderRadius: 6,
+                        border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)",
+                        color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >{uploadingSlide ? "⏳" : "+"}</button>
+                    <input
+                      ref={el => { slideFileRef.current = el; }}
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      style={{ display: "none" }}
+                      onChange={e => { if (e.target.files?.length) void addSlides(e.target.files); e.target.value = ""; }}
+                    />
+                  </>
+                )}
+              </div>
             </div>
           )}
 

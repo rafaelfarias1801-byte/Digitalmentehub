@@ -227,9 +227,18 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   }
 
   async function removePost(post: Post) {
-    if (!window.confirm(`Excluir o post?`)) return;
+    if (!window.confirm(`Excluir o post "${post.slug || post.title}"? As mídias também serão removidas.`)) return;
     setPosts(prev => prev.filter(p => p.id !== post.id));
     await supabase.from("posts").delete().eq("id", post.id);
+
+    // Deleta mídias do R2
+    const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+    const urls = [...(post.media_urls || []), ...(post.media_url ? [post.media_url] : [])];
+    const unique = [...new Set(urls)].filter(u => u.startsWith(R2_PUBLIC_URL));
+    for (const url of unique) {
+      const filename = url.replace(R2_PUBLIC_URL + "/", "");
+      void supabase.functions.invoke("delete-r2-file", { body: { filename } });
+    }
   }
 
   function updatePost(updated: Post) {
