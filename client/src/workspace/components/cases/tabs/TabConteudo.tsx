@@ -1,4 +1,4 @@
-﻿// client/src/workspace/components/cases/tabs/TabConteudo.tsx
+// client/src/workspace/components/cases/tabs/TabConteudo.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -277,43 +277,6 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     return `${MONTHS_FULL[parseInt(month, 10) - 1]} ${year}`;
   }
 
-  async function notifyClient() {
-    setNotifying(true);
-    setNotifyResult(null);
-    try {
-      const monthLabel = getMonthLabel(currentMonth);
-      const postCount = currentPosts.length;
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-client`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            case_id: caseData.id,
-            case_name: caseData.name,
-            type: "conteudo_pronto",
-            month_label: monthLabel,
-            post_count: postCount,
-          }),
-        }
-      );
-      const json = await res.json();
-      if (!res.ok || json.error) {
-        setNotifyResult(json.error?.includes("sem token") ? "notoken" : "error");
-      } else {
-        setNotifyResult("ok");
-      }
-    } catch {
-      setNotifyResult("error");
-    } finally {
-      setNotifying(false);
-      setTimeout(() => setNotifyResult(null), 4000);
-    }
-  }
-
   async function approveCurrentMonthPosts() {
     const monthPosts = currentPosts.filter(
       post => post.approval_status !== "aprovado" && post.approval_status !== "postado"
@@ -380,6 +343,43 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     }
   }
 
+  async function notifyClient() {
+    setNotifying(true);
+    setNotifyResult(null);
+    try {
+      const monthLabel = getMonthLabel(currentMonth);
+      const postCount = currentPosts.length;
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-client`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            case_id: caseData.id,
+            case_name: caseData.name,
+            type: "conteudo_pronto",
+            month_label: monthLabel,
+            post_count: postCount,
+          }),
+        }
+      );
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        setNotifyResult(json.error?.includes("sem token") ? "notoken" : "error");
+      } else {
+        setNotifyResult("ok");
+      }
+    } catch {
+      setNotifyResult("error");
+    } finally {
+      setNotifying(false);
+      setTimeout(() => setNotifyResult(null), 4000);
+    }
+  }
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -442,14 +442,16 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
               ))}
             </div>
 
-            {!readonly && currentMonth !== "sem-data" && (
+            {currentMonth !== "sem-data" && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {bulkApproveResult && (
-                  <span style={{
-                    fontSize: ".75rem",
-                    fontFamily: "Poppins",
-                    color: bulkApproveResult === "ok" ? "#00e676" : "#ff5c7a",
-                  }}>
+                  <span
+                    style={{
+                      fontSize: ".75rem",
+                      fontFamily: "Poppins",
+                      color: bulkApproveResult === "ok" ? "#00e676" : "#ff5c7a",
+                    }}
+                  >
                     {bulkApproveResult === "ok" && "✅ Conteúdo do mês aprovado!"}
                     {bulkApproveResult === "error" && "❌ Erro ao aprovar o conteúdo do mês"}
                   </span>
@@ -485,34 +487,19 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   <div style={{ width: 52, height: 52, borderRadius: 8, overflow: "hidden", background: "var(--ws-surface2)", flexShrink: 0 }}>
                     <MediaThumb url={post.media_url} alt={post.title || post.slug} mediaType={post.media_type} />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", display: "flex", alignItems: "center", gap: 6 }}>
                       {/* ETIQUETA AUTOMÁTICA POR TIPO */}
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: TYPE_COLORS[post.media_type] || "#9E9E9E", flexShrink: 0 }} />
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {post.slug || post.title}
-                      </span>
+                      {post.slug || post.title}
                     </div>
-
-                    {!!post.title && post.title !== post.slug && (
-                      <div style={{
-                        fontSize: ".76rem",
-                        color: "var(--ws-text)",
-                        opacity: 0.92,
-                        marginTop: 4,
-                        fontFamily: "Poppins",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}>
-                        Tema: {post.title}
-                      </div>
-                    )}
-
                     <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "Poppins" }}>
                       {post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
                       {" · "}
                       {post.media_type === "feed" ? "Feed" : post.media_type === "stories" ? "Stories" : post.media_type === "reels" ? "Reels" : "Carrossel"}
+                      {post.platforms?.length ? ` · ${post.platforms
+                        .map(platform => PLATFORMS.find(p => p.value === platform)?.label || platform)
+                        .join(" · ")}` : ""}
                     </div>
                   </div>
                   <div style={{ background: approval.bg, color: approval.color, borderRadius: 20, padding: "3px 10px", fontSize: ".72rem", fontWeight: 600 }}>{approval.label}</div>
