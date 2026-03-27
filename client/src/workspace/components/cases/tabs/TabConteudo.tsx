@@ -1,4 +1,4 @@
-﻿// client/src/workspace/components/cases/tabs/TabConteudo.tsx
+// client/src/workspace/components/cases/tabs/TabConteudo.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -442,7 +442,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
               ))}
             </div>
 
-            {!readonly && currentMonth !== "sem-data" && (
+            {currentMonth !== "sem-data" && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {bulkApproveResult && (
                   <span style={{
