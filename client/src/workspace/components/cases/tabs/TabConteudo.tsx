@@ -1,4 +1,4 @@
-// client/src/workspace/components/cases/tabs/TabConteudo.tsx
+﻿// client/src/workspace/components/cases/tabs/TabConteudo.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -442,7 +442,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
               ))}
             </div>
 
-            {currentMonth !== "sem-data" && (
+            {!readonly && currentMonth !== "sem-data" && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {bulkApproveResult && (
                   <span style={{
@@ -485,12 +485,30 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   <div style={{ width: 52, height: 52, borderRadius: 8, overflow: "hidden", background: "var(--ws-surface2)", flexShrink: 0 }}>
                     <MediaThumb url={post.media_url} alt={post.title || post.slug} mediaType={post.media_type} />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", display: "flex", alignItems: "center", gap: 6 }}>
                       {/* ETIQUETA AUTOMÁTICA POR TIPO */}
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: TYPE_COLORS[post.media_type] || "#9E9E9E", flexShrink: 0 }} />
-                      {post.slug || post.title}
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {post.slug || post.title}
+                      </span>
                     </div>
+
+                    {!!post.title && post.title !== post.slug && (
+                      <div style={{
+                        fontSize: ".76rem",
+                        color: "var(--ws-text)",
+                        opacity: 0.92,
+                        marginTop: 4,
+                        fontFamily: "Poppins",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}>
+                        Tema: {post.title}
+                      </div>
+                    )}
+
                     <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "Poppins" }}>
                       {post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
                       {" · "}
