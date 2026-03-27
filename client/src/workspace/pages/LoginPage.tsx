@@ -16,47 +16,46 @@ export default function LoginPage({ onLogin }: Props) {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (loading) return;
-
     setError("");
     setLoading(true);
 
     try {
-      // Mantemos o checkbox visualmente, mas não forçamos remoção manual de storage,
-      // porque isso estava gerando instabilidade na restauração da sessão.
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email,
         password,
       });
 
       if (authError) throw authError;
 
+      if (!rememberMe) {
+        try {
+          sessionStorage.setItem("ws-session-login", "1");
+        } catch {}
+      }
+
       const userId = authData.user?.id;
       if (!userId) {
-        // O listener global de auth ainda deve reconstruir a sessão,
-        // mas evitamos deixar o botão travado caso o retorno venha sem user.
         setLoading(false);
         return;
       }
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .maybeSingle();
 
-      if (!profileError && profile) {
-        onLogin(profile as Profile);
+      if (!profileError && profileData) {
+        onLogin(profileData as Profile);
       }
-
-      // Se lembrar conectado estiver desmarcado, a sessão ainda viverá nesta aba.
-      // Não removemos manualmente a chave do Supabase para evitar quebrar a restauração.
-      void rememberMe;
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro no login:", err);
       setError("Email ou senha inválidos.");
       setLoading(false);
+      return;
     }
+
+    setLoading(false);
   }
 
   return (
@@ -69,11 +68,8 @@ export default function LoginPage({ onLogin }: Props) {
           <path d="M0 400 Q360 150 720 400 Q1080 650 1440 400" stroke="#7b2fff" strokeWidth="0.8" />
         </svg>
       </div>
-
       <form className="ws-login-card" onSubmit={handleLogin}>
-        <div className="ws-logo">
-          DIG<span className="ws-dot">.</span>
-        </div>
+        <div className="ws-logo">DIG<span className="ws-dot">.</span></div>
         <div className="ws-logo-sub">Workspace Interno</div>
 
         <label className="ws-label">Email</label>
@@ -83,7 +79,6 @@ export default function LoginPage({ onLogin }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="seu@email.com"
-          autoComplete="email"
           required
         />
 
@@ -94,7 +89,6 @@ export default function LoginPage({ onLogin }: Props) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          autoComplete="current-password"
           required
         />
 

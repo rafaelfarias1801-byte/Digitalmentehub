@@ -1,7 +1,7 @@
 // client/src/workspace/WorkspaceApp.tsx
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
-import type { Profile } from "./lib/supabaseClient";
+import type { Profile } from "../lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
 import Sidebar from "./components/Sidebar";
@@ -58,7 +58,6 @@ export default function WorkspaceApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [pendingPost, setPendingPost] = useState<{ caseId: string; postId: string } | null>(null);
 
-  // --- LÓGICA GLOBAL DO POMODORO ---
   const [pomoMode, setPomoMode] = useState<"focus" | "short" | "long">("focus");
   const [pomoSecs, setPomoSecs] = useState(25 * 60);
   const [pomoRunning, setPomoRunning] = useState(false);
@@ -66,6 +65,8 @@ export default function WorkspaceApp() {
   const [pomoTaskId, setPomoTaskId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastUserIdRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
 
   const notify = () => {
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -115,61 +116,49 @@ export default function WorkspaceApp() {
     };
   }, [pomoRunning, pomoMode]);
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  async function fetchProfile(userId: string) {
     try {
       setLoading(true);
 
-      const profilePromise = supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-      const tasksPromise = supabase.from("tasks").select("id, title, status").neq("status", "concluido");
+      const [{ data: profileData, error: profileError }, { data: tks, error: tasksError }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+        supabase.from("tasks").select("id, title, status").neq("status", "concluido"),
+      ]);
 
-      const [profileResult, tasksResult] = await Promise.allSettled([profilePromise, tasksPromise]);
+      if (!mountedRef.current) return;
 
-      if (profileResult.status === "fulfilled") {
-        const { data, error } = profileResult.value;
-        if (error) {
-          console.error("Erro ao buscar perfil:", error);
-          setProfile(null);
-        } else {
-          setProfile((data as Profile | null) ?? null);
-        }
-      } else {
-        console.error("Falha inesperada ao buscar perfil:", profileResult.reason);
+      if (profileError) {
+        console.error("Erro ao buscar perfil:", profileError);
         setProfile(null);
+      } else {
+        setProfile((profileData as Profile | null) ?? null);
       }
 
-      if (tasksResult.status === "fulfilled") {
-        const { data, error } = tasksResult.value;
-        if (error) {
-          console.error("Erro ao buscar tarefas:", error);
-          setTasks([]);
-        } else {
-          setTasks(data || []);
-        }
-      } else {
-        console.error("Falha inesperada ao buscar tarefas:", tasksResult.reason);
+      if (tasksError) {
+        console.error("Erro ao buscar tarefas:", tasksError);
         setTasks([]);
+      } else {
+        setTasks(tks || []);
       }
     } catch (error) {
-      console.error("Erro ao reconstruir sessão:", error);
+      console.error("Erro ao carregar sessão/perfil:", error);
+      if (!mountedRef.current) return;
       setProfile(null);
       setTasks([]);
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
-  }, []);
+  }
 
   useEffect(() => {
-    let isMounted = true;
+    mountedRef.current = true;
 
     async function bootstrap() {
       try {
         setLoading(true);
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
 
-        if (!isMounted) return;
+        if (!mountedRef.current) return;
 
         if (error) {
           console.error("Erro ao restaurar sessão:", error);
@@ -179,20 +168,22 @@ export default function WorkspaceApp() {
           return;
         }
 
-        if (session?.user?.id) {
-          await fetchProfile(session.user.id);
+        const userId = data.session?.user?.id ?? null;
+        lastUserIdRef.current = userId;
+
+        if (userId) {
+          await fetchProfile(userId);
         } else {
           setProfile(null);
           setTasks([]);
           setLoading(false);
         }
       } catch (error) {
-        console.error("Erro no bootstrap da sessão:", error);
-        if (isMounted) {
-          setProfile(null);
-          setTasks([]);
-          setLoading(false);
-        }
+        console.error("Erro no bootstrap:", error);
+        if (!mountedRef.current) return;
+        setProfile(null);
+        setTasks([]);
+        setLoading(false);
       }
     }
 
@@ -202,32 +193,42 @@ export default function WorkspaceApp() {
       Notification.requestPermission().catch(() => {});
     }
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const userId = session?.user?.id ?? null;
 
       if (event === "SIGNED_OUT") {
-        setProfile(null);
-        setTasks([]);
-        setLoading(false);
+        lastUserIdRef.current = null;
+        if (mountedRef.current) {
+          setProfile(null);
+          setTasks([]);
+          setLoading(false);
+        }
         return;
       }
 
-      if (session?.user?.id) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setTasks([]);
-        setLoading(false);
+      if (!userId) {
+        lastUserIdRef.current = null;
+        if (mountedRef.current) {
+          setProfile(null);
+          setTasks([]);
+          setLoading(false);
+        }
+        return;
       }
+
+      if (lastUserIdRef.current === userId && event === "INITIAL_SESSION") {
+        return;
+      }
+
+      lastUserIdRef.current = userId;
+      void fetchProfile(userId);
     });
 
     return () => {
-      isMounted = false;
+      mountedRef.current = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, []);
 
   function navigate(newPage: PageId) {
     try {
@@ -238,7 +239,14 @@ export default function WorkspaceApp() {
 
   if (loading) return <div className="ws-loading"><div className="ws-loading-dot" /></div>;
   if (!profile) return <LoginPage onLogin={setProfile} />;
-  if (profile.must_change_password) return <ChangePasswordPage profile={profile} onPasswordChanged={() => setProfile({ ...profile, must_change_password: false })} />;
+  if (profile.must_change_password) {
+    return (
+      <ChangePasswordPage
+        profile={profile}
+        onPasswordChanged={() => setProfile({ ...profile, must_change_password: false })}
+      />
+    );
+  }
   if (profile.role === "cliente") return <ClientView profile={profile} />;
   if (profile.role === "designer") return <DesignerView profile={profile} />;
 
@@ -246,7 +254,14 @@ export default function WorkspaceApp() {
 
   return (
     <div className="ws-layout">
-      <Sidebar currentPage={page} onNavigate={navigate} profile={profile} open={sidebarOpen} onOpenChange={setSidebarOpen} onProfileUpdate={setProfile} />
+      <Sidebar
+        currentPage={page}
+        onNavigate={navigate}
+        profile={profile}
+        open={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+        onProfileUpdate={setProfile}
+      />
       <main className="ws-main">
         <CurrentPage
           profile={profile}
