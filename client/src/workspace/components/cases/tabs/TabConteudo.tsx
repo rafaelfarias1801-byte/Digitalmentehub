@@ -493,13 +493,63 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: TYPE_COLORS[post.media_type] || "#9E9E9E", flexShrink: 0 }} />
                       {post.slug || post.title}
                     </div>
-                    <div style={{ fontSize: ".72rem", color: "var(--ws-text2)", marginTop: 3, fontFamily: "Poppins" }}>
-                      {post.scheduled_date ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) + " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
-                      {" · "}
-                      {post.media_type === "feed" ? "Feed" : post.media_type === "stories" ? "Stories" : post.media_type === "reels" ? "Reels" : "Carrossel"}
-                      {post.platforms?.length ? ` · ${post.platforms
-                        .map(platform => PLATFORMS.find(p => p.value === platform)?.label || platform)
-                        .join(" · ")}` : ""}
+                    <div
+                      style={{
+                        fontSize: ".72rem",
+                        color: "var(--ws-text2)",
+                        marginTop: 3,
+                        fontFamily: "Poppins",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <span>
+                        {post.scheduled_date
+                          ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) +
+                            " às " +
+                            new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+                          : "Sem data"}
+                      </span>
+
+                      <span style={{ opacity: 0.7 }}>·</span>
+
+                      <span>
+                        {post.media_type === "feed"
+                          ? "Feed"
+                          : post.media_type === "stories"
+                            ? "Stories"
+                            : post.media_type === "reels"
+                              ? "Reels"
+                              : "Carrossel"}
+                      </span>
+
+                      {!!post.platforms?.length && post.platforms.map(platform => {
+                        const platformMeta = PLATFORMS.find(p => p.value === platform);
+                        if (!platformMeta) return null;
+
+                        return (
+                          <span
+                            key={platform}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                              padding: "3px 9px",
+                              borderRadius: 999,
+                              background: `${caseData.color}14`,
+                              border: `1px solid ${caseData.color}40`,
+                              color: "var(--ws-text)",
+                              lineHeight: 1,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <span style={{ fontSize: ".7rem", lineHeight: 1 }}>{platformMeta.icon}</span>
+                            <span style={{ fontSize: ".68rem", fontWeight: 500 }}>{platformMeta.label}</span>
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                   <div style={{ background: approval.bg, color: approval.color, borderRadius: 20, padding: "3px 10px", fontSize: ".72rem", fontWeight: 600 }}>{approval.label}</div>
