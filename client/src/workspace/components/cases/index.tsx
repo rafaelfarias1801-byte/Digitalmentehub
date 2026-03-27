@@ -21,6 +21,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [clientAvatarUrl, setClientAvatarUrl] = useState<string>("");
 
   const fileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
@@ -79,6 +80,10 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
 
   function openEdit(caseItem: Case) {
     setEditing(caseItem);
+    // Fetch client avatar
+    setClientAvatarUrl("");
+    supabase.from("profiles").select("avatar_url").eq("case_id", caseItem.id).eq("role", "cliente").maybeSingle()
+      .then(({ data }) => { if (data?.avatar_url) setClientAvatarUrl(data.avatar_url); });
     setForm({
       name: caseItem.name,
       description: caseItem.description,
@@ -112,6 +117,16 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
     setUploading(false);
   }
 
+  async function removeAvatar() {
+    if (!editing) return;
+    const { data: clientProfile } = await supabase
+      .from("profiles").select("id").eq("case_id", editing.id).eq("role", "cliente").maybeSingle();
+    if (clientProfile) {
+      await supabase.from("profiles").update({ avatar_url: null }).eq("id", clientProfile.id);
+      setClientAvatarUrl("");
+    }
+  }
+
   async function uploadAvatar(file: File, onSuccess?: (url: string) => void) {
     setUploadingAvatar(true);
     const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
@@ -126,6 +141,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
       if (res.ok) {
         const url = `${R2_PUBLIC_URL}/${path}?t=${Date.now()}`;
         onSuccess?.(url);
+        setClientAvatarUrl(url);
         // Salva no perfil do cliente vinculado
         if (editing) {
           const { data: clientProfile } = await supabase
@@ -193,6 +209,8 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
             uploading={uploading} fileRef={fileRef} uploadLogo={uploadLogo}
             uploadingAvatar={uploadingAvatar} avatarFileRef={avatarFileRef}
             uploadAvatar={(file, onSuccess) => void uploadAvatar(file, onSuccess)}
+            currentAvatarUrl={clientAvatarUrl}
+            onRemoveAvatar={removeAvatar}
             onSave={save} onClose={() => setModal(false)}
           />
         )}

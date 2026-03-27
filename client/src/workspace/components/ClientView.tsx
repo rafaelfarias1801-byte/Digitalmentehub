@@ -151,6 +151,11 @@ export default function ClientView({ profile }: Props) {
     }
   }
 
+  async function removeAvatar() {
+    await supabase.from("profiles").update({ avatar_url: null }).eq("id", profile.id);
+    setCurrentProfile(prev => ({ ...prev, avatar_url: undefined }));
+  }
+
   async function fetchLatestProfile() {
     try {
       const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).single();
@@ -291,6 +296,17 @@ export default function ClientView({ profile }: Props) {
             >
               {uploadingAvatar ? "Enviando..." : "📷 Alterar foto"}
             </button>
+            {currentProfile.avatar_url && (
+              <button
+                onClick={() => void removeAvatar()}
+                style={{
+                  background: "none", border: "none", color: "var(--ws-accent)",
+                  cursor: "pointer", fontSize: ".74rem", fontFamily: "inherit", padding: 0,
+                }}
+              >
+                × Remover foto
+              </button>
+            )}
             <input
               ref={el => { avatarFileRef.current = el; }}
               type="file"

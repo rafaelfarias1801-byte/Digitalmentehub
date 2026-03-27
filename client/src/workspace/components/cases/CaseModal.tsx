@@ -19,6 +19,8 @@ interface CaseModalProps {
   uploadingAvatar?: boolean;
   avatarFileRef?: MutableRefObject<HTMLInputElement | null>;
   uploadAvatar?: (file: File, onSuccess: (url: string) => void) => Promise<void> | void;
+  currentAvatarUrl?: string;
+  onRemoveAvatar?: () => Promise<void> | void;
   onSave: () => Promise<void> | void;
   onClose: () => void;
 }
@@ -54,11 +56,16 @@ export default function CaseModal({
   uploadingAvatar = false,
   avatarFileRef,
   uploadAvatar,
+  currentAvatarUrl = "",
+  onRemoveAvatar,
   onSave,
   onClose,
 }: CaseModalProps) {
   const [activeTab, setActiveTab] = useState<"geral" | "redes">("geral");
-  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [avatarPreview, setAvatarPreview] = useState<string>(currentAvatarUrl);
+
+  // Sync preview when modal opens with existing avatar
+  useState(() => { setAvatarPreview(currentAvatarUrl); });
 
   return (
     <div
@@ -178,7 +185,7 @@ export default function CaseModal({
                 </button>
                 {avatarPreview && (
                   <button
-                    onClick={() => setAvatarPreview("")}
+                    onClick={() => { setAvatarPreview(""); void onRemoveAvatar?.(); }}
                     style={{ background: "none", border: "none", color: "var(--ws-accent)", cursor: "pointer", fontSize: ".72rem", padding: 0, textAlign: "left" }}
                   >
                     × Remover foto
