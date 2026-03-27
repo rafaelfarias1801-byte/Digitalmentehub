@@ -564,6 +564,20 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
     setSavingValue(false);
   }
 
+  async function sendToApproval(b: Briefing) {
+    if (!b.delivery_urls || b.delivery_urls.length === 0) {
+      alert("Adicione pelo menos uma arte antes de enviar.");
+      return;
+    }
+    setSavingValue(true);
+    const { data } = await supabase.from("briefings").update({ status: "entregue" }).eq("id", b.id).select().single();
+    if (data) { 
+      onBriefingUpdate(data); 
+      setDetailBriefing(null);
+    }
+    setSavingValue(false);
+  }
+
   const overdueBriefings = briefings.filter(b => b.status !== "aprovado" && deadlineStatus(b.deadline) === "overdue");
 
   return (
@@ -756,8 +770,28 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
               )}
             </BISection>
 
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setDetailBriefing(null)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 16px", fontFamily: "Poppins" }}>Fechar</button>
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 10, borderTop: "1px solid var(--ws-border)", paddingTop: 16 }}>
+              <button onClick={() => setDetailBriefing(null)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "10px 18px", fontFamily: "Poppins" }}>Fechar</button>
+              {detailBriefing.status !== "aprovado" && (
+                <button 
+                  onClick={() => void sendToApproval(detailBriefing)} 
+                  disabled={savingValue || !detailBriefing.delivery_urls?.length}
+                  style={{ 
+                    background: "#00e676", 
+                    border: "none", 
+                    borderRadius: 8, 
+                    color: "#00331a", 
+                    cursor: "pointer", 
+                    fontSize: ".78rem", 
+                    fontWeight: 700, 
+                    padding: "10px 20px", 
+                    fontFamily: "Poppins",
+                    opacity: (!detailBriefing.delivery_urls?.length || savingValue) ? 0.5 : 1
+                  }}
+                >
+                  {savingValue ? "Enviando..." : "Enviar para aprovação da Dig"}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -780,7 +814,8 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: { briefing:
     const urls: string[] = [];
     for (const file of files) {
       const ext = file.name.split(".").pop();
-      const path = `deliveries/${caseData.id}/${briefing.id}/${Date.now()}.${ext}`;
+      // Adicionado Math.random para garantir unicidade em uploads múltiplos
+      const path = `deliveries/${caseData.id}/${briefing.id}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
       const { data, error } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename: path, contentType: file.type } });
       if (!error && data?.signedUrl) {
          await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
@@ -789,7 +824,8 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: { briefing:
     }
     if (urls.length > 0) {
       const newUrls = [...(briefing.delivery_urls ?? []), ...urls];
-      const { data } = await supabase.from("briefings").update({ delivery_urls: newUrls, status: "entregue" }).eq("id", briefing.id).select().single();
+      // Apenas atualiza as URLs, o status muda no botão "Enviar para Aprovação"
+      const { data } = await supabase.from("briefings").update({ delivery_urls: newUrls }).eq("id", briefing.id).select().single();
       if (data) onDelivered(data);
     }
     setUploading(false);

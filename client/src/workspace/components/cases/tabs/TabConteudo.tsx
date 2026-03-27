@@ -493,6 +493,21 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: TYPE_COLORS[post.media_type] || "#9E9E9E", flexShrink: 0 }} />
                       {post.slug || post.title}
                     </div>
+
+                    {!!post.title?.trim() && (
+                      <div
+                        style={{
+                          fontSize: ".78rem",
+                          color: "var(--ws-text2)",
+                          marginTop: 4,
+                          fontFamily: "Poppins",
+                          lineHeight: 1.35,
+                        }}
+                      >
+                        {post.title}
+                      </div>
+                    )}
+
                     <div
                       style={{
                         fontSize: ".72rem",
