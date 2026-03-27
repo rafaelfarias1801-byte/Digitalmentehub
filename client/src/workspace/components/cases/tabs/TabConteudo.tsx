@@ -89,6 +89,8 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const [activeMonth, setActiveMonth] = useState<string>("");
   const [notifying, setNotifying] = useState(false);
   const [notifyResult, setNotifyResult] = useState<"ok" | "error" | "notoken" | null>(null);
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const [bulkApproveResult, setBulkApproveResult] = useState<"ok" | "error" | null>(null);
 
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const dragIdx = useRef<number | null>(null);
@@ -265,6 +267,9 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
   const currentMonth = sortedMonths.includes(activeMonth) ? activeMonth : sortedMonths[0] || "sem-data";
   const currentPosts = postsByMonth[currentMonth] || [];
+  const approvableCurrentPosts = currentPosts.filter(
+    post => post.approval_status !== "aprovado" && post.approval_status !== "postado"
+  );
 
   function getMonthLabel(key: string) {
     if (key === "sem-data") return "Sem data";
@@ -309,6 +314,72 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     }
   }
 
+  async function approveCurrentMonthPosts() {
+    const monthPosts = currentPosts.filter(
+      post => post.approval_status !== "aprovado" && post.approval_status !== "postado"
+    );
+
+    if (monthPosts.length === 0) {
+      alert("Não há posts pendentes para aprovar neste mês.");
+      return;
+    }
+
+    const monthLabel = getMonthLabel(currentMonth);
+    const confirmApprove = window.confirm(
+      `Aprovar todos os ${monthPosts.length} post(s) de ${monthLabel}?`
+    );
+
+    if (!confirmApprove) return;
+
+    setBulkApproving(true);
+    setBulkApproveResult(null);
+
+    try {
+      const ids = monthPosts.map(post => post.id);
+      const now = new Date().toISOString();
+
+      const { error } = await supabase
+        .from("posts")
+        .update({
+          approval_status: "aprovado",
+          status_changed_at: now,
+        })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      setPosts(prev =>
+        prev.map(post =>
+          ids.includes(post.id)
+            ? {
+                ...post,
+                approval_status: "aprovado",
+                status_changed_at: now,
+              }
+            : post
+        )
+      );
+
+      setSelected(prev =>
+        prev && ids.includes(prev.id)
+          ? {
+              ...prev,
+              approval_status: "aprovado",
+              status_changed_at: now,
+            }
+          : prev
+      );
+
+      setBulkApproveResult("ok");
+    } catch (err) {
+      console.error("Erro ao aprovar posts em massa:", err);
+      setBulkApproveResult("error");
+    } finally {
+      setBulkApproving(false);
+      setTimeout(() => setBulkApproveResult(null), 4000);
+    }
+  }
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -340,25 +411,66 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
       {loading ? <Loader /> : posts.length === 0 ? <Empty label="Nenhum post cadastrado ainda." /> : (
         <>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-            {sortedMonths.map(key => (
-              <button key={key} onClick={() => setActiveMonth(key)} style={{
-                padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
-                fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                background: currentMonth === key ? `${caseData.color}22` : "var(--ws-surface)",
-                color: currentMonth === key ? caseData.color : "var(--ws-text3)",
-                outline: currentMonth === key ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
-                transition: "all .15s",
-              }}>
-                {getMonthLabel(key)}
-                <span style={{
-                  marginLeft: 6, fontSize: ".65rem",
-                  background: currentMonth === key ? caseData.color : "var(--ws-border)",
-                  color: currentMonth === key ? "#fff" : "var(--ws-text3)",
-                  borderRadius: 10, padding: "1px 6px",
-                }}>{(postsByMonth[key] || []).length}</span>
-              </button>
-            ))}
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              {sortedMonths.map(key => (
+                <button key={key} onClick={() => setActiveMonth(key)} style={{
+                  padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
+                  fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                  background: currentMonth === key ? `${caseData.color}22` : "var(--ws-surface)",
+                  color: currentMonth === key ? caseData.color : "var(--ws-text3)",
+                  outline: currentMonth === key ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
+                  transition: "all .15s",
+                }}>
+                  {getMonthLabel(key)}
+                  <span style={{
+                    marginLeft: 6, fontSize: ".65rem",
+                    background: currentMonth === key ? caseData.color : "var(--ws-border)",
+                    color: currentMonth === key ? "#fff" : "var(--ws-text3)",
+                    borderRadius: 10, padding: "1px 6px",
+                  }}>{(postsByMonth[key] || []).length}</span>
+                </button>
+              ))}
+            </div>
+
+            {!readonly && currentMonth !== "sem-data" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                {bulkApproveResult && (
+                  <span style={{
+                    fontSize: ".75rem",
+                    fontFamily: "Poppins",
+                    color: bulkApproveResult === "ok" ? "#00e676" : "#ff5c7a",
+                  }}>
+                    {bulkApproveResult === "ok" && "✅ Conteúdo do mês aprovado!"}
+                    {bulkApproveResult === "error" && "❌ Erro ao aprovar o conteúdo do mês"}
+                  </span>
+                )}
+
+                <button
+                  className="ws-btn"
+                  onClick={() => void approveCurrentMonthPosts()}
+                  disabled={bulkApproving || approvableCurrentPosts.length === 0}
+                  title={`Aprovar todos os posts de ${getMonthLabel(currentMonth)}`}
+                  style={{
+                    whiteSpace: "nowrap",
+                    opacity: bulkApproving || approvableCurrentPosts.length === 0 ? 0.6 : 1,
+                  }}
+                >
+                  {bulkApproving
+                    ? "Aprovando..."
+                    : `✓ Aprovar todo o conteúdo desse mês${approvableCurrentPosts.length > 0 ? ` (${approvableCurrentPosts.length})` : ""}`}
+                </button>
+              </div>
+            )}
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -436,11 +548,22 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             {mediaUrls.length > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(86px, 1fr))", gap: 8, marginBottom: 10 }}>
                 {mediaUrls.map((url, i) => (
-                  <div key={url + i} style={{ position: "relative", aspectRatio: "1/1", borderRadius: 8, overflow: "hidden", border: i === 0 ? `2px solid ${caseData.color}` : "1px solid var(--ws-border2)" }}>
-                    {isVideoUrl(url) ? <video src={url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <img src={url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
-                    <button onClick={() => removeMedia(i)} style={{ position: "absolute", top: 3, right: 3, width: 16, height: 16, borderRadius: "50%", background: "rgba(0,0,0,.7)", color: "#fff", border: "none", fontSize: ".7rem" }}>×</button>
+                  <div key={url + i} style={{ position: "relative", aspectRatio: "1/1", borderRadius: 8, overflow: "visible", border: i === 0 ? `2px solid ${caseData.color}` : "1px solid var(--ws-border2)" }}>
+                    <div style={{ width: "100%", height: "100%", borderRadius: 6, overflow: "hidden" }}>
+                      {isVideoUrl(url) ? <video src={url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <img src={url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                    </div>
+                    <button
+                      onClick={e => { e.stopPropagation(); removeMedia(i); }}
+                      style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: "50%", background: "#ff4d4d", color: "#fff", border: "2px solid var(--ws-surface)", fontSize: ".7rem", cursor: "pointer", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
+                    >×</button>
                   </div>
                 ))}
+                {/* Botão de adicionar mais mídias sempre visível dentro do grid */}
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  style={{ aspectRatio: "1/1", borderRadius: 8, border: "1px dashed var(--ws-border2)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: "var(--ws-surface2)", fontSize: "1.4rem", color: "var(--ws-text3)" }}
+                  title="Adicionar mais arquivos"
+                >+</div>
               </div>
             )}
             <input ref={fileRef} type="file" accept="image/*,video/*" multiple style={{ display: "none" }} onChange={e => { if (e.target.files?.length) void uploadFiles(e.target.files); }} />

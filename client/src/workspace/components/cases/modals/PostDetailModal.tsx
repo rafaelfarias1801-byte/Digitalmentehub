@@ -375,58 +375,75 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           </div>
 
           {/* ── Visualizador de slides ── */}
-          {allSlides.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              {/* Viewer principal */}
-              <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000", marginBottom: allSlides.length > 1 ? 8 : 0, maxWidth: "100%" }}>
-                {isVideoFile(activeSlideUrl) ? (
-                  <video src={activeSlideUrl} controls style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 420, display: "block" }} />
-                ) : (
-                  <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`}
-                    style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 420, display: "block" }} />
-                )}
+          <div style={{ marginBottom: 20 }}>
+            {allSlides.length > 0 ? (
+              <>
+                {/* Viewer principal */}
+                <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000", marginBottom: allSlides.length > 1 ? 8 : 0, maxWidth: "100%" }}>
+                  {isVideoFile(activeSlideUrl) ? (
+                    <video src={activeSlideUrl} controls style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 420, display: "block" }} />
+                  ) : (
+                    <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`}
+                      style={{ width: "100%", maxWidth: "100%", aspectRatio, objectFit: "contain", maxHeight: 420, display: "block" }} />
+                  )}
 
-                {/* Botões de navegação sobrepostos */}
-                {allSlides.length > 1 && (
-                  <>
-                    <button onClick={prevSlide} disabled={slideIdx === 0} style={{
-                      position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
-                      background: slideIdx === 0 ? "rgba(0,0,0,.2)" : "rgba(0,0,0,.6)",
-                      border: "none", borderRadius: "50%", width: 34, height: 34,
-                      color: "#fff", cursor: slideIdx === 0 ? "default" : "pointer",
-                      fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all .15s",
-                    }}>‹</button>
+                  {/* Botões de navegação sobrepostos */}
+                  {allSlides.length > 1 && (
+                    <>
+                      <button onClick={prevSlide} disabled={slideIdx === 0} style={{
+                        position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
+                        background: slideIdx === 0 ? "rgba(0,0,0,.2)" : "rgba(0,0,0,.6)",
+                        border: "none", borderRadius: "50%", width: 34, height: 34,
+                        color: "#fff", cursor: slideIdx === 0 ? "default" : "pointer",
+                        fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all .15s",
+                      }}>‹</button>
 
-                    <button onClick={nextSlide} disabled={slideIdx === allSlides.length - 1} style={{
-                      position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                      background: slideIdx === allSlides.length - 1 ? "rgba(0,0,0,.2)" : "rgba(0,0,0,.6)",
-                      border: "none", borderRadius: "50%", width: 34, height: 34,
-                      color: "#fff", cursor: slideIdx === allSlides.length - 1 ? "default" : "pointer",
-                      fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all .15s",
-                    }}>›</button>
+                      <button onClick={nextSlide} disabled={slideIdx === allSlides.length - 1} style={{
+                        position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                        background: slideIdx === allSlides.length - 1 ? "rgba(0,0,0,.2)" : "rgba(0,0,0,.6)",
+                        border: "none", borderRadius: "50%", width: 34, height: 34,
+                        color: "#fff", cursor: slideIdx === allSlides.length - 1 ? "default" : "pointer",
+                        fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all .15s",
+                      }}>›</button>
 
-                    {/* Contador */}
-                    <div style={{
-                      position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
-                      background: "rgba(0,0,0,.55)", borderRadius: 20, padding: "3px 10px",
-                      color: "#fff", fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px",
-                    }}>{slideIdx + 1} / {allSlides.length}</div>
-                  </>
-                )}
+                      {/* Contador */}
+                      <div style={{
+                        position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
+                        background: "rgba(0,0,0,.55)", borderRadius: 20, padding: "3px 10px",
+                        color: "#fff", fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px",
+                      }}>{slideIdx + 1} / {allSlides.length}</div>
+                    </>
+                  )}
 
-                {/* Botão expandir — canto inferior direito */}
-                <button onClick={() => setFullscreenSlide(true)} title="Abrir em tela cheia" style={{
-                  position: "absolute", bottom: 8, right: 8,
-                  background: "rgba(0,0,0,.6)", border: "none", borderRadius: "50%",
-                  width: 32, height: 32, color: "#fff", cursor: "pointer",
-                  fontSize: ".75rem", display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "all .15s",
-                }}>⤢</button>
+                  {/* Botão expandir — canto inferior direito */}
+                  <button onClick={() => setFullscreenSlide(true)} title="Abrir em tela cheia" style={{
+                    position: "absolute", bottom: 8, right: 8,
+                    background: "rgba(0,0,0,.6)", border: "none", borderRadius: "50%",
+                    width: 32, height: 32, color: "#fff", cursor: "pointer",
+                    fontSize: ".75rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all .15s",
+                  }}>⤢</button>
+                </div>
+              </>
+            ) : !readonly ? (
+              /* Estado vazio — só admin vê, cliente não vê área de upload vazia */
+              <div
+                onClick={() => slideFileRef.current?.click()}
+                style={{
+                  height: 110, borderRadius: 10, border: "1px dashed var(--ws-border2)",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", marginBottom: 8, background: "var(--ws-surface2)", gap: 6,
+                  color: "var(--ws-text3)", fontSize: ".84rem",
+                }}
+              >
+                🖼 Clique para enviar foto ou vídeo
               </div>
+            ) : null}
 
-              {/* Thumbnails + gerenciamento de mídias */}
+            {/* Thumbnails + gerenciamento de mídias — sempre visível para admin enquanto houver slides ou ao adicionar */}
+            {(!readonly) && (
               <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, alignItems: "center" }}>
                 {allSlides.map((url, i) => (
                   <div key={i} style={{ position: "relative", flexShrink: 0 }}>
@@ -440,51 +457,63 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                         : <img src={url} alt={`thumb ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       }
                     </div>
-                    {/* Botão remover mídia — só admin */}
-                    {!readonly && (
-                      <button
-                        onClick={e => { e.stopPropagation(); void removeSlide(i); }}
-                        title="Remover mídia"
-                        style={{
-                          position: "absolute", top: -6, right: -6,
-                          width: 16, height: 16, borderRadius: "50%",
-                          background: "#ff4433", border: "none",
-                          color: "#fff", cursor: "pointer", fontSize: ".55rem",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontWeight: 800, lineHeight: 1, zIndex: 5,
-                        }}
-                      >×</button>
-                    )}
+                    {/* Botão remover mídia */}
+                    <button
+                      onClick={e => { e.stopPropagation(); void removeSlide(i); }}
+                      title="Remover mídia"
+                      style={{
+                        position: "absolute", top: -6, right: -6,
+                        width: 16, height: 16, borderRadius: "50%",
+                        background: "#ff4433", border: "none",
+                        color: "#fff", cursor: "pointer", fontSize: ".55rem",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontWeight: 800, lineHeight: 1, zIndex: 5,
+                      }}
+                    >×</button>
                   </div>
                 ))}
 
-                {/* Botão adicionar mídia — só admin */}
-                {!readonly && (
-                  <>
-                    <button
-                      onClick={() => slideFileRef.current?.click()}
-                      disabled={uploadingSlide}
-                      title="Adicionar mídia"
-                      style={{
-                        width: 44, height: 44, flexShrink: 0, borderRadius: 6,
-                        border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)",
-                        color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}
-                    >{uploadingSlide ? "⏳" : "+"}</button>
-                    <input
-                      ref={el => { slideFileRef.current = el; }}
-                      type="file"
-                      accept="image/*,video/*"
-                      multiple
-                      style={{ display: "none" }}
-                      onChange={e => { if (e.target.files?.length) void addSlides(e.target.files); e.target.value = ""; }}
-                    />
-                  </>
-                )}
+                {/* Botão adicionar mídia — sempre visível para admin */}
+                <button
+                  onClick={() => slideFileRef.current?.click()}
+                  disabled={uploadingSlide}
+                  title="Adicionar mídia"
+                  style={{
+                    width: 44, height: 44, flexShrink: 0, borderRadius: 6,
+                    border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)",
+                    color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >{uploadingSlide ? "⏳" : "+"}</button>
+                <input
+                  ref={el => { slideFileRef.current = el; }}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={e => { if (e.target.files?.length) void addSlides(e.target.files); e.target.value = ""; }}
+                />
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Thumbnails readonly — cliente só vê as miniaturas sem botões de ação */}
+            {readonly && allSlides.length > 1 && (
+              <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, alignItems: "center" }}>
+                {allSlides.map((url, i) => (
+                  <div key={i} onClick={() => setSlideIdx(i)} style={{
+                    width: 44, height: 44, borderRadius: 6, overflow: "hidden", flexShrink: 0,
+                    border: i === slideIdx ? `2px solid ${caseData.color}` : "2px solid transparent",
+                    cursor: "pointer", opacity: i === slideIdx ? 1 : 0.55, transition: "all .15s",
+                  }}>
+                    {isVideoFile(url)
+                      ? <video src={url} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <img src={url} alt={`thumb ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    }
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* ── Lightbox fullscreen ── */}
           {fullscreenSlide && (
