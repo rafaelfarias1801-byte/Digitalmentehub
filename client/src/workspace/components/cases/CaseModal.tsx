@@ -3,7 +3,7 @@ import type {
   MutableRefObject,
   SetStateAction,
 } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { COLORS } from "./constants";
 import { modalBoxStyle, modalTitleStyle, overlayStyle } from "./styles";
 import type { Case } from "./types";
@@ -64,8 +64,9 @@ export default function CaseModal({
   const [activeTab, setActiveTab] = useState<"geral" | "redes">("geral");
   const [avatarPreview, setAvatarPreview] = useState<string>(currentAvatarUrl);
 
-  // Sync preview when modal opens with existing avatar
-  useState(() => { setAvatarPreview(currentAvatarUrl); });
+  useEffect(() => {
+    setAvatarPreview(currentAvatarUrl);
+  }, [currentAvatarUrl]);
 
   return (
     <div
