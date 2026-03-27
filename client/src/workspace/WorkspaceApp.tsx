@@ -1,7 +1,7 @@
 // client/src/workspace/WorkspaceApp.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "../lib/supabaseClient";
-import type { Profile } from "../lib/supabaseClient";
+import { supabase } from "./lib/supabaseClient";
+import type { Profile } from "./lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
 import Sidebar from "./components/Sidebar";
@@ -18,7 +18,16 @@ import Notificacoes from "./components/Notificacoes";
 import DesignerView from "./components/DesignerView";
 import "./workspace.css";
 
-export type PageId = "dashboard" | "checklist" | "agenda" | "financeiro" | "cases" | "notas" | "ia" | "pomodoro" | "notificacoes";
+export type PageId =
+  | "dashboard"
+  | "checklist"
+  | "agenda"
+  | "financeiro"
+  | "cases"
+  | "notas"
+  | "ia"
+  | "pomodoro"
+  | "notificacoes";
 
 const PAGES: Record<PageId, React.ComponentType<any>> = {
   dashboard: Dashboard,
@@ -35,8 +44,10 @@ const PAGES: Record<PageId, React.ComponentType<any>> = {
 const VALID_PAGES = Object.keys(PAGES) as PageId[];
 
 function getSavedPage(): PageId {
-  const saved = localStorage.getItem("ws_page");
-  if (saved && VALID_PAGES.includes(saved as PageId)) return saved as PageId;
+  try {
+    const saved = localStorage.getItem("ws_page");
+    if (saved && VALID_PAGES.includes(saved as PageId)) return saved as PageId;
+  } catch {}
   return "dashboard";
 }
 
@@ -44,7 +55,6 @@ export default function WorkspaceApp() {
   const [page, setPage] = useState<PageId>(getSavedPage);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileError, setProfileError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [pendingPost, setPendingPost] = useState<{ caseId: string; postId: string } | null>(null);
 
@@ -106,50 +116,43 @@ export default function WorkspaceApp() {
   }, [pomoRunning, pomoMode]);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    setLoading(true);
-    setProfileError("");
-
     try {
-      const { data: profileData, error: profileQueryError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle();
+      setLoading(true);
 
-      if (profileQueryError) {
-        console.error("Erro ao buscar perfil:", profileQueryError);
-        setProfile(null);
-        setTasks([]);
-        setProfileError("Não foi possível carregar seu perfil agora. Tente novamente em alguns segundos.");
-        return;
-      }
+      const profilePromise = supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+      const tasksPromise = supabase.from("tasks").select("id, title, status").neq("status", "concluido");
 
-      if (!profileData) {
-        console.warn("Perfil não encontrado para o usuário:", userId);
-        setProfile(null);
-        setTasks([]);
-        setProfileError("Seu acesso foi encontrado, mas o perfil não está disponível no momento.");
-        return;
-      }
+      const [profileResult, tasksResult] = await Promise.allSettled([profilePromise, tasksPromise]);
 
-      setProfile(profileData);
-
-      const { data: tks, error: tasksError } = await supabase
-        .from("tasks")
-        .select("id, title, status")
-        .neq("status", "concluido");
-
-      if (tasksError) {
-        console.error("Erro ao buscar tarefas do Pomodoro:", tasksError);
-        setTasks([]);
+      if (profileResult.status === "fulfilled") {
+        const { data, error } = profileResult.value;
+        if (error) {
+          console.error("Erro ao buscar perfil:", error);
+          setProfile(null);
+        } else {
+          setProfile((data as Profile | null) ?? null);
+        }
       } else {
-        setTasks(tks || []);
+        console.error("Falha inesperada ao buscar perfil:", profileResult.reason);
+        setProfile(null);
       }
-    } catch (err) {
-      console.error("Erro inesperado ao carregar sessão/perfil:", err);
+
+      if (tasksResult.status === "fulfilled") {
+        const { data, error } = tasksResult.value;
+        if (error) {
+          console.error("Erro ao buscar tarefas:", error);
+          setTasks([]);
+        } else {
+          setTasks(data || []);
+        }
+      } else {
+        console.error("Falha inesperada ao buscar tarefas:", tasksResult.reason);
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error("Erro ao reconstruir sessão:", error);
       setProfile(null);
       setTasks([]);
-      setProfileError("Ocorreu um erro ao restaurar sua sessão. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -158,54 +161,64 @@ export default function WorkspaceApp() {
   useEffect(() => {
     let isMounted = true;
 
-    async function bootstrapAuth() {
+    async function bootstrap() {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        setLoading(true);
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
         if (!isMounted) return;
 
         if (error) {
-          console.error("Erro ao obter sessão:", error);
+          console.error("Erro ao restaurar sessão:", error);
           setProfile(null);
-          setProfileError("Não foi possível verificar sua sessão.");
+          setTasks([]);
           setLoading(false);
           return;
         }
 
-        const session = data.session;
-        if (session?.user) {
+        if (session?.user?.id) {
           await fetchProfile(session.user.id);
         } else {
           setProfile(null);
-          setProfileError("");
+          setTasks([]);
           setLoading(false);
         }
-      } catch (err) {
-        console.error("Erro ao iniciar autenticação:", err);
-        if (!isMounted) return;
-        setProfile(null);
-        setProfileError("Não foi possível iniciar sua sessão.");
-        setLoading(false);
+      } catch (error) {
+        console.error("Erro no bootstrap da sessão:", error);
+        if (isMounted) {
+          setProfile(null);
+          setTasks([]);
+          setLoading(false);
+        }
       }
     }
 
-    void bootstrapAuth();
+    bootstrap();
 
     if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
+      Notification.requestPermission().catch(() => {});
     }
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
 
-      if (session?.user) {
+      if (event === "SIGNED_OUT") {
+        setProfile(null);
+        setTasks([]);
+        setLoading(false);
+        return;
+      }
+
+      if (session?.user?.id) {
         await fetchProfile(session.user.id);
       } else {
         setProfile(null);
         setTasks([]);
-        setProfileError("");
         setLoading(false);
       }
     });
@@ -217,25 +230,15 @@ export default function WorkspaceApp() {
   }, [fetchProfile]);
 
   function navigate(newPage: PageId) {
-    localStorage.setItem("ws_page", newPage);
+    try {
+      localStorage.setItem("ws_page", newPage);
+    } catch {}
     setPage(newPage);
   }
 
   if (loading) return <div className="ws-loading"><div className="ws-loading-dot" /></div>;
-
-  if (!profile) {
-    return (
-      <>
-        {profileError ? (
-          <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 30, background: "rgba(233, 30, 140, 0.12)", border: "1px solid rgba(233, 30, 140, 0.35)", color: "#ffd6ec", padding: "10px 14px", borderRadius: 12, fontSize: ".88rem", fontFamily: "Poppins", maxWidth: 520, width: "calc(100% - 32px)" }}>
-            {profileError}
-          </div>
-        ) : null}
-        <LoginPage onLogin={setProfile} />
-      </>
-    );
-  }
-
+  if (!profile) return <LoginPage onLogin={setProfile} />;
+  if (profile.must_change_password) return <ChangePasswordPage profile={profile} onPasswordChanged={() => setProfile({ ...profile, must_change_password: false })} />;
   if (profile.role === "cliente") return <ClientView profile={profile} />;
   if (profile.role === "designer") return <DesignerView profile={profile} />;
 
