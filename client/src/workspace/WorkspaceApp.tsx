@@ -1,6 +1,6 @@
 // client/src/workspace/WorkspaceApp.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "./lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import type { Profile } from "./lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
