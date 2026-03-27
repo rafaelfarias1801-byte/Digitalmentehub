@@ -112,7 +112,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
     setUploading(false);
   }
 
-  async function uploadAvatar(file: File) {
+  async function uploadAvatar(file: File, onSuccess?: (url: string) => void) {
     setUploadingAvatar(true);
     const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
     const ext = file.name.split(".").pop();
@@ -125,8 +125,8 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
       const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
       if (res.ok) {
         const url = `${R2_PUBLIC_URL}/${path}?t=${Date.now()}`;
-        setForm(prev => ({ ...prev, client_avatar_url: url }));
-        // Se estiver editando, salva já no perfil do cliente vinculado
+        onSuccess?.(url);
+        // Salva no perfil do cliente vinculado
         if (editing) {
           const { data: clientProfile } = await supabase
             .from("profiles")
@@ -191,7 +191,8 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
           <CaseModal
             form={form} setForm={setForm} editing={editing} saving={saving}
             uploading={uploading} fileRef={fileRef} uploadLogo={uploadLogo}
-            uploadingAvatar={uploadingAvatar} avatarFileRef={avatarFileRef} uploadAvatar={uploadAvatar}
+            uploadingAvatar={uploadingAvatar} avatarFileRef={avatarFileRef}
+            uploadAvatar={(file, onSuccess) => void uploadAvatar(file, onSuccess)}
             onSave={save} onClose={() => setModal(false)}
           />
         )}

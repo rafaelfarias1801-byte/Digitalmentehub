@@ -9,7 +9,7 @@ import { modalBoxStyle, modalTitleStyle, overlayStyle } from "./styles";
 import type { Case } from "./types";
 
 interface CaseModalProps {
-  form: Omit<Case, "id"> & { client_avatar_url?: string };
+  form: Omit<Case, "id">;
   setForm: Dispatch<SetStateAction<Omit<Case, "id">>>;
   editing: Case | null;
   saving: boolean;
@@ -18,7 +18,7 @@ interface CaseModalProps {
   uploadLogo: (file: File) => Promise<void> | void;
   uploadingAvatar?: boolean;
   avatarFileRef?: MutableRefObject<HTMLInputElement | null>;
-  uploadAvatar?: (file: File) => Promise<void> | void;
+  uploadAvatar?: (file: File, onSuccess: (url: string) => void) => Promise<void> | void;
   onSave: () => Promise<void> | void;
   onClose: () => void;
 }
@@ -58,6 +58,7 @@ export default function CaseModal({
   onClose,
 }: CaseModalProps) {
   const [activeTab, setActiveTab] = useState<"geral" | "redes">("geral");
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
 
   return (
     <div
@@ -158,8 +159,8 @@ export default function CaseModal({
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}>
-                {form.client_avatar_url
-                  ? <img src={form.client_avatar_url} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                {avatarPreview
+                  ? <img src={avatarPreview} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : <span style={{ fontSize: "1.4rem", color: "var(--ws-text3)" }}>👤</span>
                 }
               </div>
@@ -175,9 +176,9 @@ export default function CaseModal({
                 >
                   {uploadingAvatar ? "Enviando..." : "📷 Enviar foto"}
                 </button>
-                {form.client_avatar_url && (
+                {avatarPreview && (
                   <button
-                    onClick={() => setForm(prev => ({ ...prev, client_avatar_url: "" }))}
+                    onClick={() => setAvatarPreview("")}
                     style={{ background: "none", border: "none", color: "var(--ws-accent)", cursor: "pointer", fontSize: ".72rem", padding: 0, textAlign: "left" }}
                   >
                     × Remover foto
@@ -189,7 +190,7 @@ export default function CaseModal({
                 type="file"
                 accept="image/*"
                 style={{ display: "none" }}
-                onChange={e => { if (e.target.files?.[0] && uploadAvatar) void uploadAvatar(e.target.files[0]); e.target.value = ""; }}
+                onChange={e => { if (e.target.files?.[0] && uploadAvatar) void uploadAvatar(e.target.files[0], (url) => setAvatarPreview(url)); e.target.value = ""; }}
               />
             </div>
 
