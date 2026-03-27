@@ -6,6 +6,7 @@ import { CasesGlobalStyle } from "./cases/styles";
 import Loader from "./cases/shared/Loader";
 import DesignerChangePassword from "../pages/DesignerChangePassword";
 import type { Case, Briefing, DesignerClosing, BrandIdentity } from "./cases/types";
+import TabNotas from "./cases/tabs/TabNotas";
 
 interface DesignerViewProps { profile: Profile; }
 type View = "dashboard" | "workspace";
@@ -538,7 +539,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
   profile: Profile; caseData: Case; briefings: Briefing[];
   onBriefingUpdate: (b: Briefing) => void;
 }) {
-  const [subTab, setSubTab]               = useState<"briefings" | "identidade">("briefings");
+  const [subTab, setSubTab]               = useState<"briefings" | "identidade" | "notas">("briefings");
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
   const [loadingBrand, setLoadingBrand]   = useState(false);
   const [detailBriefing, setDetailBriefing] = useState<Briefing | null>(null);
@@ -590,15 +591,18 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
           )}
         </div>
         <div style={{ display: "flex" }}>
-          {(["briefings", "identidade"] as const).map(tab => (
+          {(["briefings", "identidade", "notas"] as const).map(tab => (
             <button key={tab} onClick={() => setSubTab(tab)} style={{ background: "none", border: "none", cursor: "pointer", borderBottom: subTab === tab ? `2px solid ${caseData.color}` : "2px solid transparent", color: subTab === tab ? caseData.color : "var(--ws-text3)", fontSize: ".78rem", padding: "6px 14px", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
-              {tab === "briefings" ? "📋 Briefings" : "🎨 Identidade Visual"}
+              {tab === "briefings" ? "📋 Briefings" : tab === "identidade" ? "🎨 Identidade Visual" : "📝 Notas"}
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: 20, background: "var(--ws-bg)" }}>
+      <div style={{ padding: subTab === "notas" ? 0 : 20, background: "var(--ws-bg)" }}>
+        {subTab === "notas" && (
+          <TabNotas caseData={caseData} profile={profile} readonly={false} />
+        )}
         {subTab === "briefings" && (
           briefings.length === 0 ? (
             <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".82rem" }}>Nenhum briefing para este cliente ainda.</div>

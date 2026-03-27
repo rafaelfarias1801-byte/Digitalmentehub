@@ -9,13 +9,16 @@ import { modalBoxStyle, modalTitleStyle, overlayStyle } from "./styles";
 import type { Case } from "./types";
 
 interface CaseModalProps {
-  form: Omit<Case, "id">;
+  form: Omit<Case, "id"> & { client_avatar_url?: string };
   setForm: Dispatch<SetStateAction<Omit<Case, "id">>>;
   editing: Case | null;
   saving: boolean;
   uploading: boolean;
   fileRef: MutableRefObject<HTMLInputElement | null>;
   uploadLogo: (file: File) => Promise<void> | void;
+  uploadingAvatar?: boolean;
+  avatarFileRef?: MutableRefObject<HTMLInputElement | null>;
+  uploadAvatar?: (file: File) => Promise<void> | void;
   onSave: () => Promise<void> | void;
   onClose: () => void;
 }
@@ -48,6 +51,9 @@ export default function CaseModal({
   uploading,
   fileRef,
   uploadLogo,
+  uploadingAvatar = false,
+  avatarFileRef,
+  uploadAvatar,
   onSave,
   onClose,
 }: CaseModalProps) {
@@ -142,6 +148,50 @@ export default function CaseModal({
                 × Remover logo
               </button>
             )}
+
+            {/* Avatar do cliente */}
+            <label className="ws-label">Foto de perfil do cliente</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: "50%", overflow: "hidden",
+                background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                {form.client_avatar_url
+                  ? <img src={form.client_avatar_url} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  : <span style={{ fontSize: "1.4rem", color: "var(--ws-text3)" }}>👤</span>
+                }
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <button
+                  onClick={() => avatarFileRef?.current?.click()}
+                  disabled={uploadingAvatar}
+                  style={{
+                    background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)",
+                    borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer",
+                    fontSize: ".75rem", padding: "6px 14px", fontFamily: "inherit",
+                  }}
+                >
+                  {uploadingAvatar ? "Enviando..." : "📷 Enviar foto"}
+                </button>
+                {form.client_avatar_url && (
+                  <button
+                    onClick={() => setForm(prev => ({ ...prev, client_avatar_url: "" }))}
+                    style={{ background: "none", border: "none", color: "var(--ws-accent)", cursor: "pointer", fontSize: ".72rem", padding: 0, textAlign: "left" }}
+                  >
+                    × Remover foto
+                  </button>
+                )}
+              </div>
+              <input
+                ref={avatarFileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={e => { if (e.target.files?.[0] && uploadAvatar) void uploadAvatar(e.target.files[0]); e.target.value = ""; }}
+              />
+            </div>
 
             <label className="ws-label">Nome do cliente</label>
             <input

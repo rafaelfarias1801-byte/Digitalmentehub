@@ -116,6 +116,8 @@ export default function ClientView({ profile }: Props) {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
   const [passwordResetMsg, setPasswordResetMsg] = useState<string>("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarFileRef = { current: null as HTMLInputElement | null };
   const isMobile = useIsMobile();
 
   usePushNotification(profile.id);
@@ -125,6 +127,29 @@ export default function ClientView({ profile }: Props) {
   useEffect(() => {
     setCurrentProfile(prev => ({ ...prev, ...profile }));
   }, [profile]);
+
+  async function uploadAvatar(file: File) {
+    setUploadingAvatar(true);
+    const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+    const ext = file.name.split(".").pop();
+    const path = `avatars/${profile.id}.${ext}`;
+    try {
+      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", {
+        body: { filename: path, contentType: file.type },
+      });
+      if (error || !data?.signedUrl) throw new Error("Erro ao gerar URL");
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) {
+        const url = `${R2_PUBLIC_URL}/${path}?t=${Date.now()}`;
+        await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+        setCurrentProfile(prev => ({ ...prev, avatar_url: url }));
+      }
+    } catch (err) {
+      console.error("Erro ao enviar avatar:", err);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function fetchLatestProfile() {
     try {
@@ -254,8 +279,28 @@ export default function ClientView({ profile }: Props) {
 
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginBottom: 24 }}>
           <UserAvatar profile={currentProfile} size={isMobile ? 96 : 104} borderColor={caseData?.color ? `${caseData.color}88` : "var(--ws-border2)"} background="var(--ws-surface2)" fontSize="1.15rem" />
-          <div style={{ marginTop: 16, fontSize: ".88rem", color: "var(--ws-text2)", maxWidth: 320, lineHeight: 1.5 }}>
-            Se deseja editar alguma informação, consulte um responsável da Dig.
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => avatarFileRef.current?.click()}
+              disabled={uploadingAvatar}
+              style={{
+                background: "none", border: "1px solid var(--ws-border2)",
+                borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer",
+                fontSize: ".76rem", padding: "6px 14px", fontFamily: "inherit",
+              }}
+            >
+              {uploadingAvatar ? "Enviando..." : "📷 Alterar foto"}
+            </button>
+            <input
+              ref={el => { avatarFileRef.current = el; }}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={e => { if (e.target.files?.[0]) void uploadAvatar(e.target.files[0]); e.target.value = ""; }}
+            />
+          </div>
+          <div style={{ marginTop: 12, fontSize: ".88rem", color: "var(--ws-text2)", maxWidth: 320, lineHeight: 1.5 }}>
+            Para editar outras informações, consulte um responsável da Dig.
           </div>
         </div>
 

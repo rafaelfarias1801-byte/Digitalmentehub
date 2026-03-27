@@ -20,8 +20,10 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
   const [form, setForm] = useState<Omit<Case, "id">>(EMPTY_CASE);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const avatarFileRef = useRef<HTMLInputElement>(null);
 
   // EFEITO DE NAVEGAÇÃO AUTOMÁTICA
   useEffect(() => {
@@ -110,6 +112,40 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
     setUploading(false);
   }
 
+  async function uploadAvatar(file: File) {
+    setUploadingAvatar(true);
+    const R2_PUBLIC_URL = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+    const ext = file.name.split(".").pop();
+    const path = `avatars/case_${editing?.id ?? "new"}_${Date.now()}.${ext}`;
+    try {
+      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", {
+        body: { filename: path, contentType: file.type },
+      });
+      if (error || !data?.signedUrl) throw new Error("Erro ao gerar URL");
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) {
+        const url = `${R2_PUBLIC_URL}/${path}?t=${Date.now()}`;
+        setForm(prev => ({ ...prev, client_avatar_url: url }));
+        // Se estiver editando, salva já no perfil do cliente vinculado
+        if (editing) {
+          const { data: clientProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("case_id", editing.id)
+            .eq("role", "cliente")
+            .maybeSingle();
+          if (clientProfile) {
+            await supabase.from("profiles").update({ avatar_url: url }).eq("id", clientProfile.id);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao enviar avatar:", err);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
   async function save() {
     if (!form.name.trim()) return;
     setSaving(true);
@@ -155,6 +191,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
           <CaseModal
             form={form} setForm={setForm} editing={editing} saving={saving}
             uploading={uploading} fileRef={fileRef} uploadLogo={uploadLogo}
+            uploadingAvatar={uploadingAvatar} avatarFileRef={avatarFileRef} uploadAvatar={uploadAvatar}
             onSave={save} onClose={() => setModal(false)}
           />
         )}
