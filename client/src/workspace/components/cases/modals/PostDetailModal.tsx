@@ -125,7 +125,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     await save({ approval_status: status, status_changed_at: new Date().toISOString() });
 
     // Notifica admin se for ação do cliente
-    if (readonly && profile.role === "cliente") {
+    if (profile.role === "cliente") {
       const postTitle = currentPost.slug || currentPost.title || "Post";
       const caseName = caseData.name;
       if (status === "aprovado") {
@@ -148,6 +148,17 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     setRejectionInput("");
     setEditingReason(false);
     setEditReasonInput("");
+
+    // Notifica admin quando cliente reprova ou solicita alteração
+    if (profile.role === "cliente") {
+      const postTitle = currentPost.slug || currentPost.title || "Post";
+      const caseName = caseData.name;
+      if (status === "reprovado") {
+        void notifyAdmins({ type: "cliente_reprovacao", title: `❌ ${caseName} reprovou um post`, body: `"${postTitle}" foi reprovado: ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason } as any);
+      } else if (status === "alteracao") {
+        void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}": ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason } as any);
+      }
+    }
     setSaving(false);
   }
 
