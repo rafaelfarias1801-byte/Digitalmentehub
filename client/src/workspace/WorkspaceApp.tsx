@@ -70,6 +70,9 @@ export default function WorkspaceApp() {
   const lastUserIdRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
 
+  // Push notifications para admin — deve ficar antes de qualquer return condicional
+  usePushNotification(profile?.id);
+
   const notify = () => {
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const osc = audioCtx.createOscillator();
@@ -250,8 +253,6 @@ export default function WorkspaceApp() {
     );
   }
   if (profile.role === "cliente") return <ClientView profile={profile} />;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  usePushNotification(profile.id);
   if (profile.role === "designer") return <DesignerView profile={profile} />;
 
   const CurrentPage = PAGES[page];
