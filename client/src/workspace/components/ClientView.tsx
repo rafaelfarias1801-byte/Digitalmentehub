@@ -11,6 +11,7 @@ import TabFinanceiro from "./cases/tabs/TabFinanceiro";
 import TabDocumentos from "./cases/tabs/TabDocumentos";
 import TabNotas from "./cases/tabs/TabNotas";
 import { useIsMobile } from "../hooks/useIsMobile";
+import NotificationBadge from "./NotificationBadge";
 import { usePushNotification } from "../hooks/usePushNotification";
 
 interface Props {
@@ -515,6 +516,7 @@ export default function ClientView({ profile }: Props) {
         <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px 32px", minWidth: 0 }}>
           <TabContent />
         </div>
+        <NotificationBadge profile={currentProfile} />
       </div>
     );
   }
@@ -633,6 +635,7 @@ export default function ClientView({ profile }: Props) {
       )}
 
       {profileModalOpen && <ProfileModal />}
+      <NotificationBadge profile={currentProfile} />
 
       <div style={{ flex: 1, overflow: "auto", background: "var(--ws-bg)" }}>
         <CasesGlobalStyle />

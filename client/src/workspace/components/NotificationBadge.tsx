@@ -10,6 +10,8 @@ interface AdminNotification {
   body: string;
   read: boolean;
   created_at: string;
+  target_user_id?: string | null;
+  target_role?: string | null;
 }
 
 interface Props { profile: Profile; }
@@ -22,14 +24,21 @@ export default function NotificationBadge({ profile }: Props) {
   const unread = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
-    if (profile.role !== "admin") return;
     load();
 
-    // Realtime — escuta novas notificações
+    // Realtime — escuta novas notificações para este usuário
     const channel = supabase
-      .channel("admin_notifications")
+      .channel(`notifications_${profile.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_notifications" }, payload => {
-        setNotifications(prev => [payload.new as AdminNotification, ...prev].slice(0, 50));
+        const n = payload.new as AdminNotification;
+        // Só adiciona se for para este usuário ou para o role dele
+        if (
+          n.target_user_id === profile.id ||
+          n.target_role === profile.role ||
+          (!n.target_user_id && !n.target_role)
+        ) {
+          setNotifications(prev => [n, ...prev].slice(0, 50));
+        }
       })
       .subscribe();
 
@@ -40,6 +49,7 @@ export default function NotificationBadge({ profile }: Props) {
     const { data } = await supabase
       .from("admin_notifications")
       .select("*")
+      .or(`target_user_id.eq.${profile.id},target_role.eq.${profile.role}`)
       .order("created_at", { ascending: false })
       .limit(50);
     setNotifications(data ?? []);
@@ -70,8 +80,6 @@ export default function NotificationBadge({ profile }: Props) {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
-  if (profile.role !== "admin") return null;
 
   function fmtTime(iso: string) {
     const d = new Date(iso);

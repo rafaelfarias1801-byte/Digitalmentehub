@@ -5,6 +5,7 @@ import type { Profile } from "../../lib/supabaseClient";
 import { CasesGlobalStyle } from "./cases/styles";
 import Loader from "./cases/shared/Loader";
 import DesignerChangePassword from "../pages/DesignerChangePassword";
+import NotificationBadge from "./NotificationBadge";
 import { notifyAdmins } from "../utils/notifyPush";
 import type { Case, Briefing, DesignerClosing, BrandIdentity } from "./cases/types";
 
@@ -257,6 +258,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           />
         </div>
         {showChangePwd && <DesignerChangePassword onDone={() => setShowChangePwd(false)} />}
+        <NotificationBadge profile={profile} />
       </div>
     );
   }
@@ -506,6 +508,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
       )}
 
       {showChangePwd && <DesignerChangePassword onDone={() => setShowChangePwd(false)} />}
+      <NotificationBadge profile={profile} />
     </div>
   );
 }

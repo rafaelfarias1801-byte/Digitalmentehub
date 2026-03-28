@@ -22,6 +22,7 @@ export async function notifyAdmins(params: {
   type: string;
   title: string;
   body: string;
+  [key: string]: any;
 }): Promise<void> {
   await callNotify({ ...params, target_role: "admin" });
 }
@@ -32,6 +33,17 @@ export async function notifyDesigner(params: {
   type: string;
   title: string;
   body: string;
+  [key: string]: any;
 }): Promise<void> {
-  await callNotify({ ...params, profile_ids: [params.designer_id] });
+  await callNotify({ ...params, profile_ids: [params.designer_id], target_user_id: params.designer_id });
+}
+
+export async function notifyUser(params: {
+  user_id: string;
+  type: string;
+  title: string;
+  body: string;
+  [key: string]: any;
+}): Promise<void> {
+  await callNotify({ ...params, profile_ids: [params.user_id], target_user_id: params.user_id });
 }

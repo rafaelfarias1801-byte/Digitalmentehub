@@ -183,18 +183,29 @@ Deno.serve(async (req) => {
       if (data?.push_token) profiles = [data];
     }
 
-    // Salva badge no banco para notificações visuais (admin)
-    if (target_role === "admin" || (profile_ids && profile_ids.length > 0)) {
+    // Salva badge no banco para notificações visuais
+    try {
       const notification = buildNotification(type, body);
-      await supabase.from("admin_notifications").insert({
+      const notifPayload: any = {
         type,
         title: notification.title,
         body: notification.body,
         data: body,
         read: false,
         created_at: new Date().toISOString(),
-      }).then(() => {}); // best-effort, não falha se tabela não existir
-    }
+      };
+
+      if (target_role) {
+        notifPayload.target_role = target_role;
+      }
+      if (body.target_user_id) {
+        notifPayload.target_user_id = body.target_user_id;
+      } else if (profile_ids && profile_ids.length === 1) {
+        notifPayload.target_user_id = profile_ids[0];
+      }
+
+      await supabase.from("admin_notifications").insert(notifPayload);
+    } catch { /* best-effort */ }
 
     if (profiles.length === 0) {
       return new Response(
