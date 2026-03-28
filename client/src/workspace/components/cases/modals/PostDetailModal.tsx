@@ -8,6 +8,7 @@ import type { Case, CheckItem, Comment, Post } from "../types";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { decodeExtraUrls, stripMediaTag, encodeExtraUrls } from "../tabs/TabConteudo";
 import { useIsMobile } from "../../../hooks/useIsMobile";
+import { notifyAdmins } from "../../../utils/notifyPush";
 
 // Componente interno para Informações extras
 function ExtraInfoSection({ extraInfo, readonly, color, onSave }: {
@@ -122,6 +123,19 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   async function saveApproval(status: Post["approval_status"]) {
     setSaving(true);
     await save({ approval_status: status, status_changed_at: new Date().toISOString() });
+
+    // Notifica admin se for ação do cliente
+    if (readonly && profile.role === "cliente") {
+      const postTitle = currentPost.slug || currentPost.title || "Post";
+      const caseName = caseData.name;
+      if (status === "aprovado") {
+        void notifyAdmins({ type: "cliente_aprovacao", title: `✅ ${caseName} aprovou um post`, body: `"${postTitle}" foi aprovado.`, case_name: caseName, post_title: postTitle } as any);
+      } else if (status === "reprovado") {
+        void notifyAdmins({ type: "cliente_reprovacao", title: `❌ ${caseName} reprovou um post`, body: `"${postTitle}" foi reprovado.`, case_name: caseName, post_title: postTitle } as any);
+      } else if (status === "alteracao") {
+        void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}" precisa de ajustes.`, case_name: caseName, post_title: postTitle } as any);
+      }
+    }
     setSaving(false);
   }
 
@@ -156,6 +170,12 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     if (!newComment.trim()) return;
     const c: Comment = { id: Date.now().toString(), author: profile.name || "Você", text: newComment.trim(), created_at: new Date().toISOString() };
     void save({ comments: [...(currentPost.comments || []), c] });
+
+    // Notifica admin quando cliente comenta
+    if (profile.role === "cliente") {
+      const postTitle = currentPost.slug || currentPost.title || "Post";
+      void notifyAdmins({ type: "cliente_comentario_post", title: `💬 ${caseData.name} comentou em um post`, body: `"${postTitle}": ${newComment.trim().slice(0, 80)}`, case_name: caseData.name, post_title: postTitle, comment: newComment.trim() } as any);
+    }
     setNewComment("");
   }
   function startEditComment(c: Comment) { setEditingCommentId(c.id); setEditingCommentText(c.text); }

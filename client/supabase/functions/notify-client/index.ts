@@ -28,6 +28,70 @@ function buildNotification(type: string, data: Record<string, any>): { title: st
   const hi = firstName ? `Olá ${firstName}, ` : "";
 
   switch (type) {
+    // ── Cliente → Admin ──────────────────────────────────────
+    case "cliente_aprovacao":
+      return {
+        title: `✅ ${data.case_name} aprovou um post`,
+        body: `"${data.post_title}" foi aprovado. Acesse o Workspace.`,
+      };
+    case "cliente_aprovacao_massa":
+      return {
+        title: `✅ ${data.case_name} aprovou todos os posts`,
+        body: `${data.count} post${data.count !== 1 ? "s" : ""} aprovados de uma vez. Acesse o Workspace.`,
+      };
+    case "cliente_reprovacao":
+      return {
+        title: `❌ ${data.case_name} reprovou um post`,
+        body: `"${data.post_title}" foi reprovado${data.reason ? `: ${data.reason}` : ""}. Acesse o Workspace.`,
+      };
+    case "cliente_alteracao":
+      return {
+        title: `⚠️ ${data.case_name} solicitou alteração`,
+        body: `"${data.post_title}" precisa de ajustes. Acesse o Workspace.`,
+      };
+    case "cliente_comentario_post":
+      return {
+        title: `💬 ${data.case_name} comentou em um post`,
+        body: `"${data.post_title}": ${data.comment?.slice(0, 80)}`,
+      };
+    case "cliente_comentario_nota":
+      return {
+        title: `💬 ${data.case_name} comentou em uma nota`,
+        body: `"${data.card_title}": ${data.comment?.slice(0, 80)}`,
+      };
+    // ── Designer → Admin ─────────────────────────────────────
+    case "designer_entregou_briefing":
+      return {
+        title: `🎨 ${data.designer_name} entregou uma arte`,
+        body: `Briefing "${data.format}" do cliente ${data.case_name} aguarda aprovação.`,
+      };
+    case "designer_fechou_financeiro":
+      return {
+        title: `💰 ${data.designer_name} fechou o financeiro`,
+        body: `Valor: ${fmtMoney(data.total_final)} — ${MONTHS[(data.month ?? 1) - 1]}/${data.year}. Acesse para aprovar.`,
+      };
+    // ── Admin → Designer ─────────────────────────────────────
+    case "briefing_criado":
+      return {
+        title: `📋 Novo briefing para você`,
+        body: `Briefing "${data.format}" do cliente ${data.case_name} foi criado. Acesse o Workspace Dig.`,
+      };
+    case "briefing_revisao":
+      return {
+        title: `🔄 Revisão solicitada`,
+        body: `O briefing "${data.format}" de ${data.case_name} precisa de ajustes. Acesse o Workspace Dig.`,
+      };
+    case "briefing_aprovado":
+      return {
+        title: `✅ Arte aprovada!`,
+        body: `Seu trabalho em "${data.format}" para ${data.case_name} foi aprovado pela Dig.`,
+      };
+    case "financeiro_aprovado":
+      return {
+        title: `💰 Financeiro aprovado`,
+        body: `Seu fechamento de ${MONTHS[(data.month ?? 1) - 1]}/${data.year} foi aprovado. Pagamento previsto para ${data.payment_date ?? "em breve"}.`,
+      };
+    // ── Conteúdo (cliente) ───────────────────────────────────
     case "conteudo_pronto":
       return {
         title: `${data.case_name} — conteúdo pronto 🎉`,
@@ -62,10 +126,7 @@ function buildNotification(type: string, data: Record<string, any>): { title: st
         body: data.body ?? "",
       };
     default:
-      return {
-        title: data.case_name ?? "Workspace Dig",
-        body: data.body ?? "",
-      };
+      return { title: data.title ?? "Workspace Dig", body: data.body ?? "" };
   }
 }
 
@@ -82,26 +143,29 @@ async function sendToProfile(pushToken: string, notification: { title: string; b
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "authorization, content-type",
-    }
+    headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type" }
   });
 
   try {
     const body = await req.json() as Record<string, any>;
-    const { case_id, case_name, type = "conteudo_pronto", profile_ids } = body;
+    const { type = "custom", profile_ids, target_role, case_id } = body;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Se profile_ids fornecido (broadcast), envia para lista específica
-    // Se case_id fornecido, busca o cliente do case
     let profiles: { push_token: string; name: string }[] = [];
 
-    if (profile_ids && Array.isArray(profile_ids)) {
+    if (target_role) {
+      // Notifica todos de um role (ex: admin)
+      const { data } = await supabase
+        .from("profiles")
+        .select("push_token, name")
+        .eq("role", target_role)
+        .not("push_token", "is", null);
+      profiles = (data ?? []).filter(p => p.push_token);
+    } else if (profile_ids && Array.isArray(profile_ids)) {
       const { data } = await supabase
         .from("profiles")
         .select("push_token, name")
@@ -119,16 +183,30 @@ Deno.serve(async (req) => {
       if (data?.push_token) profiles = [data];
     }
 
+    // Salva badge no banco para notificações visuais (admin)
+    if (target_role === "admin" || (profile_ids && profile_ids.length > 0)) {
+      const notification = buildNotification(type, body);
+      await supabase.from("admin_notifications").insert({
+        type,
+        title: notification.title,
+        body: notification.body,
+        data: body,
+        read: false,
+        created_at: new Date().toISOString(),
+      }).then(() => {}); // best-effort, não falha se tabela não existir
+    }
+
     if (profiles.length === 0) {
       return new Response(
-        JSON.stringify({ error: "Cliente sem token de notificação. Ele precisa acessar o workspace primeiro." }),
-        { status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
+        JSON.stringify({ ok: true, sent: 0, message: "Sem tokens registrados" }),
+        { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
 
     const results = await Promise.allSettled(
       profiles.map(p => {
-        const notification = buildNotification(type, { ...body, case_name: case_name ?? p.name, client_name: p.name });
+        const caseName = body.case_name ?? p.name;
+        const notification = buildNotification(type, { ...body, case_name: caseName, client_name: p.name });
         return sendToProfile(p.push_token, notification);
       })
     );

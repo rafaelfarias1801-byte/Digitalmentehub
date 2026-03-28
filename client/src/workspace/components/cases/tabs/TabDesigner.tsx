@@ -6,6 +6,7 @@ import Loader from "../shared/Loader";
 import { modalBoxStyle, modalTitleStyle, getOverlayStyle } from "../styles";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import type { Case, Designer, Briefing, BrandIdentity } from "../types";
+import { notifyAdmins, notifyDesigner } from "../../../../utils/notifyPush";
 
 interface TabDesignerProps {
   caseData: Case;
@@ -245,6 +246,11 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     }).select().single();
     if (data) {
       setBriefings(prev => [data, ...prev]);
+
+      // Notifica designer sobre novo briefing
+      const caseName = allCases.find(c => c.id === activeClientId)?.name ?? activeClientId;
+      void notifyDesigner({ designer_id: activeDesigner.id, type: "briefing_criado", title: "📋 Novo briefing para você", body: `Briefing "${briefingForm.format}" do cliente ${caseName} foi criado. Acesse o Workspace Dig.`, format: briefingForm.format, case_name: caseName } as any);
+
       // Vínculo permanente em designer_cases
       await supabase.from("designer_cases").upsert(
         { designer_id: activeDesigner!.id, case_id: activeClientId },
@@ -307,13 +313,28 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 
   async function approveBriefing(b: Briefing) {
     const { data } = await supabase.from("briefings").update({ status: "aprovado" }).eq("id", b.id).select().single();
-    if (data) { setBriefings(prev => prev.map(x => x.id === b.id ? data : x)); setDetailBriefing(data); }
+    if (data) {
+      setBriefings(prev => prev.map(x => x.id === b.id ? data : x));
+      setDetailBriefing(data);
+
+      // Notifica designer que arte foi aprovada
+      const caseName = allCases.find(c => c.id === activeClientId)?.name ?? "";
+      void notifyDesigner({ designer_id: activeDesigner!.id, type: "briefing_aprovado", title: "✅ Arte aprovada!", body: `Seu trabalho em "${b.format}" para ${caseName} foi aprovado pela Dig.`, format: b.format, case_name: caseName } as any);
+    }
   }
 
   async function requestRevision(b: Briefing) {
     if (!revisionText.trim()) return;
     const { data } = await supabase.from("briefings").update({ status: "revisao", revision_note: revisionText.trim() }).eq("id", b.id).select().single();
-    if (data) { setBriefings(prev => prev.map(x => x.id === b.id ? data : x)); setDetailBriefing(data); setRevisionText(""); }
+    if (data) {
+      setBriefings(prev => prev.map(x => x.id === b.id ? data : x));
+      setDetailBriefing(data);
+      setRevisionText("");
+
+      // Notifica designer sobre revisão
+      const caseName = allCases.find(c => c.id === activeClientId)?.name ?? "";
+      void notifyDesigner({ designer_id: activeDesigner!.id, type: "briefing_revisao", title: "🔄 Revisão solicitada", body: `O briefing "${b.format}" de ${caseName} precisa de ajustes. Acesse o Workspace Dig.`, format: b.format, case_name: caseName } as any);
+    }
   }
 
   async function deleteBriefing(id: string) {
@@ -969,7 +990,14 @@ function DeliveryUpload({ briefing, caseData, r2base, onDelivered }: {
         .eq("id", briefing.id)
         .select()
         .single();
-      if (data) onDelivered(data);
+      if (data) {
+        onDelivered(data);
+
+        // Notifica admin que designer entregou
+        const { data: designerProfile } = await supabase.from("profiles").select("name").eq("id", briefing.designer_id).maybeSingle();
+        const designerName = designerProfile?.name ?? "Designer";
+        void notifyAdmins({ type: "designer_entregou_briefing", title: `🎨 ${designerName} entregou uma arte`, body: `Briefing "${briefing.format}" do cliente ${caseData.name} aguarda aprovação.`, designer_name: designerName, case_name: caseData.name, format: briefing.format } as any);
+      }
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";

@@ -7,6 +7,7 @@ import { DEFAULT_LABELS } from "../constants";
 import { closeBtnStyle, labelStyle, getOverlayStyle } from "../styles";
 import type { Case, NoteCard, NoteLabel } from "../types";
 import { useIsMobile } from "../../../hooks/useIsMobile";
+import { notifyAdmins } from "../../../utils/notifyPush";
 
 interface NoteCardModalProps { card: NoteCard; caseData: Case; onClose: () => void; onUpdate: (card: NoteCard) => void; onDelete: (id: string) => void; profile: Profile; }
 
@@ -124,7 +125,16 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
   function addCheckItem() { if (!newCheck.trim()) return; void save({ checklist: [...(currentCard.checklist || []), { id: Date.now().toString(), text: newCheck.trim(), done: false }] }); setNewCheck(""); }
   function toggleCheck(id: string) { void save({ checklist: (currentCard.checklist || []).map(i => i.id === id ? { ...i, done: !i.done } : i) }); }
   function removeCheck(id: string) { void save({ checklist: (currentCard.checklist || []).filter(i => i.id !== id) }); }
-  function addComment() { if (!newComment.trim()) return; void save({ comments: [...(currentCard.comments || []), { id: Date.now().toString(), author: profile.name || "Você", text: newComment.trim(), created_at: new Date().toISOString() }] }); setNewComment(""); }
+  function addComment() {
+    if (!newComment.trim()) return;
+    void save({ comments: [...(currentCard.comments || []), { id: Date.now().toString(), author: profile.name || "Você", text: newComment.trim(), created_at: new Date().toISOString() }] });
+
+    // Notifica admin quando cliente comenta em nota
+    if (profile.role === "cliente") {
+      void notifyAdmins({ type: "cliente_comentario_nota", title: `💬 ${caseData.name} comentou em uma nota`, body: `"${currentCard.title}": ${newComment.trim().slice(0, 80)}`, case_name: caseData.name, card_title: currentCard.title, comment: newComment.trim() } as any);
+    }
+    setNewComment("");
+  }
   function removeComment(id: string) { if (!window.confirm("Apagar este comentário?")) return; void save({ comments: (currentCard.comments || []).filter(c => c.id !== id) }); }
   function startEditComment(comment: { id: string; text: string }) { setEditingCommentId(comment.id); setEditingCommentText(comment.text); }
   function saveEditComment(id: string) {

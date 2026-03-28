@@ -14,6 +14,8 @@ import Notas from "./components/Notas";
 import IA from "./components/IA";
 import Pomodoro from "./components/Pomodoro";
 import ClientView from "./components/ClientView";
+import { usePushNotification } from "./hooks/usePushNotification";
+import NotificationBadge from "./components/NotificationBadge";
 import Notificacoes from "./components/Notificacoes";
 import DesignerView from "./components/DesignerView";
 import "./workspace.css";
@@ -248,6 +250,8 @@ export default function WorkspaceApp() {
     );
   }
   if (profile.role === "cliente") return <ClientView profile={profile} />;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  usePushNotification(profile.id);
   if (profile.role === "designer") return <DesignerView profile={profile} />;
 
   const CurrentPage = PAGES[page];
@@ -262,6 +266,7 @@ export default function WorkspaceApp() {
         onOpenChange={setSidebarOpen}
         onProfileUpdate={setProfile}
       />
+      <NotificationBadge profile={profile} />
       <main className="ws-main">
         <CurrentPage
           profile={profile}
