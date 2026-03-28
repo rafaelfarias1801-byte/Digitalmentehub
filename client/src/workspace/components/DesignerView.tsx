@@ -136,6 +136,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
 
   const currentClosing = closings.find(c => c.month === closingPeriod.month && c.year === closingPeriod.year);
   const alreadyClosed  = !!currentClosing?.closed_at;
+  const alreadyApproved = !!(currentClosing as any)?.approved_at;
 
   const mustChangePwd = !!(profile as any).must_change_password;
   if (mustChangePwd) {
@@ -287,10 +288,13 @@ export default function DesignerView({ profile }: DesignerViewProps) {
         )}
 
         {alreadyClosed && closingPeriod.show && (
-          <div style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)", borderRadius: 14, padding: "12px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
-            <span>✅</span>
+          <div style={{ background: alreadyApproved ? "rgba(0,230,118,0.12)" : "rgba(0,230,118,0.08)", border: `1px solid ${alreadyApproved ? "rgba(0,230,118,0.4)" : "rgba(0,230,118,0.2)"}`, borderRadius: 14, padding: "12px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+            <span>{alreadyApproved ? "💰" : "✅"}</span>
             <div style={{ fontSize: ".82rem", color: "#00a864", fontFamily: "Poppins" }}>
-              {MONTHS[closingPeriod.month - 1]} fechado — {fmt(currentClosing!.total_final)} aguardando aprovação.
+              {alreadyApproved
+                ? `${MONTHS[closingPeriod.month - 1]} aprovado — ${fmt(currentClosing!.total_final)} entrará no financeiro.`
+                : `${MONTHS[closingPeriod.month - 1]} fechado — ${fmt(currentClosing!.total_final)} aguardando aprovação.`
+              }
             </div>
           </div>
         )}
@@ -390,7 +394,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
                 {!alreadyClosed && closingPeriod.show && (
                   <button onClick={() => setClosingModal(true)} style={{ background: "#ffd600", border: "none", borderRadius: 8, color: "#1a1200", cursor: "pointer", fontSize: ".76rem", fontWeight: 700, padding: "7px 16px", fontFamily: "Poppins" }}>Fechar mês</button>
                 )}
-                {alreadyClosed && <div style={{ fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 700 }}>✓ Fechado — aguardando aprovação</div>}
+                {alreadyClosed && <div style={{ fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 700 }}>{alreadyApproved ? "💰 Aprovado — pagamento a caminho" : "✓ Fechado — aguardando aprovação"}</div>}
               </div>
               <div style={{ padding: "16px 20px" }}>
                 {briefingsThisMonth.length === 0 ? (
@@ -423,14 +427,18 @@ export default function DesignerView({ profile }: DesignerViewProps) {
                 <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 12 }}>Histórico</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {closings.filter(c => c.closed_at).map(c => (
-                    <div key={c.id} style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div key={c.id} style={{ background: "var(--ws-surface)", border: `1px solid ${(c as any).approved_at ? "rgba(0,230,118,0.3)" : "var(--ws-border)"}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: ".84rem", color: "var(--ws-text)" }}>{MONTHS[c.month - 1]} {c.year}</div>
                         {c.notes && <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>{c.notes}</div>}
+                        {(c as any).payment_date && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>📅 Pgto: {new Date((c as any).payment_date + "T12:00:00").toLocaleDateString("pt-BR")}</div>}
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)" }}>{fmt(c.total_final)}</div>
                         {c.discount > 0 && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Desconto: {fmt(c.discount)}</div>}
+                        <div style={{ fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, marginTop: 4, color: (c as any).approved_at ? "#00a864" : "#b08800" }}>
+                          {(c as any).approved_at ? "💰 Aprovado" : "⏳ Aguardando"}
+                        </div>
                       </div>
                     </div>
                   ))}
