@@ -5,7 +5,8 @@ import Empty from "../shared/Empty";
 import Loader from "../shared/Loader";
 import { modalBoxStyle, modalTitleStyle, getOverlayStyle } from "../styles";
 import { useIsMobile } from "../../../hooks/useIsMobile";
-import type { Case, Designer, Briefing, BrandIdentity } from "../types";
+import type { Case, Designer, Briefing, BrandIdentity, DesignerClosing } from "../types";
+import { notifyAdmins, notifyDesigner } from "../../../../utils/notifyPush";
 import { notifyAdmins, notifyDesigner } from "../../../utils/notifyPush";
 
 interface TabDesignerProps {
@@ -55,7 +56,9 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [view, setView]                       = useState<"cards" | "workspace">("cards");
   const [activeDesigner, setActiveDesigner]   = useState<Designer | null>(null);
   const [activeClientId, setActiveClientId]   = useState<string>(caseData.id);
-  const [activeSubTab, setActiveSubTab]       = useState<"identidade" | "briefings">("briefings");
+  const [activeSubTab, setActiveSubTab]       = useState<"identidade" | "briefings" | "financeiro">("briefings");
+  const [closings, setClosings]               = useState<DesignerClosing[]>([]);
+  const [approvingClosing, setApprovingClosing] = useState<string | null>(null);
 
   const [designers, setDesigners]             = useState<Designer[]>([]);
   const [designerProfiles, setDesignerProfiles] = useState<Record<string, { name: string; avatar_url?: string }>>({});
@@ -136,14 +139,16 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   }
 
   async function loadClientData(designerId: string, clientId: string) {
-    const [{ data: bf }, { data: bi }] = await Promise.all([
+    const [{ data: bf }, { data: bi }, { data: cl }] = await Promise.all([
       supabase.from("briefings").select("*").eq("designer_id", designerId).eq("case_id", clientId).order("created_at", { ascending: false }),
       supabase.from("brand_identity").select("*").eq("case_id", clientId).maybeSingle(),
+      supabase.from("designer_closings").select("*").eq("designer_id", designerId).order("year", { ascending: false }).order("month", { ascending: false }),
     ]);
     setBriefings(bf ?? []);
     const identity = bi ?? EMPTY_BRAND;
     setBrandIdentity(identity);
     setBrandForm(identity);
+    setClosings(cl ?? []);
   }
 
   async function switchClient(clientId: string) {
@@ -344,6 +349,60 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     if (detailBriefing?.id === id) setDetailBriefing(null);
   }
 
+  const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  function fmtMoney(v: number) { return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+
+  async function approveClosing(closing: DesignerClosing) {
+    if (!activeDesigner) return;
+    setApprovingClosing(closing.id ?? null);
+    try {
+      // Marca como aprovado
+      await supabase.from("designer_closings")
+        .update({ approved_at: new Date().toISOString() })
+        .eq("designer_id", closing.designer_id)
+        .eq("month", closing.month)
+        .eq("year", closing.year);
+
+      // Lança no financeiro global como pagamento para o designer
+      const monthLabel = `${MONTHS_PT[closing.month - 1]}/${closing.year}`;
+      const designerName = activeDesigner.name;
+      await supabase.from("financial").insert({
+        description: `Pagamento designer — ${designerName} — ${monthLabel}`,
+        type: "pagamento",
+        due_date: closing.payment_date ?? new Date().toISOString().slice(0, 10),
+        amount: closing.total_final,
+        positive: false,
+        status: "pendente",
+        related_name: designerName,
+        notes: `Fechamento aprovado via workspace. Total bruto: ${fmtMoney(closing.total_bruto)}${closing.discount ? ` | Desconto: ${fmtMoney(closing.discount)}` : ""}${closing.notes ? ` | ${closing.notes}` : ""}`,
+        created_at: new Date().toISOString(),
+      });
+
+      // Notifica designer
+      void notifyDesigner({
+        designer_id: activeDesigner.id,
+        type: "financeiro_aprovado",
+        title: "💰 Financeiro aprovado",
+        body: `Seu fechamento de ${monthLabel} foi aprovado. Valor: ${fmtMoney(closing.total_final)}${closing.payment_date ? `. Pagamento: ${new Date(closing.payment_date + "T12:00:00").toLocaleDateString("pt-BR")}` : ""}.`,
+        month: closing.month,
+        year: closing.year,
+        total_final: closing.total_final,
+        payment_date: closing.payment_date,
+      } as any);
+
+      // Atualiza lista local
+      setClosings(prev => prev.map(c =>
+        c.month === closing.month && c.year === closing.year
+          ? { ...c, approved_at: new Date().toISOString() }
+          : c
+      ));
+    } catch (err) {
+      console.error("Erro ao aprovar fechamento:", err);
+    } finally {
+      setApprovingClosing(null);
+    }
+  }
+
   const activeCase = allCases.find(c => c.id === activeClientId) ?? caseData;
 
   // ════════════════════════════════════════
@@ -501,9 +560,9 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
             {!readonly && activeSubTab === "identidade" && !editingBrand && <button className="ws-btn-ghost" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => { setBrandForm(brandIdentity); setEditingBrand(true); }}>✎ Editar</button>}
           </div>
           <div style={{ display: "flex" }}>
-            {(["briefings", "identidade"] as const).map(tab => (
+            {(["briefings", "identidade", "financeiro"] as const).map(tab => (
               <button key={tab} onClick={() => setActiveSubTab(tab)} style={{ background: "none", border: "none", cursor: "pointer", borderBottom: activeSubTab === tab ? `2px solid ${activeCase.color}` : "2px solid transparent", color: activeSubTab === tab ? activeCase.color : "var(--ws-text3)", fontSize: ".78rem", padding: "6px 14px", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
-                {tab === "briefings" ? "📋 Briefings" : "🎨 Identidade Visual"}
+                {tab === "briefings" ? "📋 Briefings" : tab === "identidade" ? "🎨 Identidade Visual" : "💰 Financeiro"}
               </button>
             ))}
           </div>
@@ -558,6 +617,114 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                 editingBrand
                   ? <BrandEditor form={brandForm} setForm={setBrandForm} caseData={activeCase} onSave={() => void saveBrand()} onCancel={() => setEditingBrand(false)} saving={saving} />
                   : <BrandView identity={brandIdentity} caseData={activeCase} />
+              )}
+
+              {activeSubTab === "financeiro" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {closings.length === 0 ? (
+                    <div style={{ color: "var(--ws-text3)", fontSize: ".82rem", textAlign: "center", padding: "32px 0" }}>
+                      Nenhum fechamento financeiro ainda.
+                    </div>
+                  ) : closings.map(closing => {
+                    const monthLabel = `${["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][closing.month - 1]}/${closing.year}`;
+                    const isApproved = !!(closing as any).approved_at;
+                    const approving = approvingClosing === (closing.id ?? `${closing.month}-${closing.year}`);
+
+                    // Briefings do mês do designer para esse client
+                    const monthBriefings = briefings.filter(b => {
+                      const d = new Date(b.created_at);
+                      return d.getMonth() + 1 === closing.month && d.getFullYear() === closing.year;
+                    });
+
+                    return (
+                      <div key={`${closing.month}-${closing.year}`} style={{
+                        background: "var(--ws-surface)", border: `1px solid ${isApproved ? "rgba(0,230,118,0.3)" : "var(--ws-border)"}`,
+                        borderRadius: 14, overflow: "hidden",
+                      }}>
+                        {/* Header */}
+                        <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--ws-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div>
+                            <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".92rem", color: "var(--ws-text)" }}>{monthLabel}</div>
+                            {(closing as any).payment_date && (
+                              <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
+                                📅 Pagamento preferido: {new Date((closing as any).payment_date + "T12:00:00").toLocaleDateString("pt-BR")}
+                              </div>
+                            )}
+                          </div>
+                          {isApproved ? (
+                            <span style={{ background: "rgba(0,230,118,0.12)", color: "#00a864", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>✅ Aprovado</span>
+                          ) : (
+                            <span style={{ background: "rgba(255,214,0,0.12)", color: "#b08800", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>⏳ Aguardando</span>
+                          )}
+                        </div>
+
+                        {/* Briefings do mês */}
+                        <div style={{ padding: "14px 18px" }}>
+                          {monthBriefings.length > 0 && (
+                            <div style={{ marginBottom: 12 }}>
+                              <div style={{ fontSize: ".62rem", fontFamily: "Poppins", letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--ws-text3)", marginBottom: 8 }}>Briefings do mês</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                {monthBriefings.map(b => (
+                                  <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--ws-surface2)", borderRadius: 8 }}>
+                                    <div>
+                                      <span style={{ fontSize: ".82rem", color: "var(--ws-text)", fontWeight: 600 }}>{b.format}</span>
+                                      <span style={{ fontSize: ".68rem", color: "var(--ws-text3)", marginLeft: 8, fontFamily: "Poppins" }}>{allCases.find(c => c.id === b.case_id)?.name ?? "—"}</span>
+                                    </div>
+                                    <span style={{ fontSize: ".82rem", fontFamily: "Poppins", fontWeight: 700, color: b.designer_value ? "var(--ws-text)" : "var(--ws-text3)" }}>
+                                      {b.designer_value ? fmtMoney(b.designer_value) : "R$ 0,00"}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Valor fixo mensal */}
+                          {closing.total_bruto > 0 && closing.discount !== undefined && (
+                            <div style={{ background: "var(--ws-surface2)", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+                              {closing.total_bruto - (monthBriefings.reduce((s, b) => s + (b.designer_value ?? 0), 0)) > 0 && (
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                                  <span style={{ fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>💼 Valor fixo / adicional</span>
+                                  <span style={{ fontSize: ".78rem", color: "var(--ws-text2)", fontFamily: "Poppins", fontWeight: 600 }}>
+                                    {fmtMoney(closing.total_bruto - monthBriefings.reduce((s, b) => s + (b.designer_value ?? 0), 0))}
+                                  </span>
+                                </div>
+                              )}
+                              {closing.discount > 0 && (
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                                  <span style={{ fontSize: ".78rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Desconto</span>
+                                  <span style={{ fontSize: ".78rem", color: "#ff6b35", fontFamily: "Poppins" }}>− {fmtMoney(closing.discount)}</span>
+                                </div>
+                              )}
+                              {closing.notes && (
+                                <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 6, fontStyle: "italic" }}>{closing.notes}</div>
+                              )}
+                              <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 8, marginTop: 8, display: "flex", justifyContent: "space-between" }}>
+                                <span style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)" }}>Total final</span>
+                                <span style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "#00a864" }}>{fmtMoney(closing.total_final)}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Botão aprovar */}
+                          {!readonly && !isApproved && (
+                            <button
+                              onClick={() => void approveClosing(closing)}
+                              disabled={approving}
+                              style={{
+                                width: "100%", background: "#00e676", border: "none", borderRadius: 10,
+                                color: "#003322", cursor: "pointer", fontSize: ".84rem", fontWeight: 700,
+                                padding: "11px 0", fontFamily: "Poppins", opacity: approving ? 0.7 : 1,
+                              }}
+                            >
+                              {approving ? "Aprovando..." : "✅ Aprovar e lançar no financeiro"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </>
           )}
