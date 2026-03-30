@@ -70,7 +70,7 @@ function sortPayments(list: Payment[]) {
 }
 
 
-async function notifyClientPush(caseId: string, caseName: string, body: object) {
+async function notifyClientPush(caseId: string, caseName: string, body: Record<string, any>) {
   try {
     await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-client`,
@@ -84,6 +84,27 @@ async function notifyClientPush(caseId: string, caseName: string, body: object) 
       }
     );
   } catch { /* silently ignore push errors */ }
+}
+
+async function saveBadgeForClient(caseId: string, title: string, body: string) {
+  try {
+    const { data: clientProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("case_id", caseId)
+      .eq("role", "cliente")
+      .maybeSingle();
+    if (!clientProfile?.id) return;
+    await supabase.from("admin_notifications").insert({
+      type: "financeiro",
+      title,
+      body,
+      read: false,
+      target_user_id: clientProfile.id,
+      target_role: "cliente",
+      created_at: new Date().toISOString(),
+    });
+  } catch { /* silently ignore */ }
 }
 
 export default function TabFinanceiro({ caseData, readonly = false }: TabFinanceiroProps) {
@@ -196,6 +217,11 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
           amount: payload.amount,
           due_date: payload.due_date,
         });
+        void saveBadgeForClient(
+          caseData.id,
+          `${caseData.name} — nova cobrança 💰`,
+          `Uma cobrança de ${payload.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} foi criada. Acesse e confira.`
+        );
       }
     }
 
@@ -244,6 +270,11 @@ export default function TabFinanceiro({ caseData, readonly = false }: TabFinance
           amount: payment.amount,
           due_date: payment.due_date,
         });
+        void saveBadgeForClient(
+          caseData.id,
+          `${caseData.name} — pagamento confirmado ✅`,
+          `Recebemos seu pagamento de ${payment.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}. Obrigado!`
+        );
       }
     }
   }
