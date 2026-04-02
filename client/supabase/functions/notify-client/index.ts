@@ -156,6 +156,7 @@ Deno.serve(async (req) => {
     );
 
     let profiles: { push_token: string; name: string }[] = [];
+    let caseClientId: string | null = null;
 
     if (target_role) {
       // Notifica todos de um role (ex: admin)
@@ -175,12 +176,15 @@ Deno.serve(async (req) => {
     } else if (case_id) {
       const { data } = await supabase
         .from("profiles")
-        .select("push_token, name")
+        .select("id, push_token, name")
         .eq("case_id", case_id)
         .eq("role", "cliente")
         .not("push_token", "is", null)
         .maybeSingle();
-      if (data?.push_token) profiles = [data];
+      if (data?.push_token) {
+        profiles = [data];
+        caseClientId = data.id;
+      }
     }
 
     // Salva badge no banco para notificações visuais
@@ -197,6 +201,10 @@ Deno.serve(async (req) => {
 
       if (target_role) {
         notifPayload.target_role = target_role;
+      } else if (case_id) {
+        // quando vier por case_id, o badge pertence ao cliente daquele case
+        notifPayload.target_role = "cliente";
+        if (caseClientId) notifPayload.target_user_id = caseClientId;
       }
       if (body.target_user_id) {
         notifPayload.target_user_id = body.target_user_id;
