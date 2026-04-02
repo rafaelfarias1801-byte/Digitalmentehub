@@ -201,15 +201,14 @@ Deno.serve(async (req) => {
 
       if (target_role) {
         notifPayload.target_role = target_role;
-      } else if (case_id) {
-        // quando vier por case_id, o badge pertence ao cliente daquele case
-        notifPayload.target_role = "cliente";
-        if (caseClientId) notifPayload.target_user_id = caseClientId;
       }
       if (body.target_user_id) {
         notifPayload.target_user_id = body.target_user_id;
       } else if (profile_ids && profile_ids.length === 1) {
         notifPayload.target_user_id = profile_ids[0];
+      } else if (case_id && caseClientId) {
+        // notificação de case: vai APENAS para o cliente específico, sem target_role
+        notifPayload.target_user_id = caseClientId;
       }
 
       await supabase.from("admin_notifications").insert(notifPayload);

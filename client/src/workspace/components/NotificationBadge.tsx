@@ -67,8 +67,11 @@ export default function NotificationBadge({ profile }: Props) {
   }
 
   async function clearAll() {
+    const readIds = notifications.filter(n => n.read).map(n => n.id);
     setNotifications([]);
-    await supabase.from("admin_notifications").delete().eq("read", true);
+    if (readIds.length > 0) {
+      await supabase.from("admin_notifications").delete().in("id", readIds);
+    }
   }
 
   // Fecha ao clicar fora
