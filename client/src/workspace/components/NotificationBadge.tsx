@@ -31,11 +31,10 @@ export default function NotificationBadge({ profile }: Props) {
       .channel(`notifications_${profile.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_notifications" }, payload => {
         const n = payload.new as AdminNotification;
-        // Só adiciona se for para este usuário ou para o role dele
+        // Só adiciona se for explicitamente para este usuário ou para o role dele
         if (
           n.target_user_id === profile.id ||
-          n.target_role === profile.role ||
-          (!n.target_user_id && !n.target_role)
+          n.target_role === profile.role
         ) {
           setNotifications(prev => [n, ...prev].slice(0, 50));
         }
