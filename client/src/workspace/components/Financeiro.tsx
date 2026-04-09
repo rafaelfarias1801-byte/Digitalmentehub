@@ -260,23 +260,23 @@ export default function Financeiro({ profile }: Props) {
   }, [monthFilteredEntries, search, statusFilter, typeFilter]);
 
   const metrics = useMemo(() => {
-    const receitasPagas = entries
+    const receitasPagas = monthFilteredEntries
       .filter((e) => e.positive && e.status === "pago")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const despesasPagas = entries
+    const despesasPagas = monthFilteredEntries
       .filter((e) => !e.positive && e.status === "pago")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const receber = entries
+    const receber = monthFilteredEntries
       .filter((e) => e.positive && e.status !== "pago")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const pagar = entries
+    const pagar = monthFilteredEntries
       .filter((e) => !e.positive && e.status !== "pago")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
-    const vencidos = entries
+    const vencidos = monthFilteredEntries
       .filter((e) => e.status === "vencido" || (e.status !== "pago" && isPastDue(e.due_date)))
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
@@ -288,7 +288,7 @@ export default function Financeiro({ profile }: Props) {
       pagar,
       vencidos,
     };
-  }, [entries]);
+  }, [monthFilteredEntries]);
 
   const monthlySummary = useMemo(() => {
     const receitasMes = monthFilteredEntries
