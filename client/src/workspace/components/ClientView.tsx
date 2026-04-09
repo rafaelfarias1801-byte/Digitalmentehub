@@ -16,6 +16,8 @@ import { usePushNotification } from "../hooks/usePushNotification";
 
 interface Props {
   profile: Profile;
+  initialTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 type ClientProfile = Profile & {
@@ -107,11 +109,23 @@ function Field({
   );
 }
 
-export default function ClientView({ profile }: Props) {
+export default function ClientView({ profile, initialTab, onTabChange }: Props) {
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [currentProfile, setCurrentProfile] = useState<ClientProfile>(profile);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("calendario");
+  const [activeTab, setActiveTab] = useState(initialTab ?? "calendario");
+
+  // Sincroniza tab quando a URL muda (ex: botão voltar do browser)
+  useEffect(() => {
+    if (initialTab && initialTab !== activeTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  function navigateTab(tabId: string) {
+    setActiveTab(tabId);
+    onTabChange?.(tabId);
+  }
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">(getSavedTheme);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
@@ -401,7 +415,7 @@ export default function ClientView({ profile }: Props) {
 
             <div style={{ display: "flex", gap: 4 }}>
               {MAIN_TABS.map(tabId => (
-                <button key={tabId} onClick={() => setActiveTab(tabId)} style={{
+                <button key={tabId} onClick={() => navigateTab(tabId)} style={{
                   width: 36, height: 36, borderRadius: 8, border: "none", cursor: "pointer",
                   background: activeTab === tabId ? `${caseData.color}22` : "none",
                   color: activeTab === tabId ? caseData.color : "var(--ws-text3)",
@@ -480,7 +494,7 @@ export default function ClientView({ profile }: Props) {
               </div>
 
               {CLIENT_TABS.filter(t => !MAIN_TABS.includes(t.id)).map(tab => (
-                <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} style={{
+                <button key={tab.id} onClick={() => { navigateTab(tab.id); setSidebarOpen(false); }} style={{
                   display: "flex", alignItems: "center", gap: 10, width: "100%",
                   background: activeTab === tab.id ? `${caseData.color}18` : "none",
                   borderLeft: activeTab === tab.id ? `3px solid ${caseData.color}` : "3px solid transparent",
@@ -540,7 +554,7 @@ export default function ClientView({ profile }: Props) {
           </div>
           <div style={{ width: 28, height: 1, background: "var(--ws-border)", margin: "4px 0" }} />
           {CLIENT_TABS.map(tab => (
-            <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }} title={tab.label}
+            <button key={tab.id} onClick={() => { navigateTab(tab.id); setSidebarOpen(false); }} title={tab.label}
               className={`ws-rail-item${activeTab === tab.id ? " active" : ""}`}
               style={{ fontSize: "1rem" }}
             >
@@ -606,7 +620,7 @@ export default function ClientView({ profile }: Props) {
 
           <nav style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
             {CLIENT_TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+              <button key={tab.id} onClick={() => navigateTab(tab.id)} style={{
                 display: "flex", alignItems: "center", gap: 8, width: "100%",
                 background: activeTab === tab.id ? `${caseData.color}18` : "none", border: "none",
                 borderLeft: activeTab === tab.id ? `2px solid ${caseData.color}` : "2px solid transparent",

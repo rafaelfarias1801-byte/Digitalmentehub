@@ -255,7 +255,22 @@ export default function WorkspaceApp() {
       />
     );
   }
-  if (profile.role === "cliente") return <ClientView profile={profile} />;
+  if (profile.role === "cliente") {
+    // Normaliza URL do cliente para /workspace/cliente/:tab
+    const clientTabMatch = location.match(/^\/workspace\/cliente\/([^/]+)$/);
+    const clientTab = clientTabMatch ? clientTabMatch[1] : "calendario";
+    // Se a URL não está no formato correto do cliente, redireciona
+    if (!location.startsWith("/workspace/cliente")) {
+      setLocation(`/workspace/cliente/${clientTab}`);
+    }
+    return (
+      <ClientView
+        profile={profile}
+        initialTab={clientTab}
+        onTabChange={(t) => setLocation(`/workspace/cliente/${t}`)}
+      />
+    );
+  }
   if (profile.role === "designer") return <DesignerView profile={profile} />;
 
   function renderContent() {
