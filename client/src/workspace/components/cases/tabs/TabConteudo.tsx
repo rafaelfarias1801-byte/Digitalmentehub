@@ -78,6 +78,8 @@ export function stripMediaTag(extra_info?: string | null): string {
 
 export default function TabConteudo({ caseData, profile, readonly = false }: TabConteudoProps) {
   const isMobile = useIsMobile();
+  const SESSION_KEY = `ws_novo_post_${caseData.id}`;
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -95,6 +97,28 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const dragIdx = useRef<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Restaura modal de novo post se o app foi recarregado com ele aberto
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const { form: savedForm, mediaUrls: savedMedia } = JSON.parse(saved);
+        setForm(savedForm ?? EMPTY_POST);
+        setMediaUrls(savedMedia ?? []);
+        setModal(true);
+      }
+    } catch {}
+  }, []);
+
+  // Persiste estado do formulário enquanto o modal estiver aberto
+  useEffect(() => {
+    if (modal) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ form, mediaUrls }));
+      } catch {}
+    }
+  }, [modal, form, mediaUrls]);
 
   useEffect(() => {
     const handleOpenPost = (e: any) => {
@@ -197,7 +221,12 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     });
   }
   function openModal() { setForm(EMPTY_POST); setMediaUrls([]); setModal(true); }
-  function closeModal() { setModal(false); setMediaUrls([]); setForm(EMPTY_POST); }
+  function closeModal() {
+    setModal(false);
+    setMediaUrls([]);
+    setForm(EMPTY_POST);
+    try { sessionStorage.removeItem(SESSION_KEY); } catch {}
+  }
 
   async function save() {
     // BLOQUEIO DE INFORMAÇÕES FALTANTES
