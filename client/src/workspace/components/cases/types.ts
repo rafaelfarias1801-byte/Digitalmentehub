@@ -141,6 +141,8 @@ export interface CaseWorkspaceProps {
   onEdit: () => void;
   onDelete: () => void;
   profile: Profile;
+  initialTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 // ── Brand Identity ────────────────────────────────────────────

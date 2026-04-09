@@ -11,7 +11,7 @@ import type { Case, CasesProps } from "./types";
 const LS_OPEN_CASE = "ws_open_case_id";
 
 // Adicionamos initialPost nas Props para receber o sinal da Dashboard
-export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }: CasesProps & { onCaseOpen?: () => void; onCaseClose?: () => void; initialPost?: {caseId: string, postId: string} | null }) {
+export default function Cases({ profile, onCaseOpen, onCaseClose, onCaseTabChange, onNavigateToPost, initialPost, initialCaseId, initialTab }: CasesProps & { onCaseOpen?: (id: string) => void; onCaseClose?: () => void; onCaseTabChange?: (caseId: string, tab: string) => void; onNavigateToPost?: (caseId: string, postId: string) => void; initialPost?: {caseId: string, postId: string} | null; initialCaseId?: string; initialTab?: string }) {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [openCase, setOpenCase] = useState<Case | null>(null);
@@ -26,7 +26,20 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
   const fileRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
 
-  // EFEITO DE NAVEGAÇÃO AUTOMÁTICA
+  // EFEITO DE NAVEGAÇÃO AUTOMÁTICA via initialCaseId (URL)
+  useEffect(() => {
+    if (initialCaseId && cases.length > 0) {
+      const found = cases.find(c => c.id === initialCaseId);
+      if (found && (!openCase || openCase.id !== initialCaseId)) {
+        setOpenCase(found);
+      }
+    }
+    if (!initialCaseId && openCase) {
+      setOpenCase(null);
+    }
+  }, [initialCaseId, cases]);
+
+  // EFEITO DE NAVEGAÇÃO AUTOMÁTICA via initialPost
   useEffect(() => {
     if (initialPost && cases.length > 0) {
       const targetCase = cases.find(c => c.id === initialPost.caseId);
@@ -47,11 +60,6 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
       if (mounted) {
         const list = data ?? [];
         setCases(list);
-        const savedId = localStorage.getItem(LS_OPEN_CASE);
-        if (savedId) {
-          const found = list.find((c) => c.id === savedId);
-          if (found) setOpenCase(found);
-        }
         setLoading(false);
       }
     }
@@ -62,7 +70,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
   function selectCase(caseItem: Case) {
     localStorage.setItem(LS_OPEN_CASE, caseItem.id);
     setOpenCase(caseItem);
-    onCaseOpen?.();
+    onCaseOpen?.(caseItem.id);
   }
 
   function closeCase() {
@@ -202,6 +210,8 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, initialPost }:
           profile={profile}
           // Passamos o ID pendente para o workspace do cliente
           initialPostId={(window as any)._pendingPostId}
+          initialTab={initialTab}
+          onTabChange={(tabId: string) => onCaseTabChange?.(openCase.id, tabId)}
         />
         {modal && (
           <CaseModal

@@ -32,8 +32,10 @@ export default function CaseWorkspace({
   onDelete,
   profile,
   initialPostId,
+  initialTab,
+  onTabChange,
 }: CaseWorkspaceProps & { initialPostId?: string | null }) {
-  const [activeTab, setActiveTab]   = useState<string>(getSavedTab);
+  const [activeTab, setActiveTab]   = useState<string>(initialTab ?? getSavedTab());
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [accessModal, setAccessModal] = useState(false);
   const isMobile  = useIsMobile();
@@ -55,6 +57,13 @@ export default function CaseWorkspace({
     }
   }, [profile?.role]);
 
+  // Sync activeTab when initialTab changes (URL navigation)
+  useEffect(() => {
+    if (initialTab && VALID_TABS.includes(initialTab)) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   // Gatilho para abrir post da dashboard
   useEffect(() => {
     if (initialPostId) {
@@ -69,6 +78,7 @@ export default function CaseWorkspace({
   function navigate(tabId: string) {
     localStorage.setItem(LS_ACTIVE_TAB, tabId);
     setActiveTab(tabId);
+    onTabChange?.(tabId);
   }
 
   const activeTabData = SUB_TABS.find((t) => t.id === activeTab);

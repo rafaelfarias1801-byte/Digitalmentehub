@@ -37,11 +37,16 @@ const ROUTE_TITLES: Record<string, string> = {
   "/analise-perfil": "Análise de Perfil | Dig",
 };
 
+function getRouteTitle(location: string): string {
+  if (location.startsWith("/workspace")) return "Workspace Dig";
+  return ROUTE_TITLES[location] ?? "Dig | Agência de Marketing Digital";
+}
+
 function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = ROUTE_TITLES[location] ?? "Dig | Agência de Marketing Digital";
+    document.title = getRouteTitle(location);
   }, [location]);
   return null;
 }
@@ -64,7 +69,7 @@ function Router() {
         <Route path="/checkout-pro">{() => <Checkout packId="pro" />}</Route>
         <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
         <Route path="/checkout-pack" component={CheckoutPack} />
-        <Route path="/workspace" component={WorkspaceApp} />
+        <Route path="/workspace~" component={WorkspaceApp} />
         <Route path="/analise-perfil" component={AnalisePerfilLanding} />
         <Route component={NotFound} />
       </Switch>

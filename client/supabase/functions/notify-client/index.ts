@@ -174,16 +174,18 @@ Deno.serve(async (req) => {
         .not("push_token", "is", null);
       profiles = (data ?? []).filter(p => p.push_token);
     } else if (case_id) {
+      // Look up client for badge recording (regardless of push_token)
       const { data } = await supabase
         .from("profiles")
         .select("id, push_token, name")
         .eq("case_id", case_id)
         .eq("role", "cliente")
-        .not("push_token", "is", null)
         .maybeSingle();
-      if (data?.push_token) {
-        profiles = [data];
+      if (data) {
         caseClientId = data.id;
+        if (data.push_token) {
+          profiles = [{ push_token: data.push_token, name: data.name }];
+        }
       }
     }
 

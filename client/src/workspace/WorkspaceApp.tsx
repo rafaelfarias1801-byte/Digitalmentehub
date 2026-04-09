@@ -1,5 +1,6 @@
 // client/src/workspace/WorkspaceApp.tsx
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import type { Profile } from "../lib/supabaseClient";
 import LoginPage from "./pages/LoginPage";
@@ -31,30 +32,35 @@ export type PageId =
   | "pomodoro"
   | "notificacoes";
 
-const PAGES: Record<PageId, React.ComponentType<any>> = {
-  dashboard: Dashboard,
-  checklist: Checklist,
-  agenda: Agenda,
-  financeiro: Financeiro,
-  cases: Cases,
-  notas: Notas,
-  ia: IA,
-  pomodoro: Pomodoro,
-  notificacoes: Notificacoes,
+const PAGE_PATHS: Record<PageId, string> = {
+  dashboard: "/workspace/dashboard",
+  checklist: "/workspace/tarefas",
+  agenda: "/workspace/agenda",
+  financeiro: "/workspace/financeiro",
+  cases: "/workspace/clientes",
+  notas: "/workspace/notas",
+  ia: "/workspace/ia",
+  pomodoro: "/workspace/pomodoro",
+  notificacoes: "/workspace/notificacoes",
 };
 
-const VALID_PAGES = Object.keys(PAGES) as PageId[];
-
-function getSavedPage(): PageId {
-  try {
-    const saved = localStorage.getItem("ws_page");
-    if (saved && VALID_PAGES.includes(saved as PageId)) return saved as PageId;
-  } catch {}
-  return "dashboard";
+function parseWorkspacePath(loc: string): { page: PageId; caseId?: string; tab?: string } {
+  const path = loc.replace(/^\/workspace\/?/, "");
+  const parts = path.split("/").filter(Boolean);
+  const [segment = "", caseId, tab] = parts;
+  const pageMap: Record<string, PageId> = {
+    "": "dashboard", "dashboard": "dashboard",
+    "tarefas": "checklist", "agenda": "agenda",
+    "financeiro": "financeiro", "clientes": "cases",
+    "notas": "notas", "ia": "ia",
+    "pomodoro": "pomodoro", "notificacoes": "notificacoes",
+  };
+  return { page: pageMap[segment] ?? "dashboard", caseId, tab };
 }
 
 export default function WorkspaceApp() {
-  const [page, setPage] = useState<PageId>(getSavedPage);
+  const [location, setLocation] = useLocation();
+  const { page, caseId, tab } = parseWorkspacePath(location);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -236,10 +242,7 @@ export default function WorkspaceApp() {
   }, []);
 
   function navigate(newPage: PageId) {
-    try {
-      localStorage.setItem("ws_page", newPage);
-    } catch {}
-    setPage(newPage);
+    setLocation(PAGE_PATHS[newPage]);
   }
 
   if (loading) return <div className="ws-loading"><div className="ws-loading-dot" /></div>;
@@ -255,7 +258,66 @@ export default function WorkspaceApp() {
   if (profile.role === "cliente") return <ClientView profile={profile} />;
   if (profile.role === "designer") return <DesignerView profile={profile} />;
 
-  const CurrentPage = PAGES[page];
+  function renderContent() {
+    switch (page) {
+      case "dashboard":
+        return (
+          <Dashboard
+            profile={profile!}
+            onNavigateToPost={(cId: string, postId: string) => {
+              setPendingPost({ caseId: cId, postId });
+              setLocation(`/workspace/clientes/${cId}`);
+            }}
+          />
+        );
+      case "checklist":
+        return <Checklist profile={profile!} />;
+      case "agenda":
+        return <Agenda profile={profile!} />;
+      case "financeiro":
+        return <Financeiro profile={profile!} />;
+      case "notas":
+        return <Notas profile={profile!} />;
+      case "ia":
+        return <IA profile={profile!} />;
+      case "pomodoro":
+        return (
+          <Pomodoro
+            profile={profile!}
+            pomoState={{
+              pomoMode,
+              setPomoMode,
+              pomoSecs,
+              setPomoSecs,
+              pomoRunning,
+              setPomoRunning,
+              pomoSessions,
+              pomoTaskId,
+              setPomoTaskId,
+              tasks,
+            }}
+          />
+        );
+      case "notificacoes":
+        return <Notificacoes profile={profile!} />;
+      case "cases":
+        return (
+          <Cases
+            profile={profile!}
+            initialCaseId={caseId}
+            initialTab={tab}
+            initialPost={pendingPost}
+            onCaseOpen={(id: string) => { setSidebarOpen(false); setLocation(`/workspace/clientes/${id}`); }}
+            onCaseClose={() => { setSidebarOpen(true); setLocation("/workspace/clientes"); }}
+            onCaseTabChange={(id: string, tabId: string) => { setLocation(`/workspace/clientes/${id}/${tabId}`); }}
+            onNavigateToPost={(cId: string, postId: string) => { setPendingPost({ caseId: cId, postId }); setLocation(`/workspace/clientes/${cId}`); }}
+          />
+        );
+      default:
+        setLocation("/workspace/dashboard");
+        return null;
+    }
+  }
 
   return (
     <div className="ws-layout">
@@ -269,28 +331,7 @@ export default function WorkspaceApp() {
       />
       <NotificationBadge profile={profile} />
       <main className="ws-main">
-        <CurrentPage
-          profile={profile}
-          onCaseOpen={() => setSidebarOpen(false)}
-          onCaseClose={() => setSidebarOpen(true)}
-          onNavigateToPost={(caseId: string, postId: string) => {
-            setPendingPost({ caseId, postId });
-            navigate("cases");
-          }}
-          initialPostId={pendingPost?.postId}
-          pomoState={{
-            pomoMode,
-            setPomoMode,
-            pomoSecs,
-            setPomoSecs,
-            pomoRunning,
-            setPomoRunning,
-            pomoSessions,
-            pomoTaskId,
-            setPomoTaskId,
-            tasks,
-          }}
-        />
+        {renderContent()}
       </main>
     </div>
   );
