@@ -130,13 +130,24 @@ function buildNotification(type: string, data: Record<string, any>): { title: st
   }
 }
 
-async function sendToProfile(pushToken: string, notification: { title: string; body: string }) {
+function buildUrl(type: string): string {
+  const clientFinanceiro = ["cobranca_criada", "vencimento_aviso", "vencimento_atrasado", "pagamento_confirmado"];
+  const clientConteudo = ["conteudo_pronto"];
+  const designerTypes = ["briefing_criado", "briefing_revisao", "briefing_aprovado", "financeiro_aprovado"];
+  if (clientFinanceiro.includes(type)) return "/workspace/cliente/financeiro";
+  if (clientConteudo.includes(type)) return "/workspace/cliente/conteudo";
+  if (designerTypes.includes(type)) return "/workspace/designer";
+  // admin notifications
+  return "/workspace/clientes";
+}
+
+async function sendToProfile(pushToken: string, notification: { title: string; body: string }, url: string) {
   const subscription = JSON.parse(pushToken);
   const payload = JSON.stringify({
     title: notification.title,
     body: notification.body,
     icon: "/icon-192.png",
-    url: "/workspace",
+    url,
   });
   await webpush.sendNotification(subscription, payload);
 }
@@ -223,11 +234,12 @@ Deno.serve(async (req) => {
       );
     }
 
+    const notifUrl = buildUrl(type);
     const results = await Promise.allSettled(
       profiles.map(p => {
         const caseName = body.case_name ?? p.name;
         const notification = buildNotification(type, { ...body, case_name: caseName, client_name: p.name });
-        return sendToProfile(p.push_token, notification);
+        return sendToProfile(p.push_token, notification, notifUrl);
       })
     );
 
