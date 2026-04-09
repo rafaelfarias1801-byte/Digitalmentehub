@@ -69,7 +69,8 @@ function Router() {
         <Route path="/checkout-pro">{() => <Checkout packId="pro" />}</Route>
         <Route path="/checkout-elite">{() => <Checkout packId="elite" />}</Route>
         <Route path="/checkout-pack" component={CheckoutPack} />
-        <Route path="/workspace~" component={WorkspaceApp} />
+        <Route path="/workspace" component={WorkspaceApp} />
+        <Route path="/workspace/:rest+" component={WorkspaceApp} />
         <Route path="/analise-perfil" component={AnalisePerfilLanding} />
         <Route component={NotFound} />
       </Switch>
