@@ -23,7 +23,7 @@ const NAV = [
   { section: "Gestão", items: [
     { id: "financeiro",   icon: "◈", label: "Financeiro" },
     { id: "cases",        icon: "◉", label: "Clientes" },
-    { id: "notificacoes", icon: "🔔", label: "Notificações" },
+    { id: "notificacoes", icon: "◬", label: "Notificações" },
   ]},
   { section: "Conteúdo", items: [
     { id: "notas", icon: "▤", label: "Notas" },
