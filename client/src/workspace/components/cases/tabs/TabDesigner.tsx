@@ -7,7 +7,7 @@ import Loader from "../shared/Loader";
 import { modalBoxStyle, modalTitleStyle, getOverlayStyle } from "../styles";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import type { Case, Designer, Briefing, BrandIdentity, DesignerClosing } from "../types";
-import { notifyAdmins, notifyDesigner } from "../../../../utils/notifyPush";
+import { notifyAdmins, notifyDesigner } from "../../../utils/notifyPush";
 
 interface TabDesignerProps {
   caseData: Case;
