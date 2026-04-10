@@ -1015,7 +1015,7 @@ ${text}`
             <input type="date" className="ws-input" value={scheduledDateValue}
               onChange={e => {
                 const newDate = e.target.value;
-                const time = scheduledTimeValue || "09:00";
+                const time = scheduledTimeValue || "12:00";
                 void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
               }} style={{ fontSize: ".8rem", marginBottom: 6 }} />
             <select className="ws-input" value={scheduledTimeValue}
@@ -1024,6 +1024,9 @@ ${text}`
                 const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
                 void save({ scheduled_date: `${date}T${newTime}:00` });
               }} style={{ fontSize: ".8rem" }}>
+              {scheduledTimeValue && !["12:00","15:00","18:00"].includes(scheduledTimeValue) && (
+                <option value={scheduledTimeValue}>{scheduledTimeValue}</option>
+              )}
               <option value="12:00">12:00</option>
               <option value="15:00">15:00</option>
               <option value="18:00">18:00</option>
