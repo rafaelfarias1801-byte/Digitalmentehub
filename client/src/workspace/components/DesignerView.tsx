@@ -686,14 +686,13 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
         {subTab === "briefings" && (
           detailBriefing ? (
             /* ── Detalhe inline (sem modal) ── */
-            <div>
+            <div style={{ position: "relative" }}>
+              {/* X fechar */}
               <button onClick={() => onNavigate(`/workspace/designer/case/${caseData.id}`)}
-                style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".78rem", fontFamily: "Poppins", padding: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6 }}>
-                ← Voltar aos briefings
-              </button>
+                style={{ position: "absolute", top: 0, right: 0, background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, padding: "2px 6px" }}>×</button>
 
               {/* Header */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10, paddingRight: 32 }}>
                 <div>
                   <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)", marginBottom: 4 }}>{detailBriefing.format}</div>
                   <DeadlineBadge deadline={detailBriefing.deadline} />
