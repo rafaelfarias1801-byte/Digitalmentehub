@@ -63,7 +63,7 @@ export default function WorkspaceApp() {
   const { page, caseId, tab } = parseWorkspacePath(location);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [pendingPost, setPendingPost] = useState<{ caseId: string; postId: string } | null>(null);
 
   const [pomoMode, setPomoMode] = useState<"focus" | "short" | "long">("focus");

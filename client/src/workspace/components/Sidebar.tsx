@@ -221,16 +221,6 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
 
     return (
       <>
-        {/* Sidebar overlay quando aberta (para perfil/tema) */}
-        {open && (
-          <>
-            <div onClick={() => setOpenAndNotify(false)} style={{ position: "fixed", inset: 0, background: "#00000060", zIndex: 198 }} />
-            <aside className="ws-sidebar" style={{ position: "fixed", top: 0, left: 0, height: "100%", zIndex: 199, boxShadow: "4px 0 24px #00000050", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-              {sidebarContent}
-            </aside>
-          </>
-        )}
-
         {/* Sheet do "Mais" */}
         {mobileMoreOpen && (
           <>
@@ -251,7 +241,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
                   <span style={{ fontSize: "1.3rem", lineHeight: 1 }}>{isDark ? "🌙" : "☀️"}</span>
                   <span>{isDark ? "Escuro" : "Claro"}</span>
                 </button>
-                <button onClick={() => { setMobileMoreOpen(false); setOpenAndNotify(true); }} style={{ ...btnBase, background: "transparent", borderRadius: 12, padding: "10px 4px", color: "var(--ws-text3)" }}>
+                <button onClick={() => { setMobileMoreOpen(false); setProfileModal(true); }} style={{ ...btnBase, background: "transparent", borderRadius: 12, padding: "10px 4px", color: "var(--ws-text3)" }}>
                   <div className="ws-avatar" style={{ width: 26, height: 26, fontSize: ".6rem", overflow: "hidden" }}>
                     {profile.avatar_url ? <img src={profile.avatar_url} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : profile.initials}
                   </div>
