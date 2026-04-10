@@ -1,5 +1,6 @@
 // client/src/workspace/components/cases/tabs/TabDesigner.tsx
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { supabase } from "../../../../lib/supabaseClient";
 import Empty from "../shared/Empty";
 import Loader from "../shared/Loader";
@@ -7,7 +8,6 @@ import { modalBoxStyle, modalTitleStyle, getOverlayStyle } from "../styles";
 import { useIsMobile } from "../../../hooks/useIsMobile";
 import type { Case, Designer, Briefing, BrandIdentity, DesignerClosing } from "../types";
 import { notifyAdmins, notifyDesigner } from "../../../../utils/notifyPush";
-import { notifyAdmins, notifyDesigner } from "../../../utils/notifyPush";
 
 interface TabDesignerProps {
   caseData: Case;
@@ -52,6 +52,11 @@ const EMPTY_BRAND: BrandIdentity = { colors: [], fonts: [], links: [], style_not
 // ═══════════════════════════════════════════════════════════
 export default function TabDesigner({ caseData, readonly = false }: TabDesignerProps) {
   const isMobile = useIsMobile();
+  const [location, setLocation] = useLocation();
+
+  // Parse briefing ID from URL (e.g. /workspace/clientes/:id/designer/briefing/:briefingId)
+  const briefingUrlMatch = location.match(/\/workspace\/clientes\/[^/]+\/designer\/briefing\/([^/]+)/);
+  const urlBriefingId = briefingUrlMatch?.[1] ?? null;
 
   const [view, setView]                       = useState<"cards" | "workspace">("cards");
   const [activeDesigner, setActiveDesigner]   = useState<Designer | null>(null);
@@ -71,7 +76,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
 
   const [designerModal, setDesignerModal]     = useState(false);
   const [briefingModal, setBriefingModal]     = useState(false);
-  const [detailBriefing, setDetailBriefing]   = useState<Briefing | null>(null);
   const [saving, setSaving]                   = useState(false);
   const [uploading, setUploading]             = useState(false);
 
@@ -297,7 +301,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     }).eq("id", editingBriefing.id).select().single();
     if (data) {
       setBriefings(prev => prev.map(b => b.id === data.id ? data : b));
-      if (detailBriefing?.id === data.id) setDetailBriefing(data);
     }
     setEditingBriefing(null);
     setSavingEdit(false);
@@ -315,7 +318,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
       .single();
     if (data) {
       setBriefings(prev => prev.map(x => x.id === b.id ? data : x));
-      setDetailBriefing(data);
     }
     setSavingValue(false);
   }
@@ -324,7 +326,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     const { data } = await supabase.from("briefings").update({ status: "aprovado" }).eq("id", b.id).select().single();
     if (data) {
       setBriefings(prev => prev.map(x => x.id === b.id ? data : x));
-      setDetailBriefing(data);
 
       // Notifica designer que arte foi aprovada
       const caseName = allCases.find(c => c.id === activeClientId)?.name ?? "";
@@ -337,7 +338,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     const { data } = await supabase.from("briefings").update({ status: "revisao", revision_note: revisionText.trim() }).eq("id", b.id).select().single();
     if (data) {
       setBriefings(prev => prev.map(x => x.id === b.id ? data : x));
-      setDetailBriefing(data);
       setRevisionText("");
 
       // Notifica designer sobre revisão
@@ -350,7 +350,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
     if (!window.confirm("Excluir este briefing?")) return;
     setBriefings(prev => prev.filter(b => b.id !== id));
     await supabase.from("briefings").delete().eq("id", id);
-    if (detailBriefing?.id === id) setDetailBriefing(null);
+    if (urlBriefingId === id) setLocation(`/workspace/clientes/${caseData.id}/designer`);
   }
 
   const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -406,6 +406,9 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
       setApprovingClosing(null);
     }
   }
+
+  // Derived from URL — no useState needed
+  const detailBriefing = urlBriefingId ? (briefings.find(b => b.id === urlBriefingId) ?? null) : null;
 
   const activeCase = allCases.find(c => c.id === activeClientId) ?? caseData;
 
@@ -579,8 +582,12 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
               {activeSubTab === "briefings" && (
                 detailBriefing ? (
                   /* Inline detail view — no modal */
-                  <div>
-                    <button onClick={() => setDetailBriefing(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".78rem", fontFamily: "Poppins", padding: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6 }}>← Voltar aos briefings</button>
+                  <div style={{ position: "relative" }}>
+                    <button
+                      onClick={() => setLocation(`/workspace/clientes/${caseData.id}/designer`)}
+                      title="Fechar"
+                      style={{ position: "absolute", top: 0, right: 0, background: "var(--ws-surface2)", border: "1px solid var(--ws-border)", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ws-text3)", fontSize: "1.1rem", lineHeight: 1, zIndex: 1 }}
+                    >×</button>
 
                     {/* Header */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
@@ -642,7 +649,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                                 const [moved] = imgs.splice(from, 1);
                                 imgs.splice(i, 0, moved);
                                 const { data } = await supabase.from("briefings").update({ reference_images: imgs }).eq("id", detailBriefing.id).select().single();
-                                if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                                if (data) { setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
                               }}
                               style={{ position: "relative", opacity: dragOverRefImg === i ? 0.5 : 1, transition: "opacity .15s" }}>
                               <img src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
@@ -657,7 +664,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                                 <button onClick={async () => {
                                   const newImgs = detailBriefing.reference_images.filter((_, idx) => idx !== i);
                                   const { data } = await supabase.from("briefings").update({ reference_images: newImgs }).eq("id", detailBriefing.id).select().single();
-                                  if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                                  if (data) { setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
                                 }} style={{ position: "absolute", top: 3, right: 3, background: "rgba(220,50,50,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".65rem", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
                               )}
                             </div>
@@ -680,14 +687,14 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                               const newImgs = [...(detailBriefing.reference_images ?? [])];
                               newImgs[replacingRefImg] = newUrl;
                               const { data } = await supabase.from("briefings").update({ reference_images: newImgs }).eq("id", detailBriefing.id).select().single();
-                              if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                              if (data) { setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
                               setReplacingRefImg(null);
                             }}
                           />
                           <DetailImgUpload caseData={activeCase} briefing={detailBriefing} r2base={R2}
                             onUploaded={newUrls => {
                               const updated = { ...detailBriefing, reference_images: [...(detailBriefing.reference_images ?? []), ...newUrls] };
-                              setDetailBriefing(updated); setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b));
+                              setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b));
                             }}
                           />
                         </>
@@ -734,7 +741,7 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                       {briefings.map(b => {
                         const cfg = STATUS_CFG[b.status];
                         return (
-                          <div key={b.id} onClick={() => { setDetailBriefing(b); setRevisionText(""); }}
+                          <div key={b.id} onClick={() => { setLocation(`/workspace/clientes/${caseData.id}/designer/briefing/${b.id}`); setRevisionText(""); }}
                             style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color .15s" }}
                             onMouseEnter={e => e.currentTarget.style.borderColor = activeCase.color}
                             onMouseLeave={e => e.currentTarget.style.borderColor = "var(--ws-border)"}
@@ -776,25 +783,40 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                   : <BrandView identity={brandIdentity} caseData={activeCase} />
               )}
 
-              {activeSubTab === "financeiro" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {closings.length === 0 ? (
-                    <div style={{ color: "var(--ws-text3)", fontSize: ".82rem", textAlign: "center", padding: "32px 0" }}>
-                      Nenhum fechamento financeiro ainda.
-                    </div>
-                  ) : closings.map(closing => {
-                    const monthLabel = `${["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][closing.month - 1]}/${closing.year}`;
-                    const isApproved = !!(closing as any).approved_at;
-                    const approving = approvingClosing === (closing.id ?? `${closing.month}-${closing.year}`);
+              {activeSubTab === "financeiro" && (() => {
+                // Build month map: ALL months from briefings + closings
+                const monthMap = new Map<string, { month: number; year: number; monthBriefings: Briefing[]; closing?: DesignerClosing }>();
 
-                    // Briefings do mês do designer para esse client
-                    const monthBriefings = briefings.filter(b => {
-                      const d = new Date(b.created_at);
-                      return d.getMonth() + 1 === closing.month && d.getFullYear() === closing.year;
-                    });
+                briefings.forEach(b => {
+                  const d = new Date(b.created_at);
+                  const m = d.getMonth() + 1;
+                  const y = d.getFullYear();
+                  const key = `${y}-${String(m).padStart(2, "0")}`;
+                  const existing = monthMap.get(key) ?? { month: m, year: y, monthBriefings: [] };
+                  monthMap.set(key, { ...existing, monthBriefings: [...existing.monthBriefings, b] });
+                });
+
+                closings.forEach(cl => {
+                  const key = `${cl.year}-${String(cl.month).padStart(2, "0")}`;
+                  const existing = monthMap.get(key) ?? { month: cl.month, year: cl.year, monthBriefings: [] };
+                  monthMap.set(key, { ...existing, closing: cl });
+                });
+
+                const sortedMonths = Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+
+                return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {sortedMonths.length === 0 ? (
+                    <div style={{ color: "var(--ws-text3)", fontSize: ".82rem", textAlign: "center", padding: "32px 0" }}>
+                      Nenhum briefing ou fechamento financeiro ainda.
+                    </div>
+                  ) : sortedMonths.map(([key, { month, year, monthBriefings, closing }]) => {
+                    const monthLabel = `${MONTHS_PT[month - 1]}/${year}`;
+                    const isApproved = !!(closing as any)?.approved_at;
+                    const approving = approvingClosing === (closing?.id ?? `${month}-${year}`);
 
                     return (
-                      <div key={`${closing.month}-${closing.year}`} style={{
+                      <div key={key} style={{
                         background: "var(--ws-surface)", border: `1px solid ${isApproved ? "rgba(0,230,118,0.3)" : "var(--ws-border)"}`,
                         borderRadius: 14, overflow: "hidden",
                       }}>
@@ -802,16 +824,20 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                         <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--ws-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div>
                             <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".92rem", color: "var(--ws-text)" }}>{monthLabel}</div>
-                            {(closing as any).payment_date && (
+                            {closing?.payment_date && (
                               <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>
-                                📅 Pagamento preferido: {new Date((closing as any).payment_date + "T12:00:00").toLocaleDateString("pt-BR")}
+                                📅 Pagamento preferido: {new Date(closing.payment_date + "T12:00:00").toLocaleDateString("pt-BR")}
                               </div>
                             )}
                           </div>
-                          {isApproved ? (
-                            <span style={{ background: "rgba(0,230,118,0.12)", color: "#00a864", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>✅ Aprovado</span>
+                          {closing ? (
+                            isApproved ? (
+                              <span style={{ background: "rgba(0,230,118,0.12)", color: "#00a864", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>✅ Aprovado</span>
+                            ) : (
+                              <span style={{ background: "rgba(255,214,0,0.12)", color: "#b08800", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>⏳ Aguardando fechamento</span>
+                            )
                           ) : (
-                            <span style={{ background: "rgba(255,214,0,0.12)", color: "#b08800", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>⏳ Aguardando</span>
+                            <span style={{ background: "rgba(100,100,100,0.10)", color: "var(--ws-text3)", borderRadius: 8, padding: "4px 12px", fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700 }}>Sem fechamento</span>
                           )}
                         </div>
 
@@ -836,8 +862,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                             </div>
                           )}
 
-                          {/* Valor fixo mensal */}
-                          {closing.total_bruto > 0 && closing.discount !== undefined && (
+                          {/* Valor fixo mensal (only if closing exists) */}
+                          {closing && closing.total_bruto > 0 && closing.discount !== undefined && (
                             <div style={{ background: "var(--ws-surface2)", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
                               {closing.total_bruto - (monthBriefings.reduce((s, b) => s + (b.designer_value ?? 0), 0)) > 0 && (
                                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -863,8 +889,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                             </div>
                           )}
 
-                          {/* Botão aprovar */}
-                          {!readonly && !isApproved && (
+                          {/* Botão aprovar (only if closing exists and not yet approved) */}
+                          {closing && !readonly && !isApproved && (
                             <button
                               onClick={() => void approveClosing(closing)}
                               disabled={approving}
@@ -882,7 +908,8 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
                     );
                   })}
                 </div>
-              )}
+                );
+              })()}
             </>
           )}
         </div>
