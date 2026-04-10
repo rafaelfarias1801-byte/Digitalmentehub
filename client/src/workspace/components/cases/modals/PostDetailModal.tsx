@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useRef } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { APPROVAL_STYLES, LABEL_COLORS } from "../constants";
@@ -225,7 +225,51 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   }
 
   const [uploadingSlide, setUploadingSlide] = useState(false);
+  const [replacingIdx, setReplacingIdx] = useState<number | null>(null);
   const slideFileRef = { current: null as HTMLInputElement | null };
+  const replaceFileRef = { current: null as HTMLInputElement | null };
+  const dragSlideIdx = useRef<number | null>(null);
+  const [dragOverSlideIdx, setDragOverSlideIdx] = useState<number | null>(null);
+
+  async function reorderSlides(fromIdx: number, toIdx: number) {
+    if (fromIdx === toIdx) return;
+    const newSlides = [...allSlides];
+    const [moved] = newSlides.splice(fromIdx, 1);
+    newSlides.splice(toIdx, 0, moved);
+    const newMediaUrl = newSlides[0] ?? "";
+    const userText = stripMediaTag(currentPost.extra_info);
+    const extraUrls = newSlides.slice(1);
+    const newExtraInfo = encodeExtraUrls(extraUrls, userText);
+    await save({ media_url: newMediaUrl, media_urls: newSlides, extra_info: newExtraInfo });
+    setSlideIdx(toIdx);
+  }
+
+  async function replaceSlide(idx: number, files: FileList) {
+    if (readonly || !files[0]) return;
+    setUploadingSlide(true);
+    const file = files[0];
+    const ext = file.name.split(".").pop();
+    const filename = `posts/${caseData.id}/${Date.now()}-0.${ext}`;
+    const { data, error } = await supabase.functions.invoke("get-r2-upload-url", {
+      body: { filename, contentType: file.type },
+    });
+    if (!error && data?.signedUrl) {
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) {
+        const oldUrl = allSlides[idx];
+        const newSlides = [...allSlides];
+        newSlides[idx] = `${R2_PUBLIC_URL}/${filename}`;
+        const newMediaUrl = newSlides[0] ?? "";
+        const userText = stripMediaTag(currentPost.extra_info);
+        const extraUrls = newSlides.slice(1);
+        const newExtraInfo = encodeExtraUrls(extraUrls, userText);
+        await save({ media_url: newMediaUrl, media_urls: newSlides, extra_info: newExtraInfo });
+        void deleteFromR2(oldUrl);
+      }
+    }
+    setReplacingIdx(null);
+    setUploadingSlide(false);
+  }
 
   async function addSlides(files: FileList) {
     if (readonly) return;
@@ -481,53 +525,48 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             {(!readonly) && (
               <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, alignItems: "center" }}>
                 {allSlides.map((url, i) => (
-                  <div key={i} style={{ position: "relative", flexShrink: 0 }}>
+                  <div key={i}
+                    draggable
+                    onDragStart={() => { dragSlideIdx.current = i; }}
+                    onDragOver={e => { e.preventDefault(); setDragOverSlideIdx(i); }}
+                    onDragEnd={() => { dragSlideIdx.current = null; setDragOverSlideIdx(null); }}
+                    onDrop={e => { e.preventDefault(); if (dragSlideIdx.current !== null) void reorderSlides(dragSlideIdx.current, i); setDragOverSlideIdx(null); }}
+                    style={{ position: "relative", flexShrink: 0 }}
+                  >
+                    {/* Número do slide */}
+                    <div style={{ position: "absolute", bottom: 2, left: 2, background: "rgba(0,0,0,.6)", color: "#fff", fontSize: ".45rem", fontFamily: "Poppins", borderRadius: 3, padding: "1px 3px", lineHeight: 1, zIndex: 5, pointerEvents: "none" }}>{i + 1}</div>
                     <div onClick={() => setSlideIdx(i)} style={{
                       width: 44, height: 44, borderRadius: 6, overflow: "hidden",
-                      border: i === slideIdx ? `2px solid ${caseData.color}` : "2px solid transparent",
-                      cursor: "pointer", opacity: i === slideIdx ? 1 : 0.55, transition: "all .15s",
+                      border: dragOverSlideIdx === i ? `2px solid #fff` : i === slideIdx ? `2px solid ${caseData.color}` : "2px solid transparent",
+                      cursor: "grab", opacity: dragSlideIdx.current === i ? 0.4 : i === slideIdx ? 1 : 0.55, transition: "all .15s",
                     }}>
                       {isVideoFile(url)
                         ? <video src={url} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         : <img src={url} alt={`thumb ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       }
                     </div>
-                    {/* Botão remover mídia */}
-                    <button
-                      onClick={e => { e.stopPropagation(); void removeSlide(i); }}
-                      title="Remover mídia"
-                      style={{
-                        position: "absolute", top: -6, right: -6,
-                        width: 16, height: 16, borderRadius: "50%",
-                        background: "#ff4433", border: "none",
-                        color: "#fff", cursor: "pointer", fontSize: ".55rem",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: 800, lineHeight: 1, zIndex: 5,
-                      }}
+                    {/* Botão remover */}
+                    <button onClick={e => { e.stopPropagation(); void removeSlide(i); }} title="Remover mídia"
+                      style={{ position: "absolute", top: -6, right: -6, width: 16, height: 16, borderRadius: "50%", background: "#ff4433", border: "none", color: "#fff", cursor: "pointer", fontSize: ".55rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, lineHeight: 1, zIndex: 5 }}
                     >×</button>
+                    {/* Botão substituir — aparece na thumbnail ativa */}
+                    {i === slideIdx && (
+                      <button onClick={e => { e.stopPropagation(); setReplacingIdx(i); replaceFileRef.current?.click(); }} title="Substituir imagem"
+                        style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", width: 16, height: 16, borderRadius: "50%", background: caseData.color, border: "none", color: "#fff", cursor: "pointer", fontSize: ".5rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, zIndex: 5 }}
+                      >↺</button>
+                    )}
                   </div>
                 ))}
 
-                {/* Botão adicionar mídia — sempre visível para admin */}
-                <button
-                  onClick={() => slideFileRef.current?.click()}
-                  disabled={uploadingSlide}
-                  title="Adicionar mídia"
-                  style={{
-                    width: 44, height: 44, flexShrink: 0, borderRadius: 6,
-                    border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)",
-                    color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}
+                {/* Botão adicionar mídia */}
+                <button onClick={() => slideFileRef.current?.click()} disabled={uploadingSlide} title="Adicionar mídia"
+                  style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 6, border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center" }}
                 >{uploadingSlide ? "⏳" : "+"}</button>
-                <input
-                  ref={el => { slideFileRef.current = el; }}
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  style={{ display: "none" }}
-                  onChange={e => { if (e.target.files?.length) void addSlides(e.target.files); e.target.value = ""; }}
-                />
+                <input ref={el => { slideFileRef.current = el; }} type="file" accept="image/*,video/*" multiple style={{ display: "none" }}
+                  onChange={e => { if (e.target.files?.length) void addSlides(e.target.files); e.target.value = ""; }} />
+                {/* Input para substituição */}
+                <input ref={el => { replaceFileRef.current = el; }} type="file" accept="image/*,video/*" style={{ display: "none" }}
+                  onChange={e => { if (e.target.files?.length && replacingIdx !== null) void replaceSlide(replacingIdx, e.target.files); e.target.value = ""; }} />
               </div>
             )}
 
