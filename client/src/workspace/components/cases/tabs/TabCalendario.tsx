@@ -165,6 +165,7 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
                         const cfg = TYPE_CFG[post.media_type] ?? TYPE_CFG.feed;
                         const label = post.slug || post.title || typeLabel(post.media_type);
                         const thumbUrl = post.media_url || (post.media_urls && post.media_urls[0]);
+                        const isVideo = thumbUrl && /\.(mp4|mov|webm|avi|mkv)(\?.*)?$/i.test(thumbUrl);
                         return isMobile ? (
                           <button key={post.id} onClick={() => setSelected(post)} style={{
                             display: "block", width: "100%", textAlign: "left",
@@ -199,8 +200,19 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
                             </div>
                             {/* Thumbnail */}
                             {thumbUrl && (
-                              <div style={{ width: "100%", aspectRatio: "1/1", background: "#000", overflow: "hidden" }}>
-                                <img src={thumbUrl} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              <div style={{ width: "100%", aspectRatio: "1/1", background: "#000", overflow: "hidden", position: "relative" }}>
+                                {isVideo ? (
+                                  <>
+                                    <video src={thumbUrl} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                                      <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <span style={{ color: "#fff", fontSize: ".6rem", marginLeft: 2 }}>▶</span>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <img src={thumbUrl} alt={label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                )}
                               </div>
                             )}
                           </button>
