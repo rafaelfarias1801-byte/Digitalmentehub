@@ -18,6 +18,7 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
   const [openCard, setOpenCard] = useState<NoteCard | null>(null);
 
   const dragCardId = useRef<string | null>(null);
+  const dragColId = useRef<string | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const [dragOverCardId, setDragOverCardId] = useState<string | null>(null);
   const isMobile = useIsMobile();
@@ -70,6 +71,22 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
     await supabase.from("note_cards").update({ completed: newVal }).eq("id", cardId);
   }
 
+  async function handleColDrop(targetColId: string) {
+    const colId = dragColId.current;
+    if (!colId || colId === targetColId) { dragColId.current = null; setDragOverColId(null); return; }
+    const sorted = [...columns].sort((a, b) => a.order - b.order);
+    const fromIdx = sorted.findIndex(c => c.id === colId);
+    const toIdx = sorted.findIndex(c => c.id === targetColId);
+    const reordered = [...sorted];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+    const final = reordered.map((c, i) => ({ ...c, order: i }));
+    setColumns(final);
+    setDragOverColId(null);
+    dragColId.current = null;
+    await Promise.all(final.map(c => supabase.from("note_columns").update({ order: c.order }).eq("id", c.id)));
+  }
+
   async function handleDrop(targetColId: string, targetCardId?: string) {
     const cardId = dragCardId.current; if (!cardId) return;
     const movingCard = cards.find(c => c.id === cardId); if (!movingCard) return;
@@ -95,11 +112,24 @@ export default function TabNotas({ caseData, profile, readonly = false }: TabNot
       {columns.map(column => {
         const columnCards = cards.filter(c => c.column_id === column.id).sort((a, b) => a.order - b.order);
         return (
-          <div key={column.id} onDragOver={e => { e.preventDefault(); setDragOverColId(column.id); }} onDrop={() => handleDrop(column.id)}
-            style={{ background: dragOverColId === column.id ? `${caseData.color}08` : "var(--ws-surface)", border: `1px solid ${dragOverColId === column.id ? caseData.color : "var(--ws-border)"}`, borderRadius: 12, padding: "12px 12px 8px", width: isMobile ? "100%" : 260, flexShrink: 0, display: "flex", flexDirection: "column" }}>
-            
+          <div key={column.id}
+            onDragOver={e => { e.preventDefault(); setDragOverColId(column.id); }}
+            onDrop={() => dragColId.current ? handleColDrop(column.id) : handleDrop(column.id)}
+            style={{ background: dragOverColId === column.id ? `${caseData.color}08` : "var(--ws-surface)", border: `1px solid ${dragOverColId === column.id ? caseData.color : "var(--ws-border)"}`, borderRadius: 12, padding: "12px 12px 8px", width: isMobile ? "100%" : 260, flexShrink: 0, display: "flex", flexDirection: "column", opacity: dragColId.current === column.id ? 0.4 : 1, transition: "opacity .15s" }}>
+
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ fontWeight: 600, fontSize: ".88rem", color: "var(--ws-text)" }}>{column.title}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {!readonly && (
+                  <span
+                    draggable
+                    onDragStart={e => { e.stopPropagation(); dragColId.current = column.id; dragCardId.current = null; }}
+                    onDragEnd={() => { dragColId.current = null; setDragOverColId(null); }}
+                    style={{ cursor: "grab", color: "var(--ws-text3)", fontSize: ".9rem", lineHeight: 1, userSelect: "none" }}
+                    title="Arrastar lista"
+                  >⠿</span>
+                )}
+                <div style={{ fontWeight: 600, fontSize: ".88rem", color: "var(--ws-text)" }}>{column.title}</div>
+              </div>
               {!readonly && <button onClick={() => removeColumn(column.id)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.1rem", lineHeight: 1 }}>×</button>}
             </div>
 
