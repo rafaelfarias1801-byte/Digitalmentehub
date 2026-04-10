@@ -1,5 +1,5 @@
 ﻿// client/src/workspace/components/cases/modals/NoteCardModal.tsx
-import { useState } from "react";
+import React, { useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
@@ -220,7 +220,7 @@ export default function NoteCardModal({ card, caseData, onClose, onUpdate, onDel
         )}
 
         <div style={{ display: isMobile ? "block" : "grid", gridTemplateColumns: isMobile ? undefined : "1fr 260px", flex: 1, minHeight: 0 }}>
-        <div style={{ padding: isMobile ? "16px" : "28px 24px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", overflowY: isMobile ? "auto" : undefined }}>
+        <div style={{ padding: isMobile ? "16px" : "28px 24px", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", overflowY: isMobile ? "auto" : undefined, overscrollBehavior: isMobile ? "contain" : undefined, WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
           {labelColor && <div style={{ display: "inline-flex", alignItems: "center", background: labelColor, borderRadius: 4, padding: labelName ? "3px 10px" : "4px 24px", marginBottom: 12, fontSize: ".7rem", fontWeight: 700, color: "#fff" }}>{labelName || ""}</div>}
 
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 }}>

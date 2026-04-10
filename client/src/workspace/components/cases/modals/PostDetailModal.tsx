@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import React, { useState } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { APPROVAL_STYLES, LABEL_COLORS } from "../constants";
@@ -337,7 +337,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           flex: 1,
           minHeight: 0,
           overflowY: isMobile ? "auto" : undefined,
-        }}>
+          overscrollBehavior: isMobile ? "contain" : undefined,
+          WebkitOverflowScrolling: "touch",
+        } as React.CSSProperties}>
         {/* ── Coluna principal ── */}
         <div style={{ padding: "20px 18px", boxSizing: "border-box", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", minWidth: 0, width: "100%" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 }}>
@@ -926,38 +928,6 @@ ${text}`
         <div style={{ padding: isMobile ? "16px 16px 32px" : "28px 18px", display: isMobile && !sidebarVisible ? "none" : "block", boxSizing: "border-box", width: "100%" }}>
           <div style={labelStyle}>Ações</div>
 
-          {!readonly && <div style={{ marginBottom: 20 }}>
-            <div style={labelStyle}>Etiqueta</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              {LABEL_COLORS.map(color => (
-                <div key={color} onClick={() => void save({ label_color: currentPost.label_color === color ? "" : color })} style={{
-                  width: 24, height: 24, borderRadius: 4, background: color, cursor: "pointer",
-                  border: currentPost.label_color === color ? "3px solid white" : "3px solid transparent",
-                  boxShadow: currentPost.label_color === color ? `0 0 0 2px ${color}` : "none",
-                  transition: "all .15s",
-                }} />
-              ))}
-              {/* Picker customizado */}
-              <label title="Cor personalizada" style={{
-                position: "relative", width: 24, height: 24, borderRadius: 4, cursor: "pointer", flexShrink: 0, overflow: "hidden",
-                background: currentPost.label_color && !LABEL_COLORS.includes(currentPost.label_color) ? currentPost.label_color : "var(--ws-border2)",
-                border: currentPost.label_color && !LABEL_COLORS.includes(currentPost.label_color) ? "3px solid white" : "3px solid transparent",
-                boxShadow: currentPost.label_color && !LABEL_COLORS.includes(currentPost.label_color) ? `0 0 0 2px ${currentPost.label_color}` : "none",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <span style={{ fontSize: ".7rem", color: "var(--ws-text3)", pointerEvents: "none" }}>+</span>
-                <input type="color" value={currentPost.label_color || "#000000"}
-                  onChange={e => void save({ label_color: e.target.value })}
-                  style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
-              </label>
-              {currentPost.label_color && (
-                <button onClick={() => void save({ label_color: "" })}
-                  style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>
-                  limpar
-                </button>
-              )}
-            </div>
-          </div>}
 
           {!readonly ? (
             <div style={{ marginBottom: 20 }}>
@@ -1013,12 +983,12 @@ ${text}`
 
           {!readonly && <div style={{ marginBottom: 20 }}>
             <div style={labelStyle}>Data de agendamento</div>
-            <input type="date" className="ws-input" value={scheduledDateValue}
+            <input type="date" className="ws-input" value={scheduledDateValue} style={{ fontSize: "16px", padding: "8px 12px", marginBottom: 6 }}
               onChange={e => {
                 const newDate = e.target.value;
                 const time = scheduledTimeValue || "12:00";
                 void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
-              }} style={{ fontSize: ".8rem", marginBottom: 6 }} />
+              }} />
             <select className="ws-input" value={scheduledTimeValue}
               onChange={e => {
                 const newTime = e.target.value;
