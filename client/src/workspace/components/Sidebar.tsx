@@ -283,8 +283,8 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
           </button>
         </div>
 
-        {/* Espaço para o conteúdo não ficar sob a barra */}
-        <style>{`.ws-page { padding-bottom: 70px !important; }`}</style>
+        {/* Espaço para o conteúdo não ficar sob a barra + eleva o sino */}
+        <style>{`.ws-page { padding-bottom: 70px !important; } :root { --ws-bottom-bar-height: 60px; }`}</style>
 
         {profileModal && (
           <ProfileModal profile={profile} onClose={() => setProfileModal(false)} onUpdate={(updated) => { setProfileModal(false); if (onProfileUpdate) onProfileUpdate(updated); }} />

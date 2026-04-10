@@ -94,7 +94,7 @@ export default function NotificationBadge({ profile }: Props) {
   }
 
   return (
-    <div ref={ref} style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999 }}>
+    <div ref={ref} style={{ position: "fixed", bottom: "calc(24px + var(--ws-bottom-bar-height, 0px))", right: 24, zIndex: 999 }}>
       {/* Bell button */}
       <button
         onClick={() => { setOpen(p => !p); if (!open && unread > 0) void markAllRead(); }}
