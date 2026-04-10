@@ -830,9 +830,46 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
 // ── DELIVERY UPLOAD COM PREVIEW EMBUTIDO ────────────────────
 function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: { briefing: Briefing; caseData: Case; onDelivered: (b: Briefing) => void; }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const [replacingIdx, setReplacingIdx] = useState<number | null>(null);
+  const dragIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const R2 = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
+
+  async function normalizeImageFile(file: File): Promise<{ file: File; ext: string }> {
+    const isPng = file.type === "image/png" || file.name.toLowerCase().endsWith(".png");
+    if (!isPng) return { file, ext: file.name.split(".").pop() ?? "jpg" };
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => {
+          if (!blob) { resolve({ file, ext: "png" }); return; }
+          resolve({ file: new File([blob], file.name.replace(/\.png$/i, ".jpg"), { type: "image/jpeg" }), ext: "jpg" });
+        }, "image/jpeg", 0.92);
+      };
+      img.src = url;
+    });
+  }
+
+  async function uploadOne(rawFile: File): Promise<string | null> {
+    const { file, ext } = await normalizeImageFile(rawFile);
+    const path = `deliveries/${caseData.id}/${briefing.id}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+    const { data, error } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename: path, contentType: file.type } });
+    if (!error && data?.signedUrl) {
+      const res = await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      if (res.ok) return `${R2}/${path}`;
+    }
+    return null;
+  }
 
   async function handleSend(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -840,36 +877,84 @@ function DesignerDeliveryUpload({ briefing, caseData, onDelivered }: { briefing:
     setUploading(true);
     const urls: string[] = [];
     for (const file of files) {
-      const ext = file.name.split(".").pop();
-      // Adicionado Math.random para garantir unicidade em uploads múltiplos
-      const path = `deliveries/${caseData.id}/${briefing.id}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-      const { data, error } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename: path, contentType: file.type } });
-      if (!error && data?.signedUrl) {
-         await fetch(data.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
-         urls.push(`${R2}/${path}`);
-      }
+      const url = await uploadOne(file);
+      if (url) urls.push(url);
     }
     if (urls.length > 0) {
       const newUrls = [...(briefing.delivery_urls ?? []), ...urls];
-      // Apenas atualiza as URLs, o status muda no botão "Enviar para Aprovação"
       const { data } = await supabase.from("briefings").update({ delivery_urls: newUrls }).eq("id", briefing.id).select().single();
       if (data) onDelivered(data);
     }
     setUploading(false);
+    e.target.value = "";
   }
+
+  async function handleReplace(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || replacingIdx === null) return;
+    setUploading(true);
+    const newUrl = await uploadOne(file);
+    if (newUrl) {
+      const newUrls = [...(briefing.delivery_urls ?? [])];
+      newUrls[replacingIdx] = newUrl;
+      const { data } = await supabase.from("briefings").update({ delivery_urls: newUrls }).eq("id", briefing.id).select().single();
+      if (data) onDelivered(data);
+    }
+    setReplacingIdx(null);
+    setUploading(false);
+    e.target.value = "";
+  }
+
+  async function handleRemove(idx: number) {
+    if (!window.confirm("Remover esta imagem?")) return;
+    const newUrls = (briefing.delivery_urls ?? []).filter((_, i) => i !== idx);
+    const { data } = await supabase.from("briefings").update({ delivery_urls: newUrls }).eq("id", briefing.id).select().single();
+    if (data) onDelivered(data);
+  }
+
+  async function handleReorder(from: number, to: number) {
+    if (from === to) return;
+    const newUrls = [...(briefing.delivery_urls ?? [])];
+    const [moved] = newUrls.splice(from, 1);
+    newUrls.splice(to, 0, moved);
+    const { data } = await supabase.from("briefings").update({ delivery_urls: newUrls }).eq("id", briefing.id).select().single();
+    if (data) onDelivered(data);
+  }
+
+  const urls = briefing.delivery_urls ?? [];
 
   return (
     <div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-        {briefing.delivery_urls?.map((url, i) => (
-          <img key={i} src={url} onClick={() => setPreviewImg(url)} style={{ width: 64, height: 64, borderRadius: 8, objectFit: "cover", cursor: "pointer", border: "1px solid var(--ws-border)" }} />
+        {urls.map((url, i) => (
+          <div key={i}
+            draggable
+            onDragStart={() => { dragIdx.current = i; }}
+            onDragOver={e => { e.preventDefault(); setDragOverIdx(i); }}
+            onDragEnd={() => { dragIdx.current = null; setDragOverIdx(null); }}
+            onDrop={e => { e.preventDefault(); if (dragIdx.current !== null) void handleReorder(dragIdx.current, i); setDragOverIdx(null); }}
+            style={{ position: "relative", flexShrink: 0 }}
+          >
+            {/* Número */}
+            <div style={{ position: "absolute", top: 2, left: 2, background: "rgba(0,0,0,.6)", color: "#fff", fontSize: ".45rem", fontFamily: "Poppins", borderRadius: 3, padding: "1px 3px", zIndex: 5, pointerEvents: "none" }}>{i + 1}</div>
+            <img src={url} onClick={() => setPreviewImg(url)} style={{ width: 64, height: 64, borderRadius: 8, objectFit: "cover", cursor: dragOverIdx === i ? "copy" : "pointer", border: dragOverIdx === i ? "2px solid #fff" : "1px solid var(--ws-border)", opacity: dragIdx.current === i ? 0.4 : 1, display: "block" }} />
+            {/* Remover */}
+            <button onClick={e => { e.stopPropagation(); void handleRemove(i); }}
+              style={{ position: "absolute", top: -5, right: -5, width: 16, height: 16, borderRadius: "50%", background: "#ff4433", border: "none", color: "#fff", cursor: "pointer", fontSize: ".55rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, zIndex: 5 }}>×</button>
+            {/* Substituir */}
+            <button onClick={e => { e.stopPropagation(); setReplacingIdx(i); replaceRef.current?.click(); }}
+              title="Substituir imagem"
+              style={{ position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%)", width: 16, height: 16, borderRadius: "50%", background: caseData.color, border: "none", color: "#fff", cursor: "pointer", fontSize: ".55rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, zIndex: 5 }}>↺</button>
+          </div>
         ))}
       </div>
+
       <button onClick={() => fileRef.current?.click()} className="ws-btn-ghost" style={{ width: "100%", padding: "10px" }} disabled={uploading}>
-        {uploading ? "Carregando..." : "+ Adicionar Arquivos"}
+        {uploading ? "Enviando..." : "+ Adicionar Arquivos"}
       </button>
-      <input ref={fileRef} type="file" multiple style={{ display: "none" }} onChange={handleSend} />
-      
+      <input ref={fileRef} type="file" multiple accept="image/*,video/*" style={{ display: "none" }} onChange={handleSend} />
+      <input ref={replaceRef} type="file" accept="image/*,video/*" style={{ display: "none" }} onChange={handleReplace} />
+
       {previewImg && (
         <div onClick={() => setPreviewImg(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <img src={previewImg} alt="Preview" style={{ maxWidth: "95vw", maxHeight: "90dvh", borderRadius: 10 }} />
