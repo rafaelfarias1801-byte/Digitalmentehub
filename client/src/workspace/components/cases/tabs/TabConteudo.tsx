@@ -175,6 +175,30 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     setActiveMonth(keys.includes(now) ? now : keys[0] || "sem-data");
   }, [posts, activeMonth]);
 
+  async function normalizeImageFile(file: File): Promise<{ file: File; ext: string }> {
+    const isPng = file.type === "image/png" || file.name.toLowerCase().endsWith(".png");
+    if (!isPng) return { file, ext: file.name.split(".").pop() ?? "jpg" };
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => {
+          if (!blob) { resolve({ file, ext: "png" }); return; }
+          resolve({ file: new File([blob], file.name.replace(/\.png$/i, ".jpg"), { type: "image/jpeg" }), ext: "jpg" });
+        }, "image/jpeg", 0.92);
+      };
+      img.src = url;
+    });
+  }
+
   async function uploadFiles(files: FileList) {
     setUploading(true);
     const uploaded: string[] = [];
@@ -182,8 +206,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
     for (let i = 0; i < files.length; i++) {
       setUploadProgress(`Enviando ${i + 1} de ${files.length}...`);
-      const file = files[i];
-      const ext = file.name.split(".").pop();
+      const { file, ext } = await normalizeImageFile(files[i]);
       const filename = `posts/${caseData.id}/${Date.now()}-${i}.${ext}`;
 
       try {
