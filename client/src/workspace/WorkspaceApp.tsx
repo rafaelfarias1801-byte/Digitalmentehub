@@ -271,7 +271,13 @@ export default function WorkspaceApp() {
       />
     );
   }
-  if (profile.role === "designer") return <DesignerView profile={profile} />;
+  if (profile.role === "designer") {
+    // Redirect non-designer URLs to /workspace/designer
+    if (!location.startsWith("/workspace/designer")) {
+      setLocation("/workspace/designer");
+    }
+    return <DesignerView profile={profile} />;
+  }
 
   function renderContent() {
     switch (page) {

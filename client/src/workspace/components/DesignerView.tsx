@@ -1,5 +1,6 @@
 // client/src/workspace/components/DesignerView.tsx
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import { CasesGlobalStyle } from "./cases/styles";
@@ -10,7 +11,6 @@ import { notifyAdmins } from "../utils/notifyPush";
 import type { Case, Briefing, DesignerClosing, BrandIdentity } from "./cases/types";
 
 interface DesignerViewProps { profile: Profile; }
-type View = "dashboard" | "workspace";
 type DashTab = "overview" | "financeiro";
 
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -107,10 +107,12 @@ async function downloadFile(url: string, filename?: string) {
 }
 
 export default function DesignerView({ profile }: DesignerViewProps) {
-  const [view, setView]               = useState<View>(() => {
-    try { return (sessionStorage.getItem("dv_view") as View) || "dashboard"; } catch { return "dashboard"; }
-  });
-  const [dashTab, setDashTab]         = useState<DashTab>("overview");
+  const [location, setLocation]       = useLocation();
+  // Parse URL: /workspace/designer | /workspace/designer/financeiro | /workspace/designer/case/:caseId | /workspace/designer/case/:caseId/briefing/:briefingId
+  const wsMatch = location.match(/\/workspace\/designer\/case\/([^/]+)(?:\/briefing\/([^/]+))?/);
+  const urlCaseId    = wsMatch?.[1] ?? null;
+  const urlBriefingId = wsMatch?.[2] ?? null;
+  const dashTab: DashTab = location.includes("/financeiro") ? "financeiro" : "overview";
   const [theme, setTheme]             = useState<"dark" | "light">(getSavedTheme);
   const isDark = theme === "dark";
   const [activeCase, setActiveCase]   = useState<Case | null>(null);
@@ -159,34 +161,27 @@ export default function DesignerView({ profile }: DesignerViewProps) {
       setCases(cs ?? []);
       setBriefings(bf ?? []);
       setClosings(cl ?? []);
-      // Restore activeCase from sessionStorage synchronously so there's no dashboard flash
-      try {
-        const savedId = sessionStorage.getItem("dv_case_id");
-        if (savedId && cs) {
-          const found = (cs as Case[]).find(c => c.id === savedId);
-          if (found) setActiveCase(found);
-        }
-      } catch {}
+      // Restore activeCase from URL on load
+      if (urlCaseId && cs) {
+        const found = (cs as Case[]).find(c => c.id === urlCaseId);
+        if (found) setActiveCase(found);
+      }
       setLoading(false);
     }
     void load();
   }, [profile.id]);
 
+  // Sync activeCase with URL caseId when cases load or URL changes
+  useEffect(() => {
+    if (urlCaseId && cases.length > 0) {
+      const found = cases.find(c => c.id === urlCaseId);
+      setActiveCase(found ?? null);
+    } else if (!urlCaseId) {
+      setActiveCase(null);
+    }
+  }, [urlCaseId, cases.length]);
+
   useEffect(() => { applyTheme(theme); }, []);
-
-  // Persist view to sessionStorage
-  useEffect(() => {
-    try { sessionStorage.setItem("dv_view", view); } catch {}
-  }, [view]);
-
-  // Persist and restore activeCase
-  useEffect(() => {
-    try {
-      if (activeCase) sessionStorage.setItem("dv_case_id", activeCase.id);
-      else sessionStorage.removeItem("dv_case_id");
-    } catch {}
-  }, [activeCase]);
-
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
@@ -265,20 +260,32 @@ export default function DesignerView({ profile }: DesignerViewProps) {
     </div>
   );
 
-  if (view === "workspace" && activeCase) {
+  if (urlCaseId && activeCase) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
         <CasesGlobalStyle />
         <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme}>
-          <button onClick={() => setView("dashboard")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", letterSpacing: "1px" }}>← Dashboard</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button onClick={() => setLocation("/workspace/designer")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins" }}>← Dashboard</button>
+            <span style={{ color: "var(--ws-border2)", fontSize: ".72rem" }}>/</span>
+            <span style={{ fontSize: ".72rem", color: "var(--ws-text2)", fontFamily: "Poppins", fontWeight: 600 }}>{activeCase.name}</span>
+            {urlBriefingId && (
+              <>
+                <span style={{ color: "var(--ws-border2)", fontSize: ".72rem" }}>/</span>
+                <span style={{ fontSize: ".72rem", color: "var(--ws-text2)", fontFamily: "Poppins" }}>#{urlBriefingId.slice(0, 6).toUpperCase()}</span>
+              </>
+            )}
+          </div>
         </DesignerHeader>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
-        <div style={{ flex: 1, padding: "28px" }}>
+        <div style={{ flex: 1, padding: "28px", maxWidth: 860, width: "100%", margin: "0 auto" }}>
           <DesignerClientWorkspace
             profile={profile}
             caseData={activeCase}
             briefings={briefings.filter(b => b.case_id === activeCase.id)}
             onBriefingUpdate={updated => setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b))}
+            urlBriefingId={urlBriefingId}
+            onNavigate={setLocation}
           />
         </div>
         {showChangePwd && <DesignerChangePassword onDone={() => setShowChangePwd(false)} />}
@@ -290,7 +297,12 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   return (
     <div style={{ minHeight: "100vh", background: "var(--ws-bg)", display: "flex", flexDirection: "column" }}>
       <CasesGlobalStyle />
-      <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme} />
+      <DesignerHeader displayName={displayName} avatarUrl={avatarUrl} uploadingAvatar={uploadingAvatar} fileRef={fileRef} onAvatarClick={() => fileRef.current?.click()} onLogout={handleLogout} onChangePwd={() => setShowChangePwd(true)} showMenu={showProfileMenu} onToggleMenu={() => setShowProfileMenu(p => !p)} isDark={isDark} onToggleTheme={toggleTheme}>
+        <div style={{ display: "flex", gap: 2 }}>
+          <button onClick={() => setLocation("/workspace/designer")} style={{ background: dashTab === "overview" ? "var(--ws-surface2)" : "none", border: "none", borderRadius: 6, color: dashTab === "overview" ? "var(--ws-text)" : "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", padding: "4px 10px" }}>📋 Visão Geral</button>
+          <button onClick={() => setLocation("/workspace/designer/financeiro")} style={{ background: dashTab === "financeiro" ? "var(--ws-surface2)" : "none", border: "none", borderRadius: 6, color: dashTab === "financeiro" ? "var(--ws-text)" : "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", padding: "4px 10px" }}>💰 Financeiro</button>
+        </div>
+      </DesignerHeader>
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) void handleAvatar(f); }} />
 
       <div style={{ flex: 1, padding: "32px 28px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
@@ -353,7 +365,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
           </div>
           <div style={{ display: "flex", border: "1px solid var(--ws-border)", borderRadius: 10, overflow: "hidden" }}>
             {(["overview", "financeiro"] as DashTab[]).map(tab => (
-              <button key={tab} onClick={() => setDashTab(tab)} style={{ background: dashTab === tab ? "var(--ws-surface2)" : "none", border: "none", cursor: "pointer", fontSize: ".76rem", padding: "8px 16px", fontFamily: "Poppins", color: dashTab === tab ? "var(--ws-text)" : "var(--ws-text3)", fontWeight: dashTab === tab ? 700 : 400 }}>
+              <button key={tab} onClick={() => setLocation(tab === "financeiro" ? "/workspace/designer/financeiro" : "/workspace/designer")} style={{ background: dashTab === tab ? "var(--ws-surface2)" : "none", border: "none", cursor: "pointer", fontSize: ".76rem", padding: "8px 16px", fontFamily: "Poppins", color: dashTab === tab ? "var(--ws-text)" : "var(--ws-text3)", fontWeight: dashTab === tab ? 700 : 400 }}>
                 {tab === "overview" ? "📋 Visão Geral" : "💰 Financeiro"}
               </button>
             ))}
@@ -376,7 +388,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
                 const pending = cb.filter(b => b.status === "aguardando" || b.status === "revisao").length;
                 const overdue = cb.filter(b => b.status !== "aprovado" && deadlineStatus(b.deadline) === "overdue").length;
                 return (
-                  <div key={c.id} onClick={() => { setActiveCase(c); setView("workspace"); }}
+                  <div key={c.id} onClick={() => setLocation(`/workspace/designer/case/${c.id}`)}
                     style={{ background: "var(--ws-surface)", border: `1px solid ${overdue > 0 ? "rgba(220,50,50,0.4)" : "var(--ws-border)"}`, borderRadius: 14, overflow: "hidden", cursor: "pointer", transition: "border-color .15s, transform .15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-2px)"; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = overdue > 0 ? "rgba(220,50,50,0.4)" : "var(--ws-border)"; e.currentTarget.style.transform = "translateY(0)"; }}
@@ -604,14 +616,16 @@ function DesignerHeader({ displayName, avatarUrl, uploadingAvatar, fileRef, onAv
 }
 
 // ── Workspace por cliente ────────────────────────────────────
-function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdate }: {
+function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdate, urlBriefingId, onNavigate }: {
   profile: Profile; caseData: Case; briefings: Briefing[];
   onBriefingUpdate: (b: Briefing) => void;
+  urlBriefingId: string | null;
+  onNavigate: (path: string) => void;
 }) {
   const [subTab, setSubTab]               = useState<"briefings" | "identidade">("briefings");
   const [brandIdentity, setBrandIdentity] = useState<BrandIdentity | null>(null);
   const [loadingBrand, setLoadingBrand]   = useState(false);
-  const [detailBriefing, setDetailBriefing] = useState<Briefing | null>(null);
+  const detailBriefing = urlBriefingId ? briefings.find(b => b.id === urlBriefingId) ?? null : null;
   const [editingValue, setEditingValue]   = useState("");
   const [savingValue, setSavingValue]     = useState(false);
 
@@ -630,7 +644,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
     if (isNaN(val)) return;
     setSavingValue(true);
     const { data } = await supabase.from("briefings").update({ designer_value: val }).eq("id", b.id).select().single();
-    if (data) { onBriefingUpdate(data); setDetailBriefing(data); }
+    if (data) { onBriefingUpdate(data); onNavigate(`/workspace/designer/case/${caseData.id}/briefing/${data.id}`); }
     setSavingValue(false);
   }
 
@@ -641,9 +655,9 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
     }
     setSavingValue(true);
     const { data } = await supabase.from("briefings").update({ status: "entregue" }).eq("id", b.id).select().single();
-    if (data) { 
-      onBriefingUpdate(data); 
-      setDetailBriefing(null);
+    if (data) {
+      onBriefingUpdate(data);
+      onNavigate(`/workspace/designer/case/${caseData.id}`);
     }
     setSavingValue(false);
   }
@@ -673,7 +687,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
           detailBriefing ? (
             /* ── Detalhe inline (sem modal) ── */
             <div>
-              <button onClick={() => setDetailBriefing(null)}
+              <button onClick={() => onNavigate(`/workspace/designer/case/${caseData.id}`)}
                 style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".78rem", fontFamily: "Poppins", padding: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6 }}>
                 ← Voltar aos briefings
               </button>
@@ -718,7 +732,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                 <DesignerDeliveryUpload
                   briefing={detailBriefing}
                   caseData={caseData}
-                  onDelivered={(updated) => { onBriefingUpdate(updated); setDetailBriefing(updated); }}
+                  onDelivered={(updated) => { onBriefingUpdate(updated); onNavigate(`/workspace/designer/case/${caseData.id}/briefing/${updated.id}`); }}
                 />
               </BISection>
 
@@ -759,7 +773,7 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
                   const cfg = STATUS_CFG[b.status];
                   const ds  = deadlineStatus(b.deadline);
                   return (
-                    <div key={b.id} onClick={() => { setDetailBriefing(b); setEditingValue(String(b.designer_value ?? "")); }}
+                    <div key={b.id} onClick={() => { onNavigate(`/workspace/designer/case/${caseData.id}/briefing/${b.id}`); setEditingValue(String(b.designer_value ?? "")); }}
                       style={{ background: "var(--ws-surface)", border: `1px solid ${ds === "overdue" ? "rgba(220,50,50,0.35)" : "var(--ws-border)"}`, borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color .15s" }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = caseData.color}
                       onMouseLeave={e => e.currentTarget.style.borderColor = ds === "overdue" ? "rgba(220,50,50,0.35)" : "var(--ws-border)"}
