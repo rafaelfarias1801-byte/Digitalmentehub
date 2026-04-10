@@ -1,5 +1,5 @@
 // client/src/workspace/components/Sidebar.tsx
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ProfileModal from "./ProfileModal";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
@@ -98,6 +98,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
   }
 
   const [profileModal, setProfileModal] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const isDark = theme === "dark";
   const isMobile = getIsMobile();
 
@@ -203,6 +204,94 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
       </div>
     </>
   );
+
+  // ── Mobile Admin: Bottom Bar ────────────────────────────────────
+  if (isMobile && isAdmin) {
+    const allItems = NAV.flatMap(g => g.items);
+    const PINNED: PageId[] = ["dashboard", "cases", "checklist"];
+    const pinnedItems = PINNED.map(id => allItems.find(i => i.id === id)!).filter(Boolean);
+    const moreItems = allItems.filter(i => !PINNED.includes(i.id as PageId));
+
+    const btnBase: React.CSSProperties = {
+      flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      gap: 3, background: "none", border: "none", cursor: "pointer", padding: "6px 2px",
+      fontSize: ".58rem", fontFamily: "Poppins, sans-serif", letterSpacing: ".3px",
+      transition: "color .15s",
+    };
+
+    return (
+      <>
+        {/* Sidebar overlay quando aberta (para perfil/tema) */}
+        {open && (
+          <>
+            <div onClick={() => setOpenAndNotify(false)} style={{ position: "fixed", inset: 0, background: "#00000060", zIndex: 198 }} />
+            <aside className="ws-sidebar" style={{ position: "fixed", top: 0, left: 0, height: "100%", zIndex: 199, boxShadow: "4px 0 24px #00000050", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              {sidebarContent}
+            </aside>
+          </>
+        )}
+
+        {/* Sheet do "Mais" */}
+        {mobileMoreOpen && (
+          <>
+            <div onClick={() => setMobileMoreOpen(false)} style={{ position: "fixed", inset: 0, background: "#00000055", zIndex: 298 }} />
+            <div style={{ position: "fixed", bottom: 60, left: 0, right: 0, background: "var(--ws-surface)", borderTop: "1px solid var(--ws-border)", borderRadius: "16px 16px 0 0", padding: "16px 12px 8px", zIndex: 299 }}>
+              <div style={{ width: 36, height: 4, background: "var(--ws-border2)", borderRadius: 2, margin: "0 auto 16px" }} />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 12 }}>
+                {moreItems.map(item => {
+                  const isActive = currentPage === item.id as PageId;
+                  return (
+                    <button key={item.id} onClick={() => { navigate(item.id as PageId); setMobileMoreOpen(false); }} style={{ ...btnBase, background: isActive ? "var(--ws-surface2)" : "transparent", borderRadius: 12, padding: "10px 4px", color: isActive ? "var(--ws-accent)" : "var(--ws-text3)" }}>
+                      <span style={{ fontSize: "1.3rem", lineHeight: 1 }}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+                <button onClick={() => { toggleTheme(); }} style={{ ...btnBase, background: "transparent", borderRadius: 12, padding: "10px 4px", color: "var(--ws-text3)" }}>
+                  <span style={{ fontSize: "1.3rem", lineHeight: 1 }}>{isDark ? "🌙" : "☀️"}</span>
+                  <span>{isDark ? "Escuro" : "Claro"}</span>
+                </button>
+                <button onClick={() => { setMobileMoreOpen(false); setOpenAndNotify(true); }} style={{ ...btnBase, background: "transparent", borderRadius: 12, padding: "10px 4px", color: "var(--ws-text3)" }}>
+                  <div className="ws-avatar" style={{ width: 26, height: 26, fontSize: ".6rem", overflow: "hidden" }}>
+                    {profile.avatar_url ? <img src={profile.avatar_url} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : profile.initials}
+                  </div>
+                  <span>Perfil</span>
+                </button>
+                <button onClick={() => supabase.auth.signOut()} style={{ ...btnBase, background: "transparent", borderRadius: 12, padding: "10px 4px", color: "#d63232" }}>
+                  <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>↩</span>
+                  <span>Sair</span>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Bottom Bar fixa */}
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 60, background: "var(--ws-surface)", borderTop: "1px solid var(--ws-border)", zIndex: 200, display: "flex", alignItems: "stretch", paddingBottom: "env(safe-area-inset-bottom)" }}>
+          {pinnedItems.map(item => {
+            const isActive = currentPage === item.id as PageId;
+            return (
+              <button key={item.id} onClick={() => navigate(item.id as PageId)} style={{ ...btnBase, color: isActive ? "var(--ws-accent)" : "var(--ws-text3)", borderTop: isActive ? `2px solid var(--ws-accent)` : "2px solid transparent" }}>
+                <span style={{ fontSize: "1.25rem", lineHeight: 1 }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+          <button onClick={() => setMobileMoreOpen(v => !v)} style={{ ...btnBase, color: mobileMoreOpen ? "var(--ws-accent)" : "var(--ws-text3)", borderTop: mobileMoreOpen ? "2px solid var(--ws-accent)" : "2px solid transparent" }}>
+            <span style={{ fontSize: "1.25rem", lineHeight: 1 }}>☰</span>
+            <span>Mais</span>
+          </button>
+        </div>
+
+        {/* Espaço para o conteúdo não ficar sob a barra */}
+        <style>{`.ws-page { padding-bottom: 70px !important; }`}</style>
+
+        {profileModal && (
+          <ProfileModal profile={profile} onClose={() => setProfileModal(false)} onUpdate={(updated) => { setProfileModal(false); if (onProfileUpdate) onProfileUpdate(updated); }} />
+        )}
+      </>
+    );
+  }
 
   return (
     <>
