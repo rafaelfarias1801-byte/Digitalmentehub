@@ -74,8 +74,8 @@ export const APPROVAL_STYLES: Record<
     label: "Agendado",
   },
   postado: {
-    bg: "rgba(0,200,150,0.13)",
-    color: "#00a878",
+    bg: "rgba(37,99,235,0.15)",
+    color: "#3b82f6",
     label: "Postado",
   },
 };
