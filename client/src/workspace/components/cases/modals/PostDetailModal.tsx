@@ -272,7 +272,8 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const aspectRatio = currentPost.media_type === "feed" ? "4 / 5" : currentPost.media_type === "carousel" ? "1 / 1" : "9 / 16";
   const scheduledDate = currentPost.scheduled_date ? new Date(currentPost.scheduled_date) : null;
   const scheduledDateValue = scheduledDate ? scheduledDate.toISOString().slice(0, 10) : "";
-  const scheduledTimeValue = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
+  const rawTime = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
+  const scheduledTimeValue = ["12:00","15:00","18:00"].includes(rawTime) ? rawTime : "12:00";
 
   return (
     <div style={{ ...overlayStyle, left: 0 }} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -1024,9 +1025,6 @@ ${text}`
                 const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
                 void save({ scheduled_date: `${date}T${newTime}:00` });
               }} style={{ fontSize: ".8rem" }}>
-              {scheduledTimeValue && !["12:00","15:00","18:00"].includes(scheduledTimeValue) && (
-                <option value={scheduledTimeValue}>{scheduledTimeValue}</option>
-              )}
               <option value="12:00">12:00</option>
               <option value="15:00">15:00</option>
               <option value="18:00">18:00</option>
