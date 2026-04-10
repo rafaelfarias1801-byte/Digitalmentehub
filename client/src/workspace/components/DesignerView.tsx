@@ -219,7 +219,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
 
   const overdueB   = briefings.filter(b => b.status !== "aprovado" && deadlineStatus(b.deadline) === "overdue");
   const pendentes  = briefings.filter(b => b.status === "aguardando").length;
-  const emRevisao  = briefings.filter(b => b.status === "revisao").length;
+  const emRevisao  = briefings.filter(b => b.status === "revisao" || b.status === "entregue").length;
   const aprovados  = briefings.filter(b => b.status === "aprovado").length;
 
   const briefingsThisMonth = briefings.filter(b => {
@@ -369,7 +369,7 @@ export default function DesignerView({ profile }: DesignerViewProps) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 32 }}>
               <StatCard label="Total de briefings" value={briefings.length} color="#e91e8c" icon="📋" />
               <StatCard label="Aguardando entrega" value={pendentes} color="#ffd600" icon="⏳" />
-              <StatCard label="Em revisão" value={emRevisao} color="#ff6b35" icon="🔄" />
+              <StatCard label="Aguard. revisão" value={emRevisao} color="#ff6b35" icon="🔄" />
               <StatCard label="Aprovados" value={aprovados} color="#00e676" icon="✅" />
             </div>
 
@@ -846,19 +846,19 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
 
             <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end", gap: 10, borderTop: "1px solid var(--ws-border)", paddingTop: 16 }}>
               <button onClick={() => setDetailBriefing(null)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "10px 18px", fontFamily: "Poppins" }}>Fechar</button>
-              {detailBriefing.status !== "aprovado" && (
-                <button 
-                  onClick={() => void sendToApproval(detailBriefing)} 
+              {(detailBriefing.status === "aguardando" || detailBriefing.status === "revisao") && (
+                <button
+                  onClick={() => void sendToApproval(detailBriefing)}
                   disabled={savingValue || !detailBriefing.delivery_urls?.length}
-                  style={{ 
-                    background: "#00e676", 
-                    border: "none", 
-                    borderRadius: 8, 
-                    color: "#00331a", 
-                    cursor: "pointer", 
-                    fontSize: ".78rem", 
-                    fontWeight: 700, 
-                    padding: "10px 20px", 
+                  style={{
+                    background: "#00e676",
+                    border: "none",
+                    borderRadius: 8,
+                    color: "#00331a",
+                    cursor: "pointer",
+                    fontSize: ".78rem",
+                    fontWeight: 700,
+                    padding: "10px 20px",
                     fontFamily: "Poppins",
                     opacity: (!detailBriefing.delivery_urls?.length || savingValue) ? 0.5 : 1
                   }}
