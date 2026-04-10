@@ -107,7 +107,9 @@ async function downloadFile(url: string, filename?: string) {
 }
 
 export default function DesignerView({ profile }: DesignerViewProps) {
-  const [view, setView]               = useState<View>("dashboard");
+  const [view, setView]               = useState<View>(() => {
+    try { return (sessionStorage.getItem("dv_view") as View) || "dashboard"; } catch { return "dashboard"; }
+  });
   const [dashTab, setDashTab]         = useState<DashTab>("overview");
   const [theme, setTheme]             = useState<"dark" | "light">(getSavedTheme);
   const isDark = theme === "dark";
@@ -163,6 +165,32 @@ export default function DesignerView({ profile }: DesignerViewProps) {
   }, [profile.id]);
 
   useEffect(() => { applyTheme(theme); }, []);
+
+  // Persist view to sessionStorage
+  useEffect(() => {
+    try { sessionStorage.setItem("dv_view", view); } catch {}
+  }, [view]);
+
+  // Persist and restore activeCase
+  useEffect(() => {
+    try {
+      if (activeCase) sessionStorage.setItem("dv_case_id", activeCase.id);
+      else sessionStorage.removeItem("dv_case_id");
+    } catch {}
+  }, [activeCase]);
+
+  // Restore activeCase from sessionStorage after cases load
+  useEffect(() => {
+    if (cases.length > 0 && !activeCase) {
+      try {
+        const savedId = sessionStorage.getItem("dv_case_id");
+        if (savedId) {
+          const found = cases.find(c => c.id === savedId);
+          if (found) setActiveCase(found);
+        }
+      } catch {}
+    }
+  }, [cases]);
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
@@ -387,66 +415,85 @@ export default function DesignerView({ profile }: DesignerViewProps) {
 
         {dashTab === "financeiro" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <div style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 14, overflow: "hidden" }}>
-              <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--ws-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".9rem", color: "var(--ws-text)" }}>{MONTHS[closingPeriod.month - 1]} {closingPeriod.year}</div>
-                  <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>Mês atual</div>
-                </div>
-                {!alreadyClosed && closingPeriod.show && (
-                  <button onClick={() => setClosingModal(true)} style={{ background: "#ffd600", border: "none", borderRadius: 8, color: "#1a1200", cursor: "pointer", fontSize: ".76rem", fontWeight: 700, padding: "7px 16px", fontFamily: "Poppins" }}>Fechar mês</button>
-                )}
-                {alreadyClosed && <div style={{ fontSize: ".72rem", color: "#00a864", fontFamily: "Poppins", fontWeight: 700 }}>{alreadyApproved ? "💰 Aprovado — pagamento a caminho" : "✓ Fechado — aguardando aprovação"}</div>}
-              </div>
-              <div style={{ padding: "16px 20px" }}>
-                {briefingsThisMonth.length === 0 ? (
-                  <div style={{ fontSize: ".8rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Nenhum briefing este mês ainda.</div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {briefingsThisMonth.map(b => (
-                      <div key={b.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "var(--ws-surface2)", borderRadius: 8, gap: 10 }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: ".82rem", color: "var(--ws-text)", fontWeight: 600 }}>{b.format}</div>
-                          <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>{cases.find(c => c.id === b.case_id)?.name ?? "—"}</div>
+            {(() => {
+              // Build unique months from briefings
+              const monthMap = new Map<string, Briefing[]>();
+              briefings.forEach(b => {
+                const d = new Date(b.created_at);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                if (!monthMap.has(key)) monthMap.set(key, []);
+                monthMap.get(key)!.push(b);
+              });
+              // Always include current period
+              const currentKey = `${closingPeriod.year}-${String(closingPeriod.month).padStart(2, "0")}`;
+              if (!monthMap.has(currentKey)) monthMap.set(currentKey, []);
+              // Sort newest first
+              const sorted = Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+
+              return sorted.map(([key, monthBriefings]) => {
+                const [yearStr, monthStr] = key.split("-");
+                const yr = parseInt(yearStr);
+                const mo = parseInt(monthStr);
+                const isCurrentPeriod = mo === closingPeriod.month && yr === closingPeriod.year;
+                const monthClosing = closings.find(c => c.month === mo && c.year === yr);
+                const isClosed = !!monthClosing?.closed_at;
+                const isApproved = !!(monthClosing as any)?.approved_at;
+                const monthTotal = monthBriefings.reduce((s, b) => s + (b.designer_value ?? 0), 0);
+
+                return (
+                  <div key={key} style={{ background: "var(--ws-surface)", border: `1px solid ${isApproved ? "rgba(0,230,118,0.3)" : "var(--ws-border)"}`, borderRadius: 14, overflow: "hidden" }}>
+                    <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--ws-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                      <div>
+                        <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".9rem", color: "var(--ws-text)" }}>
+                          {MONTHS[mo - 1]} {yr}
                         </div>
-                        <div style={{ fontSize: ".82rem", fontFamily: "Poppins", fontWeight: 700, color: b.designer_value ? "var(--ws-text)" : "var(--ws-text3)" }}>
-                          {b.designer_value ? fmt(b.designer_value) : "—"}
+                        {isCurrentPeriod && <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>Mês atual</div>}
+                        {monthClosing?.notes && <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>{monthClosing.notes}</div>}
+                        {(monthClosing as any)?.payment_date && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>📅 Pgto preferido: {new Date((monthClosing as any).payment_date + "T12:00:00").toLocaleDateString("pt-BR")}</div>}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        {isCurrentPeriod && !isClosed && closingPeriod.show && (
+                          <button onClick={() => setClosingModal(true)} style={{ background: "#ffd600", border: "none", borderRadius: 8, color: "#1a1200", cursor: "pointer", fontSize: ".76rem", fontWeight: 700, padding: "7px 16px", fontFamily: "Poppins" }}>Fechar mês</button>
+                        )}
+                        {isClosed && (
+                          <div style={{ fontSize: ".72rem", fontFamily: "Poppins", fontWeight: 700, color: isApproved ? "#00a864" : "#b08800" }}>
+                            {isApproved ? "💰 Aprovado" : "✓ Fechado — aguardando"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ padding: "16px 20px" }}>
+                      {monthBriefings.length === 0 ? (
+                        <div style={{ fontSize: ".8rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Nenhum briefing neste mês.</div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {monthBriefings.map(b => (
+                            <div key={b.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "var(--ws-surface2)", borderRadius: 8, gap: 10 }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: ".82rem", color: "var(--ws-text)", fontWeight: 600 }}>{b.format}</div>
+                                <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>{cases.find(c => c.id === b.case_id)?.name ?? "—"}</div>
+                              </div>
+                              <div style={{ fontSize: ".82rem", fontFamily: "Poppins", fontWeight: 700, color: b.designer_value ? "var(--ws-text)" : "var(--ws-text3)" }}>
+                                {b.designer_value ? fmt(b.designer_value) : "—"}
+                              </div>
+                            </div>
+                          ))}
+                          <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8, borderTop: "1px solid var(--ws-border)" }}>
+                            <div style={{ fontSize: ".82rem", fontFamily: "Poppins", color: "var(--ws-text2)" }}>
+                              {isClosed && monthClosing ? (
+                                <>Total fechado: <strong style={{ color: "#00a864" }}>{fmt(monthClosing.total_final)}</strong></>
+                              ) : (
+                                <>Total parcial: <strong style={{ color: "var(--ws-text)" }}>{fmt(monthTotal)}</strong></>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8, borderTop: "1px solid var(--ws-border)" }}>
-                      <div style={{ fontSize: ".82rem", fontFamily: "Poppins", color: "var(--ws-text2)" }}>
-                        Total: <strong style={{ color: "var(--ws-text)" }}>{fmt(totalBriefings)}</strong>
-                      </div>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {closings.filter(c => c.closed_at).length > 0 && (
-              <div>
-                <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text)", marginBottom: 12 }}>Histórico</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {closings.filter(c => c.closed_at).map(c => (
-                    <div key={c.id} style={{ background: "var(--ws-surface)", border: `1px solid ${(c as any).approved_at ? "rgba(0,230,118,0.3)" : "var(--ws-border)"}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: ".84rem", color: "var(--ws-text)" }}>{MONTHS[c.month - 1]} {c.year}</div>
-                        {c.notes && <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>{c.notes}</div>}
-                        {(c as any).payment_date && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 2 }}>📅 Pgto: {new Date((c as any).payment_date + "T12:00:00").toLocaleDateString("pt-BR")}</div>}
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)" }}>{fmt(c.total_final)}</div>
-                        {c.discount > 0 && <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>Desconto: {fmt(c.discount)}</div>}
-                        <div style={{ fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, marginTop: 4, color: (c as any).approved_at ? "#00a864" : "#b08800" }}>
-                          {(c as any).approved_at ? "💰 Aprovado" : "⏳ Aguardando"}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                );
+              });
+            })()}
           </div>
         )}
       </div>

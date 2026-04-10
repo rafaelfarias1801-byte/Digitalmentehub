@@ -90,6 +90,10 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   const [savingValue, setSavingValue]         = useState(false);
 
   const imgInputRef = useRef<HTMLInputElement>(null);
+  const replaceRefRef = useRef<HTMLInputElement>(null);
+  const dragRefImgIdx = useRef<number | null>(null);
+  const [dragOverRefImg, setDragOverRefImg] = useState<number | null>(null);
+  const [replacingRefImg, setReplacingRefImg] = useState<number | null>(null);
   const R2 = "https://pub-5b6c395d6be84c3db8047e03bbb34bf0.r2.dev";
 
   useEffect(() => {
@@ -573,43 +577,196 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
           {loadingWorkspace ? <Loader /> : (
             <>
               {activeSubTab === "briefings" && (
-                briefings.length === 0 ? <Empty label="Nenhum briefing para este cliente ainda." /> : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {briefings.map(b => {
-                      const cfg = STATUS_CFG[b.status];
-                      return (
-                        <div key={b.id} onClick={() => setDetailBriefing(b)}
-                          style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color .15s" }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = activeCase.color}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = "var(--ws-border)"}
-                        >
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 4 }}>{b.format}</div>
-                            <DeadlineBadge deadline={b.deadline} />
-                            <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 3 }}>
-                              Criado: {new Date(b.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                detailBriefing ? (
+                  /* Inline detail view — no modal */
+                  <div>
+                    <button onClick={() => setDetailBriefing(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".78rem", fontFamily: "Poppins", padding: "0 0 16px 0", display: "flex", alignItems: "center", gap: 6 }}>← Voltar aos briefings</button>
+
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div>
+                          <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{detailBriefing.format}</div>
+                          <DeadlineBadge deadline={detailBriefing.deadline} />
+                        </div>
+                        {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
+                          <div style={{ background: cfg.bg, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                            <div style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.dot }} />{cfg.label}
+                          </div>
+                        ); })()}
+                      </div>
+                      {!readonly && (
+                        <button onClick={() => { setEditingBriefing(detailBriefing); setEditBriefingForm({ format: detailBriefing.format, reference_text: detailBriefing.reference_text ?? "", reference_links: (detailBriefing.reference_links ?? []).join("\n"), deadline: detailBriefing.deadline }); }}
+                          style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".72rem", padding: "5px 12px", fontFamily: "Poppins" }}>✎ Editar</button>
+                      )}
+                    </div>
+
+                    {detailBriefing.revision_note && detailBriefing.status === "revisao" && (
+                      <div style={{ background: "rgba(255,107,53,0.10)", border: "1px solid rgba(255,107,53,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: "1rem" }}>↩</span>
+                        <div>
+                          <div style={{ fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 }}>Revisão solicitada</div>
+                          <div style={{ fontSize: ".82rem", color: "#ff6b35" }}>{detailBriefing.revision_note}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {detailBriefing.reference_text && <BSection label="Briefing / Referência"><p style={{ margin: 0, fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6 }}>{detailBriefing.reference_text}</p></BSection>}
+
+                    {detailBriefing.reference_links?.length > 0 && (
+                      <BSection label="Links de referência">
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {detailBriefing.reference_links.map((link, li) => (
+                            <a key={li} href={link} target="_blank" rel="noreferrer" style={{ fontSize: ".78rem", color: activeCase.color, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</a>
+                          ))}
+                        </div>
+                      </BSection>
+                    )}
+
+                    <BSection label="Imagens de referência">
+                      {(detailBriefing.reference_images?.length ?? 0) > 0 && (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                          {detailBriefing.reference_images.map((url, i) => (
+                            <div key={i}
+                              draggable={!readonly}
+                              onDragStart={() => { dragRefImgIdx.current = i; }}
+                              onDragOver={e => { e.preventDefault(); setDragOverRefImg(i); }}
+                              onDragLeave={() => setDragOverRefImg(null)}
+                              onDrop={async e => {
+                                e.preventDefault();
+                                setDragOverRefImg(null);
+                                const from = dragRefImgIdx.current;
+                                dragRefImgIdx.current = null;
+                                if (from === null || from === i) return;
+                                const imgs = [...detailBriefing.reference_images];
+                                const [moved] = imgs.splice(from, 1);
+                                imgs.splice(i, 0, moved);
+                                const { data } = await supabase.from("briefings").update({ reference_images: imgs }).eq("id", detailBriefing.id).select().single();
+                                if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                              }}
+                              style={{ position: "relative", opacity: dragOverRefImg === i ? 0.5 : 1, transition: "opacity .15s" }}>
+                              <img src={url} alt="" style={{ width: 80, height: 80, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
+                              <div style={{ position: "absolute", bottom: 3, right: 3, background: "rgba(0,0,0,.55)", borderRadius: 3, fontSize: ".5rem", color: "#fff", padding: "1px 4px", fontFamily: "Poppins" }}>{i + 1}</div>
+                              <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
+                                style={{ position: "absolute", top: 3, left: 3, background: "rgba(0,0,0,.6)", border: "none", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", cursor: "pointer" }}>↓</button>
+                              {!readonly && (
+                                <button onClick={() => { setReplacingRefImg(i); replaceRefRef.current?.click(); }}
+                                  style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,100,220,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".6rem", padding: "2px 5px" }}>↺</button>
+                              )}
+                              {!readonly && (
+                                <button onClick={async () => {
+                                  const newImgs = detailBriefing.reference_images.filter((_, idx) => idx !== i);
+                                  const { data } = await supabase.from("briefings").update({ reference_images: newImgs }).eq("id", detailBriefing.id).select().single();
+                                  if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                                }} style={{ position: "absolute", top: 3, right: 3, background: "rgba(220,50,50,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".65rem", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                              )}
                             </div>
-                            {b.reference_links?.length > 0 && (
-                              <div style={{ marginTop: 5, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                {b.reference_links.map((link, i) => (
-                                  <a key={i} href={link} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                                    style={{ fontSize: ".62rem", color: activeCase.color, background: `${activeCase.color}15`, borderRadius: 4, padding: "2px 7px", textDecoration: "none", fontFamily: "Poppins", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }}>
-                                    ↗ {link.replace(/^https?:\/\//, "").slice(0, 30)}
-                                  </a>
-                                ))}
+                          ))}
+                        </div>
+                      )}
+                      {!readonly && (
+                        <>
+                          <input ref={replaceRefRef} type="file" accept="image/*" style={{ display: "none" }}
+                            onChange={async e => {
+                              const file = e.target.files?.[0];
+                              if (!file || replacingRefImg === null) return;
+                              e.target.value = "";
+                              const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+                              const filename = `briefings/${detailBriefing.id}/ref_${Date.now()}.${ext}`;
+                              const { data: urlData } = await supabase.functions.invoke("get-r2-upload-url", { body: { filename, contentType: file.type } });
+                              if (!urlData?.signedUrl) return;
+                              await fetch(urlData.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+                              const newUrl = `${R2}/${filename}`;
+                              const newImgs = [...(detailBriefing.reference_images ?? [])];
+                              newImgs[replacingRefImg] = newUrl;
+                              const { data } = await supabase.from("briefings").update({ reference_images: newImgs }).eq("id", detailBriefing.id).select().single();
+                              if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
+                              setReplacingRefImg(null);
+                            }}
+                          />
+                          <DetailImgUpload caseData={activeCase} briefing={detailBriefing} r2base={R2}
+                            onUploaded={newUrls => {
+                              const updated = { ...detailBriefing, reference_images: [...(detailBriefing.reference_images ?? []), ...newUrls] };
+                              setDetailBriefing(updated); setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b));
+                            }}
+                          />
+                        </>
+                      )}
+                    </BSection>
+
+                    {/* Arte entregue */}
+                    {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
+                      <BSection label="Arte entregue">
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {detailBriefing.delivery_urls!.map((url, i) => (
+                            <div key={i} style={{ position: "relative" }}>
+                              <img src={url} alt="" onClick={() => setPreviewImg(url)} style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44`, display: "block", cursor: "pointer" }} />
+                              <button onClick={e => { e.stopPropagation(); void downloadFile(url); }}
+                                style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", cursor: "pointer", fontFamily: "Poppins" }}>↓</button>
+                            </div>
+                          ))}
+                        </div>
+                      </BSection>
+                    )}
+
+                    {detailBriefing.designer_value > 0 && (
+                      <BSection label="Valor cobrado pelo designer">
+                        <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: "1rem", color: "var(--ws-text)" }}>
+                          R$ {detailBriefing.designer_value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        </div>
+                      </BSection>
+                    )}
+
+                    {!readonly && (
+                      <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 16, marginTop: 8 }}>
+                        <div style={{ fontSize: ".65rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>Ações</div>
+                        <textarea className="ws-input" rows={2} placeholder="Descreva o que precisa ser alterado (para solicitar revisão)..." value={revisionText} onChange={e => setRevisionText(e.target.value)} style={{ resize: "vertical", marginBottom: 10 }} />
+                        <div style={{ display: "flex", gap: 10 }}>
+                          <button className="ws-btn" onClick={() => void approveBriefing(detailBriefing)} style={{ flex: 1, background: "#00a864" }} disabled={detailBriefing.status !== "entregue"}>✓ Aprovar arte</button>
+                          <button className="ws-btn-ghost" onClick={() => void requestRevision(detailBriefing)} disabled={!revisionText.trim()} style={{ flex: 1 }}>↩ Solicitar alteração</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  briefings.length === 0 ? <Empty label="Nenhum briefing para este cliente ainda." /> : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {briefings.map(b => {
+                        const cfg = STATUS_CFG[b.status];
+                        return (
+                          <div key={b.id} onClick={() => { setDetailBriefing(b); setRevisionText(""); }}
+                            style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "border-color .15s" }}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = activeCase.color}
+                            onMouseLeave={e => e.currentTarget.style.borderColor = "var(--ws-border)"}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--ws-text)", marginBottom: 4 }}>{b.format}</div>
+                              <DeadlineBadge deadline={b.deadline} />
+                              <div style={{ fontSize: ".68rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 3 }}>
+                                Criado: {new Date(b.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                               </div>
+                              {b.reference_links?.length > 0 && (
+                                <div style={{ marginTop: 5, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                  {b.reference_links.map((link, li) => (
+                                    <a key={li} href={link} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                                      style={{ fontSize: ".62rem", color: activeCase.color, background: `${activeCase.color}15`, borderRadius: 4, padding: "2px 7px", textDecoration: "none", fontFamily: "Poppins", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }}>
+                                      ↗ {link.replace(/^https?:\/\//, "").slice(0, 30)}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ background: cfg.bg, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot }} />{cfg.label}
+                            </div>
+                            {!readonly && (
+                              <button onClick={e => { e.stopPropagation(); void deleteBriefing(b.id); }} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.1rem", padding: "0 4px", flexShrink: 0 }}>×</button>
                             )}
                           </div>
-                          <div style={{ background: cfg.bg, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot }} />{cfg.label}
-                          </div>
-                          {!readonly && (
-                            <button onClick={e => { e.stopPropagation(); void deleteBriefing(b.id); }} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.1rem", padding: "0 4px", flexShrink: 0 }}>×</button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )
                 )
               )}
 
@@ -776,126 +933,6 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
           </div>
         </div>
       )}
-
-      {/* MODAL — Detalhe Briefing */}
-      {detailBriefing && (
-        <div style={getOverlayStyle(isMobile)} onClick={e => e.target === e.currentTarget && setDetailBriefing(null)}>
-          <div style={{ ...modalBoxStyle, maxWidth: 560, width: "100%", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
-            {/* Header fixo com X */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--ws-border)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
-                <div>
-                  <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{detailBriefing.format}</div>
-                  <DeadlineBadge deadline={detailBriefing.deadline} />
-                </div>
-                {(() => { const cfg = STATUS_CFG[detailBriefing.status]; return (
-                  <div style={{ background: cfg.bg, color: cfg.color, borderRadius: 20, padding: "4px 10px", fontSize: ".65rem", fontFamily: "Poppins", fontWeight: 700, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.dot }} />{cfg.label}
-                  </div>
-                ); })()}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                {!readonly && (
-                  <button onClick={() => { setEditingBriefing(detailBriefing); setEditBriefingForm({ format: detailBriefing.format, reference_text: detailBriefing.reference_text ?? "", reference_links: (detailBriefing.reference_links ?? []).join("\n"), deadline: detailBriefing.deadline }); }}
-                    style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", fontSize: ".72rem", padding: "5px 12px", fontFamily: "Poppins" }}>✎ Editar</button>
-                )}
-                <button onClick={() => setDetailBriefing(null)} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.3rem", lineHeight: 1, padding: "2px 4px" }}>×</button>
-              </div>
-            </div>
-            {/* Corpo com scroll */}
-            <div style={{ overflowY: "auto", flex: 1, padding: "16px 20px" }}>
-            {detailBriefing.revision_note && detailBriefing.status === "revisao" && (
-              <div style={{ background: "rgba(255,107,53,0.10)", border: "1px solid rgba(255,107,53,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: "1rem" }}>↩</span>
-                <div>
-                  <div style={{ fontSize: ".65rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 }}>Revisão solicitada</div>
-                  <div style={{ fontSize: ".82rem", color: "#ff6b35" }}>{detailBriefing.revision_note}</div>
-                </div>
-              </div>
-            )}
-
-            {detailBriefing.reference_text && <BSection label="Briefing / Referência"><p style={{ margin: 0, fontSize: ".82rem", color: "var(--ws-text2)", lineHeight: 1.6 }}>{detailBriefing.reference_text}</p></BSection>}
-
-            {detailBriefing.reference_links?.length > 0 && (
-              <BSection label="Links de referência">
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {detailBriefing.reference_links.map((link, i) => (
-                    <a key={i} href={link} target="_blank" rel="noreferrer" style={{ fontSize: ".78rem", color: activeCase.color, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</a>
-                  ))}
-                </div>
-              </BSection>
-            )}
-
-            <BSection label="Imagens de referência">
-              {(detailBriefing.reference_images?.length ?? 0) > 0 && (
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-                  {detailBriefing.reference_images.map((url, i) => (
-                    <div key={i} style={{ position: "relative" }}>
-                      <img src={url} alt="" style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1px solid var(--ws-border)", display: "block" }} />
-                      {/* Admin: baixar */}
-                      <button onClick={e => { e.preventDefault(); void downloadFile(url); }}
-                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.6)", border: "none", borderRadius: 4, padding: "2px 5px", fontSize: ".55rem", color: "#fff", cursor: "pointer" }}>↓</button>
-                      {/* Admin: remover */}
-                      {!readonly && (
-                        <button onClick={async () => {
-                          const newImgs = detailBriefing.reference_images.filter((_, idx) => idx !== i);
-                          const { data } = await supabase.from("briefings").update({ reference_images: newImgs }).eq("id", detailBriefing.id).select().single();
-                          if (data) { setDetailBriefing(data); setBriefings(prev => prev.map(b => b.id === data.id ? data : b)); }
-                        }} style={{ position: "absolute", top: 3, right: 3, background: "rgba(220,50,50,.8)", border: "none", borderRadius: 4, color: "#fff", cursor: "pointer", fontSize: ".65rem", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {!readonly && (
-                <DetailImgUpload caseData={activeCase} briefing={detailBriefing} r2base={R2}
-                  onUploaded={newUrls => {
-                    const updated = { ...detailBriefing, reference_images: [...(detailBriefing.reference_images ?? []), ...newUrls] };
-                    setDetailBriefing(updated); setBriefings(prev => prev.map(b => b.id === updated.id ? updated : b));
-                  }}
-                />
-              )}
-            </BSection>
-
-            {/* Arte entregue — admin só baixa */}
-            {(detailBriefing.delivery_urls?.length ?? 0) > 0 && (
-              <BSection label="Arte entregue">
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {detailBriefing.delivery_urls!.map((url, i) => (
-                    <div key={i} style={{ position: "relative" }}>
-                      <img src={url} alt="" onClick={() => setPreviewImg(url)} style={{ width: 100, height: 100, borderRadius: 8, objectFit: "cover", border: `1px solid ${activeCase.color}44`, display: "block", cursor: "pointer" }} />
-                      <button onClick={e => { e.stopPropagation(); void downloadFile(url); }}
-                        style={{ position: "absolute", bottom: 3, left: 3, background: "rgba(0,0,0,.65)", border: "none", borderRadius: 4, padding: "2px 7px", fontSize: ".6rem", color: "#fff", cursor: "pointer", fontFamily: "Poppins" }}>↓</button>
-                    </div>
-                  ))}
-                </div>
-              </BSection>
-            )}
-
-            {/* Valor cobrado — admin só lê */}
-            {detailBriefing.designer_value > 0 && (
-              <BSection label="Valor cobrado pelo designer">
-                <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: "1rem", color: "var(--ws-text)" }}>
-                  R$ {detailBriefing.designer_value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                </div>
-              </BSection>
-            )}
-
-            {!readonly && (
-              <div style={{ borderTop: "1px solid var(--ws-border)", paddingTop: 16, marginTop: 8 }}>
-                <div style={{ fontSize: ".65rem", fontFamily: "Poppins", color: "var(--ws-text3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>Ações</div>
-                <textarea className="ws-input" rows={2} placeholder="Descreva o que precisa ser alterado (para solicitar revisão)..." value={revisionText} onChange={e => setRevisionText(e.target.value)} style={{ resize: "vertical", marginBottom: 10 }} />
-                <div style={{ display: "flex", gap: 10 }}>
-                  <button className="ws-btn" onClick={() => void approveBriefing(detailBriefing)} style={{ flex: 1, background: "#00a864" }} disabled={detailBriefing.status !== "entregue"}>✓ Aprovar arte</button>
-                  <button className="ws-btn-ghost" onClick={() => void requestRevision(detailBriefing)} disabled={!revisionText.trim()} style={{ flex: 1 }}>↩ Solicitar alteração</button>
-                </div>
-              </div>
-            )}
-            </div>{/* fim scroll body */}
-          </div>
-        </div>
-      )}
-
 
       {/* MODAL — Preview de imagem */}
       {previewImg && (
