@@ -90,6 +90,7 @@ export default function IA({ profile }: Props) {
   // ── Deletar conversa ────────────────────────────────────────────
   async function deleteConversation(id: string, e: React.MouseEvent) {
     e.stopPropagation();
+    if (!window.confirm("Deseja excluir esta conversa?")) return;
     setConversations(prev => prev.filter(c => c.id !== id));
     if (activeId === id) newConversation();
     await supabase.from("ia_conversations").delete().eq("id", id);
@@ -233,14 +234,14 @@ export default function IA({ profile }: Props) {
                       {fmtDate(conv.updated_at)}
                     </div>
                   </div>
-                  <button onClick={e => void deleteConversation(conv.id, e)} style={{
+                  <button onClick={e => void deleteConversation(conv.id, e)} title="Excluir conversa" style={{
                     background: "none", border: "none", color: "var(--ws-text3)",
-                    cursor: "pointer", fontSize: ".8rem", flexShrink: 0, lineHeight: 1,
-                    opacity: 0, transition: "opacity .15s",
+                    cursor: "pointer", fontSize: ".85rem", flexShrink: 0, lineHeight: 1,
+                    opacity: 0.45, transition: "opacity .15s, color .15s", padding: "2px 4px",
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "var(--ws-accent)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity = "0"; }}
-                  >×</button>
+                    onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "#d63232"; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = "0.45"; e.currentTarget.style.color = "var(--ws-text3)"; }}
+                  >🗑</button>
                 </div>
               ))}
             </div>
