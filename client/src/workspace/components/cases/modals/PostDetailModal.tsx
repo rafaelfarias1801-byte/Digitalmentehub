@@ -339,6 +339,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           overflowY: isMobile ? "auto" : undefined,
           overscrollBehavior: isMobile ? "contain" : undefined,
           WebkitOverflowScrolling: "touch",
+          paddingBottom: isMobile && profile.role === "admin" ? 70 : undefined,
         } as React.CSSProperties}>
         {/* ── Coluna principal ── */}
         <div style={{ padding: "20px 18px", boxSizing: "border-box", borderRight: isMobile ? "none" : "1px solid var(--ws-border)", display: isMobile && sidebarVisible ? "none" : "block", minWidth: 0, width: "100%" }}>
