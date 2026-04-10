@@ -73,6 +73,8 @@ function Router() {
         <Route path="/workspace/:p1" component={WorkspaceApp} />
         <Route path="/workspace/:p1/:p2" component={WorkspaceApp} />
         <Route path="/workspace/:p1/:p2/:p3" component={WorkspaceApp} />
+        <Route path="/workspace/:p1/:p2/:p3/:p4" component={WorkspaceApp} />
+        <Route path="/workspace/:p1/:p2/:p3/:p4/:p5" component={WorkspaceApp} />
         <Route path="/analise-perfil" component={AnalisePerfilLanding} />
         <Route component={NotFound} />
       </Switch>
