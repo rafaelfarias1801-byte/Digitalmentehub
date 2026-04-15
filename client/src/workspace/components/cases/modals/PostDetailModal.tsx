@@ -891,8 +891,20 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             )}
             {/* Admin vê o motivo mas não edita */}
             {!readonly && currentPost.rejection_reason && (
-              <div style={{ marginTop: 8, background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5 }}>
-                <b style={{ color: "var(--ws-text)" }}>Motivo do cliente:</b> {currentPost.rejection_reason}
+              <div style={{
+                marginTop: 8,
+                border: `2px solid ${currentPost.approval_status === "reprovado" ? "#ef4444" : "#f59e0b"}`,
+                background: currentPost.approval_status === "reprovado" ? "rgba(239,68,68,0.07)" : "rgba(245,158,11,0.07)",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: ".78rem",
+                color: "var(--ws-text2)",
+                lineHeight: 1.5,
+              }}>
+                <b style={{ color: currentPost.approval_status === "reprovado" ? "#ef4444" : "#f59e0b" }}>
+                  {currentPost.approval_status === "reprovado" ? "✕ Motivo da reprovação:" : "⚠ Alteração solicitada:"}
+                </b>{" "}
+                {currentPost.rejection_reason}
                 {currentPost.rejection_reason_at && (
                   <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
                     {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}

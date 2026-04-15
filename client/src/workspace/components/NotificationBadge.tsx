@@ -151,7 +151,14 @@ export default function NotificationBadge({ profile }: Props) {
       })
       .subscribe();
 
-    return () => { void supabase.removeChannel(channel); };
+    // Polling de fallback — garante que novas notificações apareçam mesmo se
+    // o Realtime não estiver habilitado na tabela admin_notifications
+    const pollInterval = setInterval(() => { void load(); }, 20000);
+
+    return () => {
+      void supabase.removeChannel(channel);
+      clearInterval(pollInterval);
+    };
   }, [profile.id]);
 
   async function load() {
