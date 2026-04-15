@@ -44,8 +44,9 @@ export default function TikTokCallback() {
         setMessage(`TikTok conectado com sucesso: ${username}`);
 
         // Redireciona para o workspace do cliente após 2s
+        // ?editTikTok=1 faz o CaseWorkspace abrir o modal de edição automaticamente
         setTimeout(() => {
-          setLocation(`/workspace/clientes/${state}`);
+          window.location.href = `/workspace/clientes/${state}?editTikTok=1`;
         }, 2000);
       } catch (e: any) {
         setStatus("error");

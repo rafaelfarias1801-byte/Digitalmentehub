@@ -64,6 +64,19 @@ export default function CaseWorkspace({
     }
   }, [initialTab]);
 
+  // Auto-abre modal de edição se vier do callback OAuth do TikTok
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("editTikTok") === "1") {
+      // Remove o param da URL sem recarregar
+      const url = new URL(window.location.href);
+      url.searchParams.delete("editTikTok");
+      window.history.replaceState({}, "", url.toString());
+      // Abre o modal de edição
+      setTimeout(() => onEdit(), 300);
+    }
+  }, []);
+
   // Gatilho para abrir post da dashboard
   useEffect(() => {
     if (initialPostId) {
