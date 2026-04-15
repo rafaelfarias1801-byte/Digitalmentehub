@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
 import { APPROVAL_STYLES, LABEL_COLORS } from "../constants";
@@ -734,28 +735,28 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             )}
           </div>
 
-          {/* ── Lightbox fullscreen ── */}
-          {fullscreenSlide && (
+          {/* ── Lightbox fullscreen — renderizado via portal no document.body
+                para sair de qualquer stacking context do modal ── */}
+          {fullscreenSlide && createPortal(
             <div onClick={() => setFullscreenSlide(false)} style={{
-              position: "fixed", inset: 0, zIndex: 9999,
+              position: "fixed", inset: 0, zIndex: 99999,
               background: "#000",
               display: "flex", alignItems: "center", justifyContent: "center",
-              // Garante altura total no mobile (exclui barra do browser)
-              height: "100dvh",
+              width: "100vw", height: "100dvh",
             }}>
-              {/* Botão X — visível em mobile e desktop, com safe-area para notch iOS */}
+              {/* Botão X — sempre visível, com safe-area para notch/Dynamic Island */}
               <button
                 onClick={e => { e.stopPropagation(); setFullscreenSlide(false); }}
                 style={{
-                  position: "fixed",
-                  top: "calc(16px + env(safe-area-inset-top, 0px))",
+                  position: "absolute",
+                  top: "calc(20px + env(safe-area-inset-top, 0px))",
                   right: "calc(16px + env(safe-area-inset-right, 0px))",
-                  zIndex: 10001,
-                  background: "rgba(0,0,0,.55)",
-                  border: "2px solid rgba(255,255,255,.35)",
+                  zIndex: 1,
+                  background: "rgba(0,0,0,.60)",
+                  border: "2px solid rgba(255,255,255,.4)",
                   borderRadius: "50%",
-                  width: 48, height: 48,
-                  color: "#fff", fontSize: "1.5rem",
+                  width: 52, height: 52,
+                  color: "#fff", fontSize: "1.6rem",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: "pointer",
                   WebkitTapHighlightColor: "transparent",
@@ -767,38 +768,51 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {allSlides.length > 1 && (
                 <>
                   <button onClick={e => { e.stopPropagation(); prevSlide(); }} disabled={slideIdx === 0} style={{
-                    position: "fixed", left: 12, top: "50%", transform: "translateY(-50%)",
+                    position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
                     background: slideIdx === 0 ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.2)",
-                    border: "none", borderRadius: "50%", width: 48, height: 48,
+                    border: "none", borderRadius: "50%", width: 52, height: 52,
                     color: "#fff", cursor: slideIdx === 0 ? "default" : "pointer",
-                    fontSize: "1.4rem", display: "flex", alignItems: "center", justifyContent: "center",
-                    zIndex: 10000, touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
+                    fontSize: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 1, touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
                   }}>‹</button>
                   <button onClick={e => { e.stopPropagation(); nextSlide(); }} disabled={slideIdx === allSlides.length - 1} style={{
-                    position: "fixed", right: 12, top: "50%", transform: "translateY(-50%)",
+                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
                     background: slideIdx === allSlides.length - 1 ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.2)",
-                    border: "none", borderRadius: "50%", width: 48, height: 48,
+                    border: "none", borderRadius: "50%", width: 52, height: 52,
                     color: "#fff", cursor: slideIdx === allSlides.length - 1 ? "default" : "pointer",
-                    fontSize: "1.4rem", display: "flex", alignItems: "center", justifyContent: "center",
-                    zIndex: 10000, touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
+                    fontSize: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 1, touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
                   }}>›</button>
                   <div style={{
-                    position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)",
-                    background: "rgba(255,255,255,.15)", borderRadius: 20, padding: "4px 12px",
-                    color: "#fff", fontSize: ".7rem", fontFamily: "Poppins", zIndex: 10000,
+                    position: "absolute",
+                    bottom: "calc(20px + env(safe-area-inset-bottom, 0px))",
+                    left: "50%", transform: "translateX(-50%)",
+                    background: "rgba(255,255,255,.15)", borderRadius: 20, padding: "4px 14px",
+                    color: "#fff", fontSize: ".7rem", fontFamily: "Poppins", zIndex: 1,
                   }}>{slideIdx + 1} / {allSlides.length}</div>
                 </>
               )}
 
-              {/* Mídia */}
+              {/* Mídia — ocupa o máximo possível sem ultrapassar a tela */}
               {isVideoFile(activeSlideUrl) ? (
-                <video src={activeSlideUrl} controls onClick={e => e.stopPropagation()}
-                  style={{ maxWidth: "100vw", maxHeight: "100dvh", objectFit: "contain" }} />
+                <video
+                  src={activeSlideUrl}
+                  controls
+                  autoPlay
+                  playsInline
+                  onClick={e => e.stopPropagation()}
+                  style={{ maxWidth: "100vw", maxHeight: "100dvh", width: "100vw", objectFit: "contain" }}
+                />
               ) : (
-                <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`} onClick={e => e.stopPropagation()}
-                  style={{ maxWidth: "100vw", maxHeight: "100dvh", objectFit: "contain" }} />
+                <img
+                  src={activeSlideUrl}
+                  alt={`Slide ${slideIdx + 1}`}
+                  onClick={e => e.stopPropagation()}
+                  style={{ maxWidth: "100vw", maxHeight: "100dvh", width: "100vw", objectFit: "contain" }}
+                />
               )}
-            </div>
+            </div>,
+            document.body
           )}
 
           {/* ── Status de aprovação ── */}
