@@ -1,5 +1,6 @@
 // client/src/workspace/components/NotificationBadge.tsx
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 
@@ -13,6 +14,9 @@ interface AdminNotification {
   target_user_id?: string | null;
   target_role?: string | null;
   source?: "designer" | "cliente" | null;
+  // Navigation fields — stored in DB when notification is fired
+  case_id?: string | null;
+  post_id?: string | null;
 }
 
 // Tipos originados de ações do designer (mostram com cor roxa para admin)
@@ -51,6 +55,18 @@ export default function NotificationBadge({ profile }: Props) {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [, setLocation] = useLocation();
+
+  // Navigate to the resource the notification is about, then mark as read
+  function handleNotifClick(n: AdminNotification) {
+    void markRead(n.id);
+    setOpen(false);
+    if (n.case_id && n.post_id) {
+      setLocation(`/workspace/clientes/${n.case_id}/conteudo/post/${n.post_id}`);
+    } else if (n.case_id) {
+      setLocation(`/workspace/clientes/${n.case_id}/conteudo`);
+    }
+  }
 
   const unread = notifications.filter(n => !n.read).length;
   // Cor do sino baseada no tipo da notificação não lida mais recente
@@ -206,10 +222,11 @@ export default function NotificationBadge({ profile }: Props) {
             ) : (
               notifications.map(n => {
                 const style = getNotifStyle(n);
+                const isNavigable = !!(n.case_id || n.post_id);
                 return (
                 <div
                   key={n.id}
-                  onClick={() => void markRead(n.id)}
+                  onClick={() => handleNotifClick(n)}
                   style={{
                     padding: "12px 16px",
                     borderBottom: "1px solid var(--ws-border)",
@@ -236,8 +253,13 @@ export default function NotificationBadge({ profile }: Props) {
                       {(n.source === "designer" || DESIGNER_TYPES.has(n.type)) ? "🎨 Designer" : "👤 Cliente"}
                     </div>
                   </div>
-                  <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins", flexShrink: 0, marginTop: 2 }}>
-                    {fmtTime(n.created_at)}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                    <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
+                      {fmtTime(n.created_at)}
+                    </div>
+                    {isNavigable && (
+                      <div style={{ fontSize: ".6rem", color: style.color, fontFamily: "Poppins", fontWeight: 700 }}>↗ Ver</div>
+                    )}
                   </div>
                 </div>
                 );

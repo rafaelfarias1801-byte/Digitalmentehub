@@ -437,6 +437,21 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     }
   }
 
+  // ── Quando um post está selecionado, mostra APENAS o detalhe (sem lista) ──
+  if (selected) {
+    return (
+      <PostDetailModal
+        post={selected}
+        caseData={caseData}
+        onClose={closePost}
+        onUpdate={updatePost}
+        profile={profile}
+        readonly={readonly}
+        inline
+      />
+    );
+  }
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -719,9 +734,6 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
         </div>
       )}
 
-      {selected && (
-        <PostDetailModal post={selected} caseData={caseData} onClose={closePost} onUpdate={updatePost} profile={profile} readonly={readonly} inline />
-      )}
     </div>
   );
 }

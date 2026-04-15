@@ -130,12 +130,13 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     if (profile.role === "cliente") {
       const postTitle = currentPost.slug || currentPost.title || "Post";
       const caseName = caseData.name;
+      const postMeta = { case_name: caseName, post_title: postTitle, case_id: caseData.id, post_id: currentPost.id, source: "cliente" as const };
       if (status === "aprovado") {
-        void notifyAdmins({ type: "cliente_aprovacao", title: `✅ ${caseName} aprovou um post`, body: `"${postTitle}" foi aprovado.`, case_name: caseName, post_title: postTitle } as any);
+        void notifyAdmins({ type: "cliente_aprovacao", title: `✅ ${caseName} aprovou um post`, body: `"${postTitle}" foi aprovado. Acesse o Workspace.`, ...postMeta } as any);
       } else if (status === "reprovado") {
-        void notifyAdmins({ type: "cliente_reprovacao", title: `❌ ${caseName} reprovou um post`, body: `"${postTitle}" foi reprovado.`, case_name: caseName, post_title: postTitle } as any);
+        void notifyAdmins({ type: "cliente_reprovacao", title: `❌ ${caseName} reprovou um post`, body: `"${postTitle}" foi reprovado.`, ...postMeta } as any);
       } else if (status === "alteracao") {
-        void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}" precisa de ajustes.`, case_name: caseName, post_title: postTitle } as any);
+        void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}" precisa de ajustes.`, ...postMeta } as any);
       }
     }
     setSaving(false);
@@ -156,9 +157,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
       const postTitle = currentPost.slug || currentPost.title || "Post";
       const caseName = caseData.name;
       if (status === "reprovado") {
-        void notifyAdmins({ type: "cliente_reprovacao", title: `❌ ${caseName} reprovou um post`, body: `"${postTitle}" foi reprovado: ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason } as any);
+        void notifyAdmins({ type: "cliente_reprovacao", title: `❌ ${caseName} reprovou um post`, body: `"${postTitle}" foi reprovado: ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason, case_id: caseData.id, post_id: currentPost.id, source: "cliente" } as any);
       } else if (status === "alteracao") {
-        void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}": ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason } as any);
+        void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}": ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason, case_id: caseData.id, post_id: currentPost.id, source: "cliente" } as any);
       }
     }
     setSaving(false);
@@ -187,7 +188,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     // Notifica admin quando cliente comenta
     if (profile.role === "cliente") {
       const postTitle = currentPost.slug || currentPost.title || "Post";
-      void notifyAdmins({ type: "cliente_comentario_post", title: `💬 ${caseData.name} comentou em um post`, body: `"${postTitle}": ${newComment.trim().slice(0, 80)}`, case_name: caseData.name, post_title: postTitle, comment: newComment.trim() } as any);
+      void notifyAdmins({ type: "cliente_comentario_post", title: `💬 ${caseData.name} comentou em um post`, body: `"${postTitle}": ${newComment.trim().slice(0, 80)}`, case_name: caseData.name, post_title: postTitle, comment: newComment.trim(), case_id: caseData.id, post_id: currentPost.id, source: "cliente" as const } as any);
     }
     setNewComment("");
   }
@@ -357,8 +358,23 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         flexDirection: "column",
         ...((!inline && isMobile) ? { position: "fixed", bottom: 0, left: 0, right: 0, top: 0, margin: 0 } : {}),
       }}>
+        {/* Inline mode: sticky back bar */}
+        {inline && (
+          <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "10px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".78rem", fontFamily: "Poppins", padding: 0, display: "flex", alignItems: "center", gap: 5 }}>
+              ← Voltar
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: ".85rem", color: "var(--ws-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {currentPost.slug || currentPost.title || "Post"}
+              </div>
+            </div>
+            <button onClick={onClose} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border)", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ws-text3)", fontSize: "1rem", lineHeight: 1, flexShrink: 0 }}>×</button>
+          </div>
+        )}
+
         {/* Mobile: tabs para admin / info de tipo+plataforma para cliente */}
-        {isMobile && (
+        {isMobile && !inline && (
           readonly ? (
             /* Cliente: mostra tipo e plataformas no topo + botão fechar fixo */
             <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
