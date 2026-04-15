@@ -740,15 +740,28 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               position: "fixed", inset: 0, zIndex: 9999,
               background: "#000",
               display: "flex", alignItems: "center", justifyContent: "center",
+              // Garante altura total no mobile (exclui barra do browser)
+              height: "100dvh",
             }}>
-              {/* Botão X fixo no topo */}
-              <button onClick={() => setFullscreenSlide(false)} style={{
-                position: "fixed", top: 16, right: 16, zIndex: 10000,
-                background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%",
-                width: 40, height: 40, color: "#fff", fontSize: "1.2rem",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer",
-              }}>×</button>
+              {/* Botão X — visível em mobile e desktop, com safe-area para notch iOS */}
+              <button
+                onClick={e => { e.stopPropagation(); setFullscreenSlide(false); }}
+                style={{
+                  position: "fixed",
+                  top: "calc(16px + env(safe-area-inset-top, 0px))",
+                  right: "calc(16px + env(safe-area-inset-right, 0px))",
+                  zIndex: 10001,
+                  background: "rgba(0,0,0,.55)",
+                  border: "2px solid rgba(255,255,255,.35)",
+                  borderRadius: "50%",
+                  width: 48, height: 48,
+                  color: "#fff", fontSize: "1.5rem",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
+                  touchAction: "manipulation",
+                  lineHeight: 1,
+                }}>×</button>
 
               {/* Setas navegação no fullscreen */}
               {allSlides.length > 1 && (
@@ -756,21 +769,21 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   <button onClick={e => { e.stopPropagation(); prevSlide(); }} disabled={slideIdx === 0} style={{
                     position: "fixed", left: 12, top: "50%", transform: "translateY(-50%)",
                     background: slideIdx === 0 ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.2)",
-                    border: "none", borderRadius: "50%", width: 44, height: 44,
+                    border: "none", borderRadius: "50%", width: 48, height: 48,
                     color: "#fff", cursor: slideIdx === 0 ? "default" : "pointer",
-                    fontSize: "1.3rem", display: "flex", alignItems: "center", justifyContent: "center",
-                    zIndex: 10000,
+                    fontSize: "1.4rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 10000, touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
                   }}>‹</button>
                   <button onClick={e => { e.stopPropagation(); nextSlide(); }} disabled={slideIdx === allSlides.length - 1} style={{
                     position: "fixed", right: 12, top: "50%", transform: "translateY(-50%)",
                     background: slideIdx === allSlides.length - 1 ? "rgba(255,255,255,.1)" : "rgba(255,255,255,.2)",
-                    border: "none", borderRadius: "50%", width: 44, height: 44,
+                    border: "none", borderRadius: "50%", width: 48, height: 48,
                     color: "#fff", cursor: slideIdx === allSlides.length - 1 ? "default" : "pointer",
-                    fontSize: "1.3rem", display: "flex", alignItems: "center", justifyContent: "center",
-                    zIndex: 10000,
+                    fontSize: "1.4rem", display: "flex", alignItems: "center", justifyContent: "center",
+                    zIndex: 10000, touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
                   }}>›</button>
                   <div style={{
-                    position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
+                    position: "fixed", bottom: "calc(20px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)",
                     background: "rgba(255,255,255,.15)", borderRadius: 20, padding: "4px 12px",
                     color: "#fff", fontSize: ".7rem", fontFamily: "Poppins", zIndex: 10000,
                   }}>{slideIdx + 1} / {allSlides.length}</div>
@@ -780,10 +793,10 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {/* Mídia */}
               {isVideoFile(activeSlideUrl) ? (
                 <video src={activeSlideUrl} controls onClick={e => e.stopPropagation()}
-                  style={{ maxWidth: "100vw", maxHeight: "100vh", objectFit: "contain" }} />
+                  style={{ maxWidth: "100vw", maxHeight: "100dvh", objectFit: "contain" }} />
               ) : (
                 <img src={activeSlideUrl} alt={`Slide ${slideIdx + 1}`} onClick={e => e.stopPropagation()}
-                  style={{ maxWidth: "100vw", maxHeight: "100vh", objectFit: "contain" }} />
+                  style={{ maxWidth: "100vw", maxHeight: "100dvh", objectFit: "contain" }} />
               )}
             </div>
           )}
