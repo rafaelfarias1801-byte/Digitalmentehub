@@ -47,7 +47,10 @@ export interface Post {
   media_type: "feed" | "stories" | "reels" | "carousel";
   scheduled_date: string;
   scheduled_time?: string;
-  approval_status: "pendente" | "aprovado" | "reprovado" | "alteracao" | "agendado" | "postado";
+  approval_status: "pendente" | "aprovado" | "reprovado" | "alteracao" | "agendado" | "postado" | "pendente_alteracao";
+  rejection_reason?: string | null;
+  rejection_reason_at?: string | null;
+  status_changed_at?: string | null;
   extra_info?: string;
   media_urls?: string[];
   description?: string;

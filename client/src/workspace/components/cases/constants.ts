@@ -78,6 +78,11 @@ export const APPROVAL_STYLES: Record<
     color: "#3b82f6",
     label: "Postado",
   },
+  pendente_alteracao: {
+    bg: "rgba(16,185,129,0.13)",
+    color: "#10b981",
+    label: "Aguardando re-aprovação",
+  },
 };
 
 export const SUB_TABS = [

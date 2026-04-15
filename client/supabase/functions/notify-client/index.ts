@@ -92,6 +92,11 @@ function buildNotification(type: string, data: Record<string, any>): { title: st
         body: `Seu fechamento de ${MONTHS[(data.month ?? 1) - 1]}/${data.year} foi aprovado. Pagamento previsto para ${data.payment_date ?? "em breve"}.`,
       };
     // ── Conteúdo (cliente) ───────────────────────────────────
+    case "ajuste_concluido":
+      return {
+        title: `✅ ${data.case_name} — post revisado!`,
+        body: `${hi}os ajustes em "${data.post_title}" foram feitos. Acesse o Workspace Dig para revisar e aprovar.`,
+      };
     case "conteudo_pronto":
       return {
         title: `${data.case_name} — conteúdo pronto 🎉`,
@@ -132,7 +137,7 @@ function buildNotification(type: string, data: Record<string, any>): { title: st
 
 function buildUrl(type: string): string {
   const clientFinanceiro = ["cobranca_criada", "vencimento_aviso", "vencimento_atrasado", "pagamento_confirmado"];
-  const clientConteudo = ["conteudo_pronto"];
+  const clientConteudo = ["conteudo_pronto", "ajuste_concluido"];
   const designerTypes = ["briefing_criado", "briefing_revisao", "briefing_aprovado", "financeiro_aprovado"];
   if (clientFinanceiro.includes(type)) return "/workspace/cliente/financeiro";
   if (clientConteudo.includes(type)) return "/workspace/cliente/conteudo";

@@ -46,6 +46,18 @@ export async function notifyDesigner(params: {
   });
 }
 
+// ── Notifica o cliente de um case específico ─────────────────
+// Usa case_id para que o Edge Function encontre o cliente automaticamente
+export async function notifyClientByCase(params: {
+  case_id: string;
+  type: string;
+  title: string;
+  body: string;
+  [key: string]: any;
+}): Promise<void> {
+  await callNotify({ ...params, source: "admin" });
+}
+
 export async function notifyUser(params: {
   user_id: string;
   type: string;

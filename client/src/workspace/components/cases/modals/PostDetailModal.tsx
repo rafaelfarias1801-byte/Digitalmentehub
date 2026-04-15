@@ -8,7 +8,7 @@ import type { Case, CheckItem, Comment, Post } from "../types";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { decodeExtraUrls, stripMediaTag, encodeExtraUrls } from "../tabs/TabConteudo";
 import { useIsMobile } from "../../../hooks/useIsMobile";
-import { notifyAdmins } from "../../../utils/notifyPush";
+import { notifyAdmins, notifyClientByCase } from "../../../utils/notifyPush";
 
 // Componente interno para Informações extras
 function ExtraInfoSection({ extraInfo, readonly, color, onSave }: {
@@ -162,6 +162,28 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
         void notifyAdmins({ type: "cliente_alteracao", title: `⚠️ ${caseName} solicitou alteração`, body: `"${postTitle}": ${reason.slice(0, 80)}`, case_name: caseName, post_title: postTitle, reason, case_id: caseData.id, post_id: currentPost.id, source: "cliente" } as any);
       }
     }
+    setSaving(false);
+  }
+
+  // ── Enviar para nova aprovação (admin) ──────────────────────────
+  async function sendForReapproval() {
+    setSaving(true);
+    const postTitle = currentPost.slug || currentPost.title || "Post";
+    await save({
+      approval_status: "pendente_alteracao",
+      rejection_reason: null,
+      rejection_reason_at: null,
+      status_changed_at: new Date().toISOString(),
+    });
+    void notifyClientByCase({
+      type: "ajuste_concluido",
+      case_id: caseData.id,
+      case_name: caseData.name,
+      post_title: postTitle,
+      post_id: currentPost.id,
+      title: `✅ ${caseData.name} — post revisado!`,
+      body: `Os ajustes em "${postTitle}" foram feitos. Por favor, revise e aprove.`,
+    });
     setSaving(false);
   }
 
@@ -705,7 +727,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               background: approval.bg, color: approval.color, borderRadius: 20,
               padding: "4px 12px", fontSize: ".78rem", fontWeight: 600, marginBottom: 12,
             }}>
-              {currentPost.approval_status === "aprovado" ? "✓" : currentPost.approval_status === "reprovado" ? "✕" : currentPost.approval_status === "alteracao" ? "⚠" : currentPost.approval_status === "agendado" ? "🗓" : currentPost.approval_status === "postado" ? "✅" : "◷"}{" "}
+              {currentPost.approval_status === "aprovado" ? "✓" : currentPost.approval_status === "reprovado" ? "✕" : currentPost.approval_status === "alteracao" ? "⚠" : currentPost.approval_status === "agendado" ? "🗓" : currentPost.approval_status === "postado" ? "✅" : currentPost.approval_status === "pendente_alteracao" ? "📤" : "◷"}{" "}
               {approval.label}
             </div>
 
@@ -720,6 +742,30 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               isLocked ? (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                   🔒 Você já aprovou este post.
+                </div>
+              ) : currentPost.approval_status === "pendente_alteracao" ? (
+                /* Post ajustado pelo time — cliente deve revisar */
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ border: "2px solid #10b981", background: "rgba(16,185,129,0.08)", borderRadius: 10, padding: "10px 14px", fontSize: ".78rem", color: "#10b981", fontWeight: 600, lineHeight: 1.5 }}>
+                    ✅ O time fez os ajustes solicitados! Por favor, revise o post acima e decida.
+                  </div>
+                  <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                    <button onClick={() => setConfirmApproval(true)} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
+                    }}>✓ Aprovar</button>
+                    <button onClick={() => setShowRejectionInput("reprovado")} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["reprovado"].bg, color: APPROVAL_STYLES["reprovado"].color,
+                    }}>✕ Reprovar</button>
+                    <button onClick={() => setShowRejectionInput("alteracao")} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
+                    }}>⚠ Solicitar alteração</button>
+                  </div>
                 </div>
               ) : currentPost.approval_status === "agendado" ? (
                 <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
@@ -864,14 +910,25 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </div>
                   ) : (
                     <>
-                      {/* Admin: só pode Voltar para Pendente ou Aprovar */}
-                      {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao" || currentPost.approval_status === "aprovado") && (
+                      {/* Admin: Voltar para Pendente */}
+                      {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao" || currentPost.approval_status === "aprovado" || currentPost.approval_status === "pendente_alteracao") && (
                         <button onClick={() => setConfirmStatus("pendente")} style={{
                           padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                           fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
                           background: APPROVAL_STYLES["pendente"].bg, color: APPROVAL_STYLES["pendente"].color,
                         }}>
                           ◷ Voltar para Pendente
+                        </button>
+                      )}
+                      {/* Admin: Enviar para nova aprovação (quando reprovado ou alteracao) */}
+                      {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao") && (
+                        <button onClick={() => void sendForReapproval()} disabled={saving} style={{
+                          padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                          fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                          background: APPROVAL_STYLES["pendente_alteracao"].bg,
+                          color: APPROVAL_STYLES["pendente_alteracao"].color,
+                        }}>
+                          📤 Enviar para nova aprovação
                         </button>
                       )}
                       <button onClick={() => setConfirmStatus("aprovado")} disabled={saving} style={{
