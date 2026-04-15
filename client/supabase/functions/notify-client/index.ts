@@ -224,6 +224,11 @@ Deno.serve(async (req) => {
         notifPayload.target_user_id = caseClientId;
       }
 
+      // Campos de navegação — permitem clicar direto no post pelo sino
+      if (body.case_id)  notifPayload.case_id  = body.case_id;
+      if (body.post_id)  notifPayload.post_id  = body.post_id;
+      if (body.source)   notifPayload.source   = body.source;
+
       await supabase.from("admin_notifications").insert(notifPayload);
     } catch { /* best-effort */ }
 
