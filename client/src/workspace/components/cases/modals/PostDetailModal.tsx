@@ -744,16 +744,17 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </div>
               ) : showRejectionInput ? (
                 /* Digitando motivo novo */
-                {(() => {
-                  const inputColor = showRejectionInput === "reprovado" ? "#ef4444" : "#f59e0b";
-                  return (
-                <div style={{ borderRadius: 10, padding: "12px", marginTop: 4, border: `2px solid ${inputColor}`, background: showRejectionInput === "reprovado" ? "rgba(239,68,68,0.05)" : "rgba(245,158,11,0.05)" }}>
-                  <div style={{ fontSize: ".78rem", color: inputColor, marginBottom: 8, fontWeight: 600 }}>
+                <div style={{
+                  borderRadius: 10, padding: "12px", marginTop: 4,
+                  border: `2px solid ${showRejectionInput === "reprovado" ? "#ef4444" : "#f59e0b"}`,
+                  background: showRejectionInput === "reprovado" ? "rgba(239,68,68,0.05)" : "rgba(245,158,11,0.05)",
+                }}>
+                  <div style={{ fontSize: ".78rem", color: showRejectionInput === "reprovado" ? "#ef4444" : "#f59e0b", marginBottom: 8, fontWeight: 600 }}>
                     {showRejectionInput === "reprovado" ? "✕ Descreva o motivo da reprovação:" : "⚠ Descreva o que precisa ser alterado:"}
                   </div>
                   <textarea className="ws-input" value={rejectionInput} onChange={e => setRejectionInput(e.target.value)}
                     placeholder="Descreva o motivo..." autoFocus
-                    style={{ minHeight: 80, resize: "vertical", fontSize: ".83rem", marginBottom: 8, borderColor: inputColor }} />
+                    style={{ minHeight: 80, resize: "vertical", fontSize: ".83rem", marginBottom: 8, borderColor: showRejectionInput === "reprovado" ? "#ef4444" : "#f59e0b" }} />
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => void saveApprovalWithReason(showRejectionInput, rejectionInput)} disabled={saving || !rejectionInput.trim()}
                       style={{ background: APPROVAL_STYLES[showRejectionInput].bg, color: APPROVAL_STYLES[showRejectionInput].color, border: `1px solid ${APPROVAL_STYLES[showRejectionInput].color}`, borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
@@ -765,8 +766,6 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </button>
                   </div>
                 </div>
-                  );
-                })()}
               ) : editingReason ? (
                 /* Editando motivo já salvo */
                 <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "12px", marginTop: 4 }}>
