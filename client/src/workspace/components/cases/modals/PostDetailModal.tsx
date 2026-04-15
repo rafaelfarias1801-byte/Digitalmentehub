@@ -170,8 +170,14 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   // ── Salvar ──────────────────────────────────────────────────────
   async function save(updates: Partial<Post>) {
     const merged = { ...currentPost, ...updates };
-    setCurrentPost(merged);
-    const { data } = await supabase.from("posts").update(merged).eq("id", currentPost.id).select().single();
+    setCurrentPost(merged); // atualização otimista imediata
+    const { data, error } = await supabase
+      .from("posts")
+      .update(updates)           // envia APENAS os campos alterados
+      .eq("id", currentPost.id)
+      .select()
+      .single();
+    if (error) console.error("[PostDetailModal] save error:", error);
     if (data) { onUpdate(data); setCurrentPost(data); }
   }
 
