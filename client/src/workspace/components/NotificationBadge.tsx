@@ -85,7 +85,23 @@ export default function NotificationBadge({ profile }: Props) {
     void markRead(n.id);
     setOpen(false);
 
-    // Best case: notification already has case_id + post_id stored
+    const isCliente  = profile.role === "cliente";
+    const isDesigner = profile.role === "designer";
+
+    // Designer — sempre vai para /workspace/designer
+    if (isDesigner) { setLocation("/workspace/designer"); return; }
+
+    // Cliente — usa rotas /workspace/cliente/...
+    if (isCliente) {
+      if (n.post_id) {
+        setLocation(`/workspace/cliente/conteudo/post/${n.post_id}`);
+      } else {
+        setLocation("/workspace/cliente/conteudo");
+      }
+      return;
+    }
+
+    // Admin — usa rotas /workspace/clientes/:caseId/...
     if (n.case_id && n.post_id) {
       setLocation(`/workspace/clientes/${n.case_id}/conteudo/post/${n.post_id}`);
       return;
@@ -95,13 +111,11 @@ export default function NotificationBadge({ profile }: Props) {
       return;
     }
 
-    // Fallback: parse from notification content
+    // Fallback admin: parse do título
     const caseName = extractCaseName(n.title);
     if (!caseName) return;
-
     const matched = cases.find(c => c.name.toLowerCase() === caseName.toLowerCase());
     if (!matched) return;
-
     const postTitle = extractPostTitle(n.body);
     if (postTitle) {
       const { data } = await supabase
@@ -115,7 +129,6 @@ export default function NotificationBadge({ profile }: Props) {
         return;
       }
     }
-    // Navigate to case content tab even without specific post
     setLocation(`/workspace/clientes/${matched.id}/conteudo`);
   }
 

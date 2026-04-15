@@ -806,32 +806,6 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                   🔒 Você já aprovou este post.
                 </div>
-              ) : currentPost.approval_status === "pendente_alteracao" ? (
-                /* Post ajustado pelo time — cliente deve revisar */
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ border: "2px solid #3b82f6", background: "rgba(59,130,246,0.08)", borderRadius: 10, padding: "10px 14px", fontSize: ".78rem", color: "#3b82f6", fontWeight: 600, lineHeight: 1.5 }}>
-                    📤 O time fez os ajustes solicitados! Por favor, revise o post acima e decida.
-                  </div>
-                  <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                    <button onClick={() => setConfirmApproval(true)} disabled={saving} style={{
-                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                      background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
-                    }}>✓ Aprovar</button>
-                    <button onClick={() => setShowRejectionInput("reprovado")} disabled={saving} style={{
-                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                      background: APPROVAL_STYLES["reprovado"].bg, color: APPROVAL_STYLES["reprovado"].color,
-                    }}>✕ Reprovar</button>
-                    <button onClick={() => setShowRejectionInput("alteracao")} disabled={saving} style={{
-                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                      background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
-                    }}>⚠ Solicitar alteração</button>
-                  </div>
-                  {/* Histórico de motivos anteriores — para contexto */}
-                  {renderHistory(false, false)}
-                </div>
               ) : currentPost.approval_status === "agendado" ? (
                 <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                   🗓 Post agendado — será publicado no horário definido.
@@ -893,6 +867,32 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                       Cancelar
                     </button>
                   </div>
+                </div>
+              ) : currentPost.approval_status === "pendente_alteracao" ? (
+                /* Post ajustado pelo time — cliente deve revisar */
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ border: "2px solid #3b82f6", background: "rgba(59,130,246,0.08)", borderRadius: 10, padding: "10px 14px", fontSize: ".78rem", color: "#3b82f6", fontWeight: 600, lineHeight: 1.5 }}>
+                    📤 O time fez os ajustes solicitados! Por favor, revise o post acima e decida.
+                  </div>
+                  <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                    <button onClick={() => setConfirmApproval(true)} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
+                    }}>✓ Aprovar</button>
+                    <button onClick={() => setShowRejectionInput("reprovado")} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["reprovado"].bg, color: APPROVAL_STYLES["reprovado"].color,
+                    }}>✕ Reprovar</button>
+                    <button onClick={() => setShowRejectionInput("alteracao")} disabled={saving} style={{
+                      padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                      fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                      background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
+                    }}>⚠ Solicitar alteração</button>
+                  </div>
+                  {/* Histórico de motivos anteriores — para contexto */}
+                  {renderHistory(false, false)}
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
