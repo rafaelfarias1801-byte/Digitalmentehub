@@ -658,6 +658,15 @@ function DesignerClientWorkspace({ profile, caseData, briefings, onBriefingUpdat
     if (data) {
       onBriefingUpdate(data);
       onNavigate(`/workspace/designer/case/${caseData.id}`);
+      // Notifica admins que o designer enviou arte para aprovação
+      void notifyAdmins({
+        type: "briefing_entregue",
+        title: `🎨 Arte enviada para aprovação`,
+        body: `"${b.format}" do cliente ${caseData.name} foi enviado para aprovação. Acesse o workspace.`,
+        source: "designer",
+        case_name: caseData.name,
+        format: b.format,
+      });
     }
     setSavingValue(false);
   }

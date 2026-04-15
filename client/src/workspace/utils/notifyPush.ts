@@ -22,12 +22,14 @@ export async function notifyAdmins(params: {
   type: string;
   title: string;
   body: string;
+  source?: "designer" | "cliente";
   [key: string]: any;
 }): Promise<void> {
   await callNotify({ ...params, target_role: "admin" });
 }
 
 // ── Notifica um designer específico ─────────────────────────
+// target_role: "designer" garante que a notificação NÃO aparece para admins
 export async function notifyDesigner(params: {
   designer_id: string;
   type: string;
@@ -35,7 +37,13 @@ export async function notifyDesigner(params: {
   body: string;
   [key: string]: any;
 }): Promise<void> {
-  await callNotify({ ...params, profile_ids: [params.designer_id], target_user_id: params.designer_id });
+  await callNotify({
+    ...params,
+    profile_ids: [params.designer_id],
+    target_user_id: params.designer_id,
+    target_role: "designer",
+    source: "designer",
+  });
 }
 
 export async function notifyUser(params: {
