@@ -1,8 +1,10 @@
 // supabase/functions/tiktok-oauth/index.ts
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const CLIENT_KEY    = "awxnasje0hynuk0i";
-const CLIENT_SECRET = "L0QMMoSt7O7p2XaKCtEYbo6Nduxh6oig";
+// Sandbox: sbaw38yytzndasvalo / xf55JcnCZw6jecWtzea8Xm6i3A3v8ODF
+// Production: awxnasje0hynuk0i / L0QMMoSt7O7p2XaKCtEYbo6Nduxh6oig
+const CLIENT_KEY    = Deno.env.get("TIKTOK_CLIENT_KEY")    ?? "sbaw38yytzndasvalo";
+const CLIENT_SECRET = Deno.env.get("TIKTOK_CLIENT_SECRET") ?? "xf55JcnCZw6jecWtzea8Xm6i3A3v8ODF";
 const REDIRECT_URI  = "https://digitalmentehub.com.br/workspace/tiktok/callback";
 const SCOPE         = "user.info.basic,video.upload";
 
