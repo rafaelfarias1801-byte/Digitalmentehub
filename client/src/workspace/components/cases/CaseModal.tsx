@@ -426,16 +426,29 @@ export default function CaseModal({
                 <span style={{ fontSize: "1rem" }}>🎵</span>
                 <span style={{ fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text1)" }}>TikTok</span>
               </div>
-              <div>
-                <label className="ws-label">@ Usuário</label>
-                <input
-                  className="ws-input"
-                  value={form.tiktok_username || ""}
-                  placeholder="@cliente"
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, tiktok_username: e.target.value }))
-                  }
-                />
+              <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <label className="ws-label">@ Usuário</label>
+                  <input
+                    className="ws-input"
+                    value={form.tiktok_username || ""}
+                    placeholder="@cliente"
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, tiktok_username: e.target.value }))
+                    }
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="ws-label">ID para Integração</label>
+                  <input
+                    className="ws-input"
+                    value={form.tiktok_user_id || ""}
+                    placeholder="ID da conta TikTok"
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, tiktok_user_id: e.target.value }))
+                    }
+                  />
+                </div>
               </div>
             </div>
 

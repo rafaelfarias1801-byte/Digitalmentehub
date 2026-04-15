@@ -18,6 +18,7 @@ export interface Case {
   instagram_page_id?: string;
   facebook_page_id?: string;
   tiktok_username?: string;
+  tiktok_user_id?: string;
   linkedin_url?: string;
 }
 
