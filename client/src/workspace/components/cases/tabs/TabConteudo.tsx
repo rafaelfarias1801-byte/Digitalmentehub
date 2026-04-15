@@ -1,5 +1,6 @@
 // client/src/workspace/components/cases/tabs/TabConteudo.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import { APPROVAL_STYLES, MONTHS_FULL } from "../constants";
@@ -78,12 +79,16 @@ export function stripMediaTag(extra_info?: string | null): string {
 
 export default function TabConteudo({ caseData, profile, readonly = false }: TabConteudoProps) {
   const isMobile = useIsMobile();
+  const [location, setLocation] = useLocation();
   const SESSION_KEY = `ws_novo_post_${caseData.id}`;
+
+  // Parse post ID from URL — e.g. /workspace/clientes/:id/conteudo/post/:postId
+  const postUrlMatch = location.match(/\/workspace\/clientes\/[^/]+\/conteudo\/post\/([^/]+)/);
+  const urlPostId = postUrlMatch?.[1] ?? null;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
-  const [selected, setSelected] = useState<Post | null>(null);
   const [form, setForm] = useState<NewPostForm>(EMPTY_POST);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -125,18 +130,14 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
       const postId = e.detail;
       if (postId && posts.length > 0) {
         const postToOpen = posts.find(p => p.id === postId);
-        if (postToOpen) {
-          if (postToOpen.scheduled_date) {
-            setActiveMonth(postToOpen.scheduled_date.slice(0, 7));
-          }
-          setSelected(postToOpen);
-        }
+        if (postToOpen) navigateToPost(postToOpen);
       }
     };
     window.addEventListener("ws_open_post", handleOpenPost);
     if ((window as any)._pendingPostId && posts.length > 0) {
-      handleOpenPost({ detail: (window as any)._pendingPostId });
+      const pendingId = (window as any)._pendingPostId as string;
       (window as any)._pendingPostId = null;
+      handleOpenPost({ detail: pendingId });
     }
     return () => window.removeEventListener("ws_open_post", handleOpenPost);
   }, [posts]);
@@ -295,9 +296,21 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     }
   }
 
+  // Derived from URL — no useState needed
+  const selected = urlPostId ? (posts.find(p => p.id === urlPostId) ?? null) : null;
+
+  function navigateToPost(post: Post) {
+    if (post.scheduled_date) setActiveMonth(post.scheduled_date.slice(0, 7));
+    setLocation(`/workspace/clientes/${caseData.id}/conteudo/post/${post.id}`);
+  }
+
+  function closePost() {
+    setLocation(`/workspace/clientes/${caseData.id}/conteudo`);
+  }
+
   function updatePost(updated: Post) {
     setPosts(prev => prev.map(p => p.id === updated.id ? updated : p));
-    setSelected(updated);
+    // selected is derived from posts — no explicit setSelected needed
   }
 
   const postsByMonth = useMemo(() => {
@@ -375,15 +388,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
         )
       );
 
-      setSelected(prev =>
-        prev && ids.includes(prev.id)
-          ? {
-              ...prev,
-              approval_status: "aprovado",
-              status_changed_at: now,
-            }
-          : prev
-      );
+      // selected is derived — just update posts state above; no setSelected needed
 
       setBulkApproveResult("ok");
     } catch (err) {
@@ -531,7 +536,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             {currentPosts.map(post => {
               const approval = APPROVAL_STYLES[post.approval_status] ?? APPROVAL_STYLES["pendente"];
               return (
-                <div key={post.id} onClick={() => setSelected(post)} style={{
+                <div key={post.id} onClick={() => navigateToPost(post)} style={{
                   background: "var(--ws-surface)", border: "1px solid var(--ws-border)",
                   borderLeft: `3px solid ${approval.color}`, borderRadius: 10,
                   padding: "14px 18px", display: "flex", alignItems: "center", gap: 16, cursor: "pointer",
@@ -715,7 +720,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
       )}
 
       {selected && (
-        <PostDetailModal post={selected} caseData={caseData} onClose={() => setSelected(null)} onUpdate={updatePost} profile={profile} readonly={readonly} />
+        <PostDetailModal post={selected} caseData={caseData} onClose={closePost} onUpdate={updatePost} profile={profile} readonly={readonly} inline />
       )}
     </div>
   );

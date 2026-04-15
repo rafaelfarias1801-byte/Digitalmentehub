@@ -68,9 +68,11 @@ interface PostDetailModalProps {
   onUpdate: (post: Post) => void;
   profile: Profile;
   readonly?: boolean;
+  /** When true, renders inline (no fixed overlay) — navigated via URL */
+  inline?: boolean;
 }
 
-export default function PostDetailModal({ post, caseData, onClose, onUpdate, profile, readonly = false }: PostDetailModalProps) {
+export default function PostDetailModal({ post, caseData, onClose, onUpdate, profile, readonly = false, inline = false }: PostDetailModalProps) {
   const [currentPost, setCurrentPost] = useState<Post>(post);
   const [editDesc, setEditDesc] = useState(false);
   const [editCaption, setEditCaption] = useState(false);
@@ -342,19 +344,18 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   const rawTime = scheduledDate ? scheduledDate.toTimeString().slice(0, 5) : "";
   const scheduledTimeValue = ["12:00","15:00","18:00"].includes(rawTime) ? rawTime : "12:00";
 
-  return (
-    <div style={{ ...overlayStyle, left: 0 }} onClick={e => e.target === e.currentTarget && onClose()}>
+  const innerBox = (
       <div style={{
         background: "var(--ws-surface)",
-        borderRadius: isMobile ? 0 : 16,
-        ...(isMobile ? {} : { width: "min(860px,95vw)" }),
-        maxHeight: isMobile ? "100dvh" : "90vh",
-        overflowY: isMobile ? "hidden" : "auto",
+        borderRadius: inline ? 14 : (isMobile ? 0 : 16),
+        ...(inline ? {} : isMobile ? {} : { width: "min(860px,95vw)" }),
+        maxHeight: inline ? undefined : (isMobile ? "100dvh" : "90vh"),
+        overflowY: inline ? undefined : (isMobile ? "hidden" : "auto"),
         border: "1px solid var(--ws-border2)",
-        boxShadow: "0 30px 80px #00000070",
+        boxShadow: inline ? "none" : "0 30px 80px #00000070",
         display: "flex",
         flexDirection: "column",
-        ...(isMobile ? { position: "fixed", bottom: 0, left: 0, right: 0, top: 0, margin: 0 } : {}),
+        ...((!inline && isMobile) ? { position: "fixed", bottom: 0, left: 0, right: 0, top: 0, margin: 0 } : {}),
       }}>
         {/* Mobile: tabs para admin / info de tipo+plataforma para cliente */}
         {isMobile && (
@@ -1092,6 +1093,15 @@ ${text}`
         </div>
         </div>{/* fecha o container grid/flex */}
       </div>
+  );  // end innerBox
+
+  if (inline) {
+    return innerBox;
+  }
+
+  return (
+    <div style={{ ...overlayStyle, left: 0 }} onClick={e => e.target === e.currentTarget && onClose()}>
+      {innerBox}
     </div>
   );
 }
