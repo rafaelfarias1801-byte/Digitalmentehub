@@ -851,7 +851,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </div>
                   ) : (
                     <>
-                      {/* Admin pode voltar pra pendente se reprovado, alteracao ou aprovado */}
+                      {/* Admin: só pode Voltar para Pendente ou Aprovar */}
                       {(currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao" || currentPost.approval_status === "aprovado") && (
                         <button onClick={() => setConfirmStatus("pendente")} style={{
                           padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
@@ -861,18 +861,16 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                           ◷ Voltar para Pendente
                         </button>
                       )}
-                      {(["aprovado", "reprovado", "alteracao"] as const).map(status => (
-                        <button key={status} onClick={() => setConfirmStatus(status)} disabled={saving} style={{
-                          padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
-                          fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                          background: APPROVAL_STYLES[status].bg, color: APPROVAL_STYLES[status].color,
-                          opacity: currentPost.approval_status === status ? 1 : 0.6,
-                          outline: currentPost.approval_status === status ? `2px solid ${APPROVAL_STYLES[status].color}` : "none",
-                          transition: "all .15s",
-                        }}>
-                          {status === "aprovado" ? "✓ Aprovar" : status === "reprovado" ? "✕ Reprovar" : "⚠ Alteração"}
-                        </button>
-                      ))}
+                      <button onClick={() => setConfirmStatus("aprovado")} disabled={saving} style={{
+                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                        background: APPROVAL_STYLES["aprovado"].bg, color: APPROVAL_STYLES["aprovado"].color,
+                        opacity: currentPost.approval_status === "aprovado" ? 1 : 0.6,
+                        outline: currentPost.approval_status === "aprovado" ? `2px solid ${APPROVAL_STYLES["aprovado"].color}` : "none",
+                        transition: "all .15s",
+                      }}>
+                        ✓ Aprovar
+                      </button>
                     </>
                   )}
                 </div>
@@ -921,16 +919,16 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   )}
                 </div>
 
-                {/* Mensagem instrucional quando reprovado/alteracao */}
-                {highlighted && (
+                {/* Mensagem instrucional — só para o cliente */}
+                {highlighted && readonly && (
                   <div style={{
                     fontSize: ".76rem", color: highlightColor, marginBottom: 10,
                     background: isReprovado ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)",
                     borderRadius: 8, padding: "8px 10px", lineHeight: 1.5,
                   }}>
                     {isReprovado
-                      ? "✕ Este post foi reprovado. Deixe um comentário explicando o que precisa ser corrigido."
-                      : "⚠ O cliente solicitou alteração. Deixe um comentário com as instruções para o ajuste."}
+                      ? "✕ Você reprovou este post. Deixe um comentário explicando o que precisa ser corrigido."
+                      : "⚠ Você solicitou alteração. Deixe um comentário com as instruções para o ajuste."}
                   </div>
                 )}
 
