@@ -891,6 +891,111 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             )}
           </div>
 
+          {/* ── Comentários — logo após o status ── */}
+          {(() => {
+            const isAlteracao = currentPost.approval_status === "alteracao";
+            const isReprovado = currentPost.approval_status === "reprovado";
+            const highlighted = isAlteracao || isReprovado;
+            const highlightColor = isReprovado ? "#ef4444" : isAlteracao ? "#f59e0b" : undefined;
+            return (
+              <div style={{
+                marginBottom: 20,
+                ...(highlighted ? {
+                  border: `2px solid ${highlightColor}`,
+                  borderRadius: 12,
+                  padding: "14px 14px 10px",
+                  background: isReprovado ? "rgba(239,68,68,0.05)" : "rgba(245,158,11,0.05)",
+                } : {}),
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: highlighted ? 6 : 0 }}>
+                  <div style={labelStyle}>Comentários</div>
+                  {highlighted && (
+                    <span style={{
+                      fontSize: ".6rem", fontFamily: "Poppins", fontWeight: 700,
+                      letterSpacing: ".8px", textTransform: "uppercase",
+                      color: highlightColor, background: isReprovado ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
+                      borderRadius: 20, padding: "2px 8px",
+                    }}>
+                      {isReprovado ? "⚠ Reprovado" : "⚠ Alteração solicitada"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Mensagem instrucional quando reprovado/alteracao */}
+                {highlighted && (
+                  <div style={{
+                    fontSize: ".76rem", color: highlightColor, marginBottom: 10,
+                    background: isReprovado ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)",
+                    borderRadius: 8, padding: "8px 10px", lineHeight: 1.5,
+                  }}>
+                    {isReprovado
+                      ? "✕ Este post foi reprovado. Deixe um comentário explicando o que precisa ser corrigido."
+                      : "⚠ O cliente solicitou alteração. Deixe um comentário com as instruções para o ajuste."}
+                  </div>
+                )}
+
+                {(currentPost.comments || []).map(comment => (
+                  <div key={comment.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid var(--ws-border)" }}>
+                    <div style={{ fontSize: ".8rem", color: "var(--ws-text2)", marginBottom: 3, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <div>
+                        <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
+                        <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
+                          {new Date(comment.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          {comment.edited_at ? " • editado" : ""}
+                        </span>
+                      </div>
+                      {isOwnComment(comment) && (
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button onClick={() => startEditComment(comment)}
+                            style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>Editar</button>
+                          <button onClick={() => deleteComment(comment.id)}
+                            style={{ background: "none", border: "none", color: "var(--ws-accent)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>Excluir</button>
+                        </div>
+                      )}
+                    </div>
+                    {editingCommentId === comment.id ? (
+                      <div>
+                        <textarea className="ws-input" value={editingCommentText} onChange={e => setEditingCommentText(e.target.value)}
+                          style={{ minHeight: 70, resize: "vertical", fontSize: ".83rem", marginBottom: 6 }} />
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button onClick={() => saveEditComment(comment.id)}
+                            style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                            Salvar
+                          </button>
+                          <button onClick={cancelEditComment}
+                            style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", fontSize: ".83rem", color: "var(--ws-text)" }}>
+                        {comment.text}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: highlighted ? highlightColor! : caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>
+                    {(profile.name || "V").slice(0, 1).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <textarea className="ws-input" value={newComment} onChange={e => setNewComment(e.target.value)}
+                      placeholder={highlighted ? "Escreva sua resposta aqui..." : "Escrever um comentário..."}
+                      style={{ minHeight: 64, resize: "vertical", fontSize: ".83rem", marginBottom: 6,
+                        ...(highlighted ? { borderColor: highlightColor, outline: "none" } : {}),
+                      }} />
+                    <button onClick={addComment}
+                      style={{ background: highlighted ? highlightColor! : caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+                      Comentar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {!!caseData.phone && (
             <div style={{ marginTop: 12, marginBottom: 16 }}>
               <button onClick={sendToWhatsApp} style={{
@@ -957,65 +1062,6 @@ ${text}`
             />
           )}
 
-          {/* ── Comentários ── */}
-          <div>
-            <div style={labelStyle}>Comentários</div>
-            {(currentPost.comments || []).map(comment => (
-              <div key={comment.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid var(--ws-border)" }}>
-                <div style={{ fontSize: ".8rem", color: "var(--ws-text2)", marginBottom: 3, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                  <div>
-                    <b style={{ color: "var(--ws-text)" }}>{comment.author}</b>{" "}
-                    <span style={{ color: "var(--ws-text3)", fontFamily: "Poppins", fontSize: ".65rem" }}>
-                      {new Date(comment.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      {comment.edited_at ? " • editado" : ""}
-                    </span>
-                  </div>
-                  {isOwnComment(comment) && (
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => startEditComment(comment)}
-                        style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>Editar</button>
-                      <button onClick={() => deleteComment(comment.id)}
-                        style={{ background: "none", border: "none", color: "var(--ws-accent)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit" }}>Excluir</button>
-                    </div>
-                  )}
-                </div>
-                {editingCommentId === comment.id ? (
-                  <div>
-                    <textarea className="ws-input" value={editingCommentText} onChange={e => setEditingCommentText(e.target.value)}
-                      style={{ minHeight: 70, resize: "vertical", fontSize: ".83rem", marginBottom: 6 }} />
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => saveEditComment(comment.id)}
-                        style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
-                        Salvar
-                      </button>
-                      <button onClick={cancelEditComment}
-                        style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem" }}>
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", fontSize: ".83rem", color: "var(--ws-text)" }}>
-                    {comment.text}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <div style={{ display: "flex", gap: 8 }}>
-              <div style={{ width: 30, height: 30, borderRadius: "50%", background: caseData.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: ".75rem", fontWeight: 700, flexShrink: 0 }}>
-                {(profile.name || "V").slice(0, 1).toUpperCase()}
-              </div>
-              <div style={{ flex: 1 }}>
-                <textarea className="ws-input" value={newComment} onChange={e => setNewComment(e.target.value)}
-                  placeholder="Escrever um comentário..." style={{ minHeight: 64, resize: "vertical", fontSize: ".83rem", marginBottom: 6 }} />
-                <button onClick={addComment}
-                  style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
-                  Comentar
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* ── Coluna lateral ── */}
