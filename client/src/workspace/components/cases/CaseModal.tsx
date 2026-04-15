@@ -7,6 +7,52 @@ import { useState, useEffect } from "react";
 import { COLORS } from "./constants";
 import { modalBoxStyle, modalTitleStyle, overlayStyle } from "./styles";
 import type { Case } from "./types";
+import { supabase } from "../../../lib/supabaseClient";
+
+// ── Botão de conexão OAuth TikTok ─────────────────────────────
+function TikTokConnectButton({ caseId, connected }: { caseId: string; connected: boolean }) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleConnect() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("tiktok-oauth", {
+        body: { action: "auth-url", case_id: caseId },
+      });
+      if (error || !data?.url) throw new Error(error?.message ?? "Erro ao gerar URL");
+      window.location.href = data.url;
+    } catch (e: any) {
+      alert("Erro ao iniciar OAuth TikTok: " + (e?.message ?? ""));
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+      <button
+        type="button"
+        onClick={handleConnect}
+        disabled={loading}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          padding: "7px 16px", borderRadius: 8, border: "none",
+          background: connected ? "rgba(0,180,100,0.12)" : "#000",
+          color: connected ? "#00a864" : "#fff",
+          fontFamily: "Poppins", fontWeight: 600, fontSize: ".78rem",
+          cursor: loading ? "wait" : "pointer", transition: "opacity .2s",
+          opacity: loading ? 0.6 : 1,
+        }}
+      >
+        🎵 {loading ? "Aguarde..." : connected ? "✓ TikTok conectado — reconectar" : "Conectar TikTok via OAuth"}
+      </button>
+      {connected && (
+        <span style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
+          Conta autorizada
+        </span>
+      )}
+    </div>
+  );
+}
 
 interface CaseModalProps {
   form: Omit<Case, "id">;
@@ -450,6 +496,10 @@ export default function CaseModal({
                   />
                 </div>
               </div>
+              {/* Botão OAuth — só aparece se o case já foi salvo (tem id) */}
+              {editing?.id && (
+                <TikTokConnectButton caseId={editing.id} connected={!!form.tiktok_user_id} />
+              )}
             </div>
 
             {/* LinkedIn */}

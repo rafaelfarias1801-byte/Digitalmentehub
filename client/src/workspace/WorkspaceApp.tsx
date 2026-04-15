@@ -19,6 +19,7 @@ import { usePushNotification } from "./hooks/usePushNotification";
 import NotificationBadge from "./components/NotificationBadge";
 import Notificacoes from "./components/Notificacoes";
 import DesignerView from "./components/DesignerView";
+import TikTokCallback from "./components/TikTokCallback";
 import "./workspace.css";
 
 export type PageId =
@@ -271,6 +272,11 @@ export default function WorkspaceApp() {
       />
     );
   }
+  // Rota especial: callback OAuth do TikTok (redirecionado pelo TikTok após autorização)
+  if (location.startsWith("/workspace/tiktok/callback")) {
+    return <TikTokCallback />;
+  }
+
   if (profile.role === "designer") {
     // Redirect non-designer URLs to /workspace/designer
     if (!location.startsWith("/workspace/designer")) {
