@@ -256,8 +256,8 @@ export default function WorkspaceApp() {
     );
   }
   if (profile.role === "cliente") {
-    // Normaliza URL do cliente para /workspace/cliente/:tab
-    const clientTabMatch = location.match(/^\/workspace\/cliente\/([^/]+)$/);
+    // Extrai tab da URL do cliente — suporta sub-rotas como /conteudo/post/:id
+    const clientTabMatch = location.match(/^\/workspace\/cliente\/([^/]+)/);
     const clientTab = clientTabMatch ? clientTabMatch[1] : "calendario";
     // Se a URL não está no formato correto do cliente, redireciona
     if (!location.startsWith("/workspace/cliente")) {

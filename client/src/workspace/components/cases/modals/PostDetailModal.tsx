@@ -601,7 +601,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </div>
                     {/* Botão remover */}
                     <button onClick={e => { e.stopPropagation(); void removeSlide(i); }} title="Remover mídia"
-                      style={{ position: "absolute", top: -6, right: -6, width: 16, height: 16, borderRadius: "50%", background: "#ff4433", border: "none", color: "#fff", cursor: "pointer", fontSize: ".55rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, lineHeight: 1, zIndex: 5 }}
+                      style={{ position: "absolute", top: 2, right: 2, width: 16, height: 16, borderRadius: "50%", background: "#ff4433", border: "none", color: "#fff", cursor: "pointer", fontSize: ".55rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, lineHeight: 1, zIndex: 5 }}
                     >×</button>
                     {/* Botão substituir — aparece na thumbnail ativa */}
                     {i === slideIdx && (

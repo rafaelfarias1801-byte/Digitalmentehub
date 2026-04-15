@@ -82,9 +82,18 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const [location, setLocation] = useLocation();
   const SESSION_KEY = `ws_novo_post_${caseData.id}`;
 
-  // Parse post ID from URL — e.g. /workspace/clientes/:id/conteudo/post/:postId
-  const postUrlMatch = location.match(/\/workspace\/clientes\/[^/]+\/conteudo\/post\/([^/]+)/);
+  // Parse post ID from URL — supports both admin and client routes:
+  // Admin:  /workspace/clientes/:caseId/conteudo/post/:postId
+  // Client: /workspace/cliente/conteudo/post/:postId
+  const postUrlMatch =
+    location.match(/\/workspace\/clientes\/[^/]+\/conteudo\/post\/([^/]+)/) ??
+    location.match(/\/workspace\/cliente\/conteudo\/post\/([^/]+)/);
   const urlPostId = postUrlMatch?.[1] ?? null;
+
+  // Base URL for navigation — preserves the current route context
+  const conteudoBase = location.startsWith("/workspace/cliente/")
+    ? "/workspace/cliente/conteudo"
+    : `/workspace/clientes/${caseData.id}/conteudo`;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -301,11 +310,11 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
   function navigateToPost(post: Post) {
     if (post.scheduled_date) setActiveMonth(post.scheduled_date.slice(0, 7));
-    setLocation(`/workspace/clientes/${caseData.id}/conteudo/post/${post.id}`);
+    setLocation(`${conteudoBase}/post/${post.id}`);
   }
 
   function closePost() {
-    setLocation(`/workspace/clientes/${caseData.id}/conteudo`);
+    setLocation(conteudoBase);
   }
 
   function updatePost(updated: Post) {
