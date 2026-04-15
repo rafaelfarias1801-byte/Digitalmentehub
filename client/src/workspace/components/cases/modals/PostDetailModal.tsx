@@ -114,6 +114,59 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   function prevSlide() { setSlideIdx(i => Math.max(0, i - 1)); }
   function nextSlide() { setSlideIdx(i => Math.min(allSlides.length - 1, i + 1)); }
 
+  // Histórico de motivos — backward compat: se não há array, usa rejection_reason avulso
+  const rejectionHistory: Array<{ reason: string; type: string; created_at: string }> =
+    Array.isArray(currentPost.rejection_history) && currentPost.rejection_history.length > 0
+      ? currentPost.rejection_history
+      : currentPost.rejection_reason
+        ? [{ reason: currentPost.rejection_reason, type: currentPost.approval_status, created_at: currentPost.rejection_reason_at || "" }]
+        : [];
+
+  // Renderiza lista numerada de motivos
+  function renderHistory(isActive: boolean, showEdit = false) {
+    if (rejectionHistory.length === 0) return null;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+        {rejectionHistory.map((item, i) => {
+          const isLatest = i === rejectionHistory.length - 1;
+          const color = item.type === "reprovado" ? "#ef4444" : "#f59e0b";
+          const bg    = item.type === "reprovado" ? "rgba(239,68,68,0.07)" : "rgba(245,158,11,0.07)";
+          const hl    = isLatest && isActive;
+          return (
+            <div key={i} style={{
+              border: `2px solid ${hl ? color : "var(--ws-border2)"}`,
+              background: hl ? bg : "transparent",
+              borderRadius: 10, padding: "10px 12px",
+              fontSize: ".78rem", lineHeight: 1.5,
+              opacity: !isLatest ? 0.7 : 1,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                <div>
+                  <b style={{ color: hl ? color : "var(--ws-text2)", fontSize: ".72rem", letterSpacing: ".3px" }}>
+                    {item.type === "reprovado" ? "✕" : "⚠"}{" "}
+                    Motivo {i + 1}{rejectionHistory.length > 1 ? ` de ${rejectionHistory.length}` : ""} — {item.type === "reprovado" ? "Reprovação" : "Alteração solicitada"}
+                  </b>
+                  <div style={{ marginTop: 4, color: "var(--ws-text)" }}>{item.reason}</div>
+                </div>
+                {showEdit && isLatest && (
+                  <button onClick={() => { setEditReasonInput(item.reason); setEditingReason(true); }}
+                    style={{ background: "none", border: "none", color: hl ? color : "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit", fontWeight: 600, flexShrink: 0 }}>
+                    ✏ Editar
+                  </button>
+                )}
+              </div>
+              {item.created_at && (
+                <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
+                  {new Date(item.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   // ── Salvar ──────────────────────────────────────────────────────
   async function save(updates: Partial<Post>) {
     const merged = { ...currentPost, ...updates };
@@ -142,10 +195,22 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     setSaving(false);
   }
 
-  async function saveApprovalWithReason(status: Post["approval_status"], reason: string) {
+  async function saveApprovalWithReason(status: Post["approval_status"], reason: string, isEdit = false) {
     setSaving(true);
     const now = new Date().toISOString();
-    await save({ approval_status: status, rejection_reason: reason, rejection_reason_at: now, status_changed_at: now });
+    // Gerencia histórico numerado
+    const existing: Array<{ reason: string; type: string; created_at: string }> =
+      Array.isArray(currentPost.rejection_history) ? [...currentPost.rejection_history] : [];
+    let newHistory: typeof existing;
+    if (isEdit && existing.length > 0) {
+      // Editar o último motivo sem criar novo
+      newHistory = [...existing];
+      newHistory[newHistory.length - 1] = { ...newHistory[newHistory.length - 1], reason, created_at: now };
+    } else {
+      // Novo motivo — acrescenta ao histórico
+      newHistory = [...existing, { reason, type: status, created_at: now }];
+    }
+    await save({ approval_status: status, rejection_reason: reason, rejection_reason_at: now, rejection_history: newHistory, status_changed_at: now });
     setRejectionReason(reason);
     setShowRejectionInput(null);
     setRejectionInput("");
@@ -171,8 +236,6 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     const postTitle = currentPost.slug || currentPost.title || "Post";
     await save({
       approval_status: "pendente_alteracao",
-      rejection_reason: null,
-      rejection_reason_at: null,
       status_changed_at: new Date().toISOString(),
     });
     void notifyClientByCase({
@@ -766,6 +829,8 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                       background: APPROVAL_STYLES["alteracao"].bg, color: APPROVAL_STYLES["alteracao"].color,
                     }}>⚠ Solicitar alteração</button>
                   </div>
+                  {/* Histórico de motivos anteriores — para contexto */}
+                  {renderHistory(false, false)}
                 </div>
               ) : currentPost.approval_status === "agendado" ? (
                 <div style={{ fontSize: ".75rem", color: "#4b6bff", background: "rgba(75,100,255,0.1)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
@@ -819,7 +884,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   <textarea className="ws-input" value={editReasonInput} onChange={e => setEditReasonInput(e.target.value)}
                     autoFocus style={{ minHeight: 80, resize: "vertical", fontSize: ".83rem", marginBottom: 8 }} />
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => void saveApprovalWithReason(currentPost.approval_status, editReasonInput)} disabled={saving || !editReasonInput.trim()}
+                    <button onClick={() => void saveApprovalWithReason(currentPost.approval_status, editReasonInput, true)} disabled={saving || !editReasonInput.trim()}
                       style={{ background: caseData.color, border: "none", borderRadius: 8, color: "#fff", padding: "7px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600 }}>
                       Salvar
                     </button>
@@ -854,33 +919,11 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                       outline: currentPost.approval_status === "alteracao" ? `2px solid ${APPROVAL_STYLES["alteracao"].color}` : "none",
                     }}>⚠ Alteração</button>
                   </div>
-                  {/* Motivo salvo — destacado com cor do status */}
-                  {currentPost.rejection_reason && (() => {
-                    const mColor = currentPost.approval_status === "reprovado" ? "#ef4444" : "#f59e0b";
-                    const mBg   = currentPost.approval_status === "reprovado" ? "rgba(239,68,68,0.07)" : "rgba(245,158,11,0.07)";
-                    return (
-                      <div style={{ border: `2px solid ${mColor}`, borderRadius: 10, padding: "10px 12px", fontSize: ".78rem", color: "var(--ws-text2)", lineHeight: 1.5, background: mBg }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                          <div>
-                            <b style={{ color: mColor }}>
-                              {currentPost.approval_status === "reprovado" ? "✕ Motivo da reprovação:" : "⚠ Alteração solicitada:"}
-                            </b>
-                            <div style={{ marginTop: 4, color: "var(--ws-text)" }}>{currentPost.rejection_reason}</div>
-                          </div>
-                          <button onClick={() => { setEditReasonInput(currentPost.rejection_reason || ""); setEditingReason(true); }}
-                            style={{ background: "none", border: "none", color: mColor, cursor: "pointer", fontSize: ".72rem", fontFamily: "inherit", fontWeight: 600, flexShrink: 0 }}>
-                            ✏ Editar
-                          </button>
-                        </div>
-                        {currentPost.rejection_reason_at && (
-                          <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 6 }}>
-                            {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                            {" • editado"}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  {/* Histórico numerado de motivos */}
+                  {renderHistory(
+                    currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao",
+                    true /* showEdit */
+                  )}
                 </div>
               )
 
@@ -946,28 +989,10 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </div>
               )
             )}
-            {/* Admin vê o motivo mas não edita */}
-            {!readonly && currentPost.rejection_reason && (
-              <div style={{
-                marginTop: 8,
-                border: `2px solid ${currentPost.approval_status === "reprovado" ? "#ef4444" : "#f59e0b"}`,
-                background: currentPost.approval_status === "reprovado" ? "rgba(239,68,68,0.07)" : "rgba(245,158,11,0.07)",
-                borderRadius: 10,
-                padding: "10px 12px",
-                fontSize: ".78rem",
-                color: "var(--ws-text2)",
-                lineHeight: 1.5,
-              }}>
-                <b style={{ color: currentPost.approval_status === "reprovado" ? "#ef4444" : "#f59e0b" }}>
-                  {currentPost.approval_status === "reprovado" ? "✕ Motivo da reprovação:" : "⚠ Alteração solicitada:"}
-                </b>{" "}
-                {currentPost.rejection_reason}
-                {currentPost.rejection_reason_at && (
-                  <div style={{ color: "var(--ws-text3)", fontSize: ".68rem", marginTop: 4 }}>
-                    {new Date(currentPost.rejection_reason_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                )}
-              </div>
+            {/* Admin vê o histórico completo de motivos */}
+            {!readonly && renderHistory(
+              currentPost.approval_status === "reprovado" || currentPost.approval_status === "alteracao",
+              false
             )}
           </div>
 

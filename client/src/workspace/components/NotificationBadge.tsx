@@ -129,30 +129,9 @@ export default function NotificationBadge({ profile }: Props) {
   useEffect(() => {
     load();
 
-    // Realtime — escuta novas notificações para este usuário
-    // Canal 1: notificações por role (ex: target_role=admin)
-    const channelRole = supabase
-      .channel(`notif_role_${profile.id}`)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "admin_notifications",
-        filter: `target_role=eq.${profile.role}`,
-      }, payload => {
-        const n = payload.new as AdminNotification;
-        const isAdminToDesigner = profile.role === "admin" && ADMIN_TO_DESIGNER_TYPES.has(n.type);
-        if (!isAdminToDesigner) {
-          setNotifications(prev => {
-            if (prev.some(x => x.id === n.id)) return prev;
-            return [n, ...prev].slice(0, 50);
-          });
-        }
-      })
-      .subscribe();
-
-    // Canal 2: notificações diretas para este usuário (target_user_id)
-    const channelUser = supabase
-      .channel(`notif_user_${profile.id}`)
+    // Realtime — cada usuário tem suas próprias linhas (target_user_id)
+    const channel = supabase
+      .channel(`notif_${profile.id}`)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
@@ -170,13 +149,11 @@ export default function NotificationBadge({ profile }: Props) {
       })
       .subscribe();
 
-    // Polling de fallback — garante que novas notificações apareçam mesmo se
-    // o Realtime não estiver habilitado na tabela admin_notifications
+    // Polling de fallback (20s) — garante recebimento mesmo se realtime falhar
     const pollInterval = setInterval(() => { void load(); }, 20000);
 
     return () => {
-      void supabase.removeChannel(channelRole);
-      void supabase.removeChannel(channelUser);
+      void supabase.removeChannel(channel);
       clearInterval(pollInterval);
     };
   }, [profile.id]);
@@ -185,15 +162,13 @@ export default function NotificationBadge({ profile }: Props) {
     const { data } = await supabase
       .from("admin_notifications")
       .select("*")
-      .or(`target_user_id.eq.${profile.id},target_role.eq.${profile.role}`)
+      .eq("target_user_id", profile.id)
       .order("created_at", { ascending: false })
       .limit(100);
 
     const filtered = (data ?? []).filter(n => {
       // Admin não vê notificações que ele mesmo disparou (admin→designer)
       if (profile.role === "admin" && ADMIN_TO_DESIGNER_TYPES.has(n.type)) return false;
-      // Não mostrar notificações destinadas explicitamente a outro usuário
-      if (n.target_user_id != null && n.target_user_id !== profile.id) return false;
       return true;
     });
 

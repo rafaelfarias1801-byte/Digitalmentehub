@@ -205,10 +205,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Salva badge no banco para notificações visuais
+    // Salva badge no banco — uma linha POR USUÁRIO para isolamento de leitura
     try {
       const notification = buildNotification(type, body);
-      const notifPayload: any = {
+      const basePayload: any = {
         type,
         title: notification.title,
         body: notification.body,
@@ -216,25 +216,34 @@ Deno.serve(async (req) => {
         read: false,
         created_at: new Date().toISOString(),
       };
+      if (body.case_id) basePayload.case_id = body.case_id;
+      if (body.post_id) basePayload.post_id = body.post_id;
+      if (body.source)  basePayload.source  = body.source;
 
       if (target_role) {
-        notifPayload.target_role = target_role;
+        // Busca TODOS os usuários do role (com ou sem push token) para criar linha individual
+        const { data: roleUsers } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("role", target_role);
+        const rows = (roleUsers ?? []).map((u: { id: string }) => ({
+          ...basePayload,
+          target_role,
+          target_user_id: u.id,
+        }));
+        if (rows.length > 0) await supabase.from("admin_notifications").insert(rows);
+      } else {
+        // Notificação para usuário específico (designer, cliente)
+        const notifPayload: any = { ...basePayload };
+        if (body.target_user_id) {
+          notifPayload.target_user_id = body.target_user_id;
+        } else if (profile_ids && profile_ids.length === 1) {
+          notifPayload.target_user_id = profile_ids[0];
+        } else if (case_id && caseClientId) {
+          notifPayload.target_user_id = caseClientId;
+        }
+        await supabase.from("admin_notifications").insert(notifPayload);
       }
-      if (body.target_user_id) {
-        notifPayload.target_user_id = body.target_user_id;
-      } else if (profile_ids && profile_ids.length === 1) {
-        notifPayload.target_user_id = profile_ids[0];
-      } else if (case_id && caseClientId) {
-        // notificação de case: vai APENAS para o cliente específico, sem target_role
-        notifPayload.target_user_id = caseClientId;
-      }
-
-      // Campos de navegação — permitem clicar direto no post pelo sino
-      if (body.case_id)  notifPayload.case_id  = body.case_id;
-      if (body.post_id)  notifPayload.post_id  = body.post_id;
-      if (body.source)   notifPayload.source   = body.source;
-
-      await supabase.from("admin_notifications").insert(notifPayload);
     } catch { /* best-effort */ }
 
     if (profiles.length === 0) {

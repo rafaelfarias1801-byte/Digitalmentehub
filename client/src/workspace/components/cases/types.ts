@@ -50,6 +50,7 @@ export interface Post {
   approval_status: "pendente" | "aprovado" | "reprovado" | "alteracao" | "agendado" | "postado" | "pendente_alteracao";
   rejection_reason?: string | null;
   rejection_reason_at?: string | null;
+  rejection_history?: Array<{ reason: string; type: string; created_at: string }> | null;
   status_changed_at?: string | null;
   extra_info?: string;
   media_urls?: string[];
