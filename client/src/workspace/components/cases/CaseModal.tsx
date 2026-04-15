@@ -10,8 +10,9 @@ import type { Case } from "./types";
 import { supabase } from "../../../lib/supabaseClient";
 
 // ── Botão de conexão OAuth TikTok ─────────────────────────────
-function TikTokConnectButton({ caseId, connected }: { caseId: string; connected: boolean }) {
+function TikTokConnectButton({ caseId, connected, onDisconnect }: { caseId: string; connected: boolean; onDisconnect: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   async function handleConnect() {
     setLoading(true);
@@ -27,12 +28,32 @@ function TikTokConnectButton({ caseId, connected }: { caseId: string; connected:
     }
   }
 
+  async function handleDisconnect() {
+    if (!confirm("Desconectar TikTok desta conta?")) return;
+    setDisconnecting(true);
+    try {
+      await supabase.from("cases").update({
+        tiktok_access_token: null,
+        tiktok_refresh_token: null,
+        tiktok_token_expires_at: null,
+        tiktok_open_id: null,
+        tiktok_user_id: null,
+        tiktok_username: null,
+      }).eq("id", caseId);
+      onDisconnect();
+    } catch (e: any) {
+      alert("Erro ao desconectar: " + (e?.message ?? ""));
+    } finally {
+      setDisconnecting(false);
+    }
+  }
+
   return (
-    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
       <button
         type="button"
         onClick={handleConnect}
-        disabled={loading}
+        disabled={loading || disconnecting}
         style={{
           display: "flex", alignItems: "center", gap: 6,
           padding: "7px 16px", borderRadius: 8, border: "none",
@@ -46,9 +67,20 @@ function TikTokConnectButton({ caseId, connected }: { caseId: string; connected:
         🎵 {loading ? "Aguarde..." : connected ? "✓ TikTok conectado — reconectar" : "Conectar TikTok via OAuth"}
       </button>
       {connected && (
-        <span style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
-          Conta autorizada
-        </span>
+        <button
+          type="button"
+          onClick={handleDisconnect}
+          disabled={disconnecting}
+          style={{
+            padding: "7px 12px", borderRadius: 8,
+            border: "1px solid rgba(220,50,50,0.3)",
+            background: "rgba(220,50,50,0.07)", color: "#d63232",
+            fontFamily: "Poppins", fontWeight: 600, fontSize: ".72rem",
+            cursor: disconnecting ? "wait" : "pointer",
+          }}
+        >
+          {disconnecting ? "..." : "Desconectar"}
+        </button>
       )}
     </div>
   );
@@ -498,7 +530,11 @@ export default function CaseModal({
               </div>
               {/* Botão OAuth — só aparece se o case já foi salvo (tem id) */}
               {editing?.id && (
-                <TikTokConnectButton caseId={editing.id} connected={!!form.tiktok_user_id} />
+                <TikTokConnectButton
+                  caseId={editing.id}
+                  connected={!!form.tiktok_user_id}
+                  onDisconnect={() => setForm(prev => ({ ...prev, tiktok_user_id: "", tiktok_username: "" }))}
+                />
               )}
             </div>
 

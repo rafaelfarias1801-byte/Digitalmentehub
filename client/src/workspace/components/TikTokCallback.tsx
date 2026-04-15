@@ -45,7 +45,7 @@ export default function TikTokCallback() {
 
         // Redireciona para o workspace do cliente após 2s
         setTimeout(() => {
-          setLocation(`/workspace/clientes/${state}/conteudo`);
+          setLocation(`/workspace/clientes/${state}`);
         }, 2000);
       } catch (e: any) {
         setStatus("error");
