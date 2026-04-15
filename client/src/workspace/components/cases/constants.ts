@@ -79,8 +79,8 @@ export const APPROVAL_STYLES: Record<
     label: "Postado",
   },
   pendente_alteracao: {
-    bg: "rgba(16,185,129,0.13)",
-    color: "#10b981",
+    bg: "rgba(59,130,246,0.15)",
+    color: "#3b82f6",
     label: "Aguardando re-aprovação",
   },
 };

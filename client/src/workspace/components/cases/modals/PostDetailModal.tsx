@@ -809,8 +809,8 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               ) : currentPost.approval_status === "pendente_alteracao" ? (
                 /* Post ajustado pelo time — cliente deve revisar */
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ border: "2px solid #10b981", background: "rgba(16,185,129,0.08)", borderRadius: 10, padding: "10px 14px", fontSize: ".78rem", color: "#10b981", fontWeight: 600, lineHeight: 1.5 }}>
-                    ✅ O time fez os ajustes solicitados! Por favor, revise o post acima e decida.
+                  <div style={{ border: "2px solid #3b82f6", background: "rgba(59,130,246,0.08)", borderRadius: 10, padding: "10px 14px", fontSize: ".78rem", color: "#3b82f6", fontWeight: 600, lineHeight: 1.5 }}>
+                    📤 O time fez os ajustes solicitados! Por favor, revise o post acima e decida.
                   </div>
                   <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
                     <button onClick={() => setConfirmApproval(true)} disabled={saving} style={{
