@@ -130,23 +130,42 @@ export default function NotificationBadge({ profile }: Props) {
     load();
 
     // Realtime — escuta novas notificações para este usuário
-    const channel = supabase
-      .channel(`notifications_${profile.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_notifications" }, payload => {
+    // Canal 1: notificações por role (ex: target_role=admin)
+    const channelRole = supabase
+      .channel(`notif_role_${profile.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "admin_notifications",
+        filter: `target_role=eq.${profile.role}`,
+      }, payload => {
         const n = payload.new as AdminNotification;
-        // Só adiciona se for para este usuário/role E não for um tipo admin→designer
-        const isForMe =
-          n.target_user_id === profile.id ||
-          n.target_role === profile.role;
-        // Admin não vê notificações que ele mesmo triggerou (admin→designer)
-        const isAdminToDesigner =
-          profile.role === "admin" && ADMIN_TO_DESIGNER_TYPES.has(n.type);
-        // Não mostrar notificações destinadas a outro usuário específico
-        const isForOtherUser =
-          n.target_user_id != null && n.target_user_id !== profile.id;
+        const isAdminToDesigner = profile.role === "admin" && ADMIN_TO_DESIGNER_TYPES.has(n.type);
+        if (!isAdminToDesigner) {
+          setNotifications(prev => {
+            if (prev.some(x => x.id === n.id)) return prev;
+            return [n, ...prev].slice(0, 50);
+          });
+        }
+      })
+      .subscribe();
 
-        if (isForMe && !isAdminToDesigner && !isForOtherUser) {
-          setNotifications(prev => [n, ...prev].slice(0, 50));
+    // Canal 2: notificações diretas para este usuário (target_user_id)
+    const channelUser = supabase
+      .channel(`notif_user_${profile.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "admin_notifications",
+        filter: `target_user_id=eq.${profile.id}`,
+      }, payload => {
+        const n = payload.new as AdminNotification;
+        const isAdminToDesigner = profile.role === "admin" && ADMIN_TO_DESIGNER_TYPES.has(n.type);
+        if (!isAdminToDesigner) {
+          setNotifications(prev => {
+            if (prev.some(x => x.id === n.id)) return prev;
+            return [n, ...prev].slice(0, 50);
+          });
         }
       })
       .subscribe();
@@ -156,7 +175,8 @@ export default function NotificationBadge({ profile }: Props) {
     const pollInterval = setInterval(() => { void load(); }, 20000);
 
     return () => {
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(channelRole);
+      void supabase.removeChannel(channelUser);
       clearInterval(pollInterval);
     };
   }, [profile.id]);
