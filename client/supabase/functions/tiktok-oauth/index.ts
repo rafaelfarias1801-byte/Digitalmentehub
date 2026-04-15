@@ -59,7 +59,9 @@ Deno.serve(async (req) => {
       });
 
       const tokenData = await tokenRes.json() as Record<string, any>;
+      console.log("[tiktok-oauth] token response:", JSON.stringify(tokenData));
       if (tokenData.error) {
+        console.error("[tiktok-oauth] token error:", tokenData.error, tokenData.error_description);
         return new Response(
           JSON.stringify({ error: tokenData.error_description ?? tokenData.error }),
           { status: 400, headers: { "Content-Type": "application/json", ...CORS } }
