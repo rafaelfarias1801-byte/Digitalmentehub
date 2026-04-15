@@ -54,18 +54,69 @@ interface Props { profile: Profile; }
 export default function NotificationBadge({ profile }: Props) {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [open, setOpen] = useState(false);
+  const [cases, setCases] = useState<{ id: string; name: string }[]>([]);
   const ref = useRef<HTMLDivElement>(null);
   const [, setLocation] = useLocation();
 
+  // Load cases list once for notification navigation fallback
+  useEffect(() => {
+    supabase.from("cases").select("id, name").then(({ data }) => setCases(data ?? []));
+  }, []);
+
+  // Extract case name from notification title
+  // e.g. "✅ ClienteName aprovou um post" → "ClienteName"
+  function extractCaseName(title: string): string | null {
+    // Strip leading emoji/symbols
+    const cleaned = title.replace(/^[\p{Emoji}\s]+/u, "").trim();
+    // Match up to the action verb
+    const match = cleaned.match(/^(.+?)\s+(?:aprovou|comentou|reprovou|solicitou|fechou|enviou|pediu)/i);
+    return match?.[1]?.trim() ?? null;
+  }
+
+  // Extract post title from notification body
+  // e.g. '"Post Title" foi aprovado...' → "Post Title"
+  function extractPostTitle(body: string): string | null {
+    const match = body.match(/^"([^"]+)"/);
+    return match?.[1] ?? null;
+  }
+
   // Navigate to the resource the notification is about, then mark as read
-  function handleNotifClick(n: AdminNotification) {
+  async function handleNotifClick(n: AdminNotification) {
     void markRead(n.id);
     setOpen(false);
+
+    // Best case: notification already has case_id + post_id stored
     if (n.case_id && n.post_id) {
       setLocation(`/workspace/clientes/${n.case_id}/conteudo/post/${n.post_id}`);
-    } else if (n.case_id) {
-      setLocation(`/workspace/clientes/${n.case_id}/conteudo`);
+      return;
     }
+    if (n.case_id) {
+      setLocation(`/workspace/clientes/${n.case_id}/conteudo`);
+      return;
+    }
+
+    // Fallback: parse from notification content
+    const caseName = extractCaseName(n.title);
+    if (!caseName) return;
+
+    const matched = cases.find(c => c.name.toLowerCase() === caseName.toLowerCase());
+    if (!matched) return;
+
+    const postTitle = extractPostTitle(n.body);
+    if (postTitle) {
+      const { data } = await supabase
+        .from("posts")
+        .select("id")
+        .eq("case_id", matched.id)
+        .or(`slug.eq.${postTitle},title.eq.${postTitle}`)
+        .limit(1);
+      if (data && data.length > 0) {
+        setLocation(`/workspace/clientes/${matched.id}/conteudo/post/${data[0].id}`);
+        return;
+      }
+    }
+    // Navigate to case content tab even without specific post
+    setLocation(`/workspace/clientes/${matched.id}/conteudo`);
   }
 
   const unread = notifications.filter(n => !n.read).length;
@@ -222,11 +273,12 @@ export default function NotificationBadge({ profile }: Props) {
             ) : (
               notifications.map(n => {
                 const style = getNotifStyle(n);
-                const isNavigable = !!(n.case_id || n.post_id);
+                // Every notification is navigable — either via stored ids or content parsing
+                const isNavigable = true;
                 return (
                 <div
                   key={n.id}
-                  onClick={() => handleNotifClick(n)}
+                  onClick={() => void handleNotifClick(n)}
                   style={{
                     padding: "12px 16px",
                     borderBottom: "1px solid var(--ws-border)",
