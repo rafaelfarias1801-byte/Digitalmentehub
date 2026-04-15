@@ -441,6 +441,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   if (selected) {
     return (
       <PostDetailModal
+        key={selected.id}
         post={selected}
         caseData={caseData}
         onClose={closePost}
