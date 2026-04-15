@@ -35,6 +35,7 @@ export const EMPTY_CASE: Omit<Case, "id"> = {
   instagram_page_id: "",
   facebook_page_id: "",
   tiktok_username: "",
+  tiktok_user_id: "",
   linkedin_url: "",
 };
 

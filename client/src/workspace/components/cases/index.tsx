@@ -108,6 +108,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, onCaseTabChang
       instagram_page_id: caseItem.instagram_page_id ?? "",
       facebook_page_id: caseItem.facebook_page_id ?? "",
       tiktok_username: caseItem.tiktok_username ?? "",
+      tiktok_user_id: caseItem.tiktok_user_id ?? "",
       linkedin_url: caseItem.linkedin_url ?? "",
     });
     setModal(true);
