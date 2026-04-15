@@ -298,12 +298,26 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
     setUploadingSlide(false);
   }
 
+  const CAROUSEL_MAX = 10;
+
   async function addSlides(files: FileList) {
     if (readonly) return;
+
+    // Limite do Instagram: máximo 10 itens por carrossel
+    const slotsLeft = CAROUSEL_MAX - allSlides.length;
+    if (slotsLeft <= 0) {
+      alert(`Limite atingido! O Instagram permite no máximo ${CAROUSEL_MAX} fotos/vídeos por carrossel.`);
+      return;
+    }
+    const filesToUpload = Array.from(files).slice(0, slotsLeft);
+    if (filesToUpload.length < files.length) {
+      alert(`Apenas ${filesToUpload.length} arquivo(s) serão adicionados. O carrossel já tem ${allSlides.length} itens e o limite é ${CAROUSEL_MAX}.`);
+    }
+
     setUploadingSlide(true);
     const uploaded: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const { file, ext } = await normalizeImageFile(files[i]);
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const { file, ext } = await normalizeImageFile(filesToUpload[i]);
       const filename = `posts/${caseData.id}/${Date.now()}-${i}.${ext}`;
       const { data, error } = await supabase.functions.invoke("get-r2-upload-url", {
         body: { filename, contentType: file.type },
@@ -598,9 +612,9 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   </div>
                 ))}
 
-                {/* Botão adicionar mídia */}
-                <button onClick={() => slideFileRef.current?.click()} disabled={uploadingSlide} title="Adicionar mídia"
-                  style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 6, border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center" }}
+                {/* Botão adicionar mídia — oculto quando limite atingido */}
+                <button onClick={() => slideFileRef.current?.click()} disabled={uploadingSlide || allSlides.length >= CAROUSEL_MAX} title={allSlides.length >= CAROUSEL_MAX ? `Limite de ${CAROUSEL_MAX} itens atingido` : "Adicionar mídia"}
+                  style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 6, border: "1px dashed var(--ws-border2)", background: "var(--ws-surface2)", color: allSlides.length >= CAROUSEL_MAX ? "var(--ws-border2)" : "var(--ws-text3)", cursor: allSlides.length >= CAROUSEL_MAX ? "not-allowed" : "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", opacity: allSlides.length >= CAROUSEL_MAX ? 0.4 : 1 }}
                 >{uploadingSlide ? "⏳" : "+"}</button>
                 <input ref={el => { slideFileRef.current = el; }} type="file" accept="image/*,video/*" multiple style={{ display: "none" }}
                   onChange={e => { if (e.target.files?.length) void addSlides(e.target.files); e.target.value = ""; }} />
