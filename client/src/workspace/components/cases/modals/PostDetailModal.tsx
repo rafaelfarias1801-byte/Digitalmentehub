@@ -889,7 +889,73 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             )}
           </div>
 
-          {/* ── Comentários — logo após o status ── */}
+          {!!caseData.phone && (
+            <div style={{ marginTop: 12, marginBottom: 16 }}>
+              <button onClick={sendToWhatsApp} style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "8px 16px",
+                backgroundColor: "#25D366", color: "#fff", border: "none", borderRadius: 8,
+                cursor: "pointer", fontSize: ".78rem", fontWeight: 600,
+              }}>Enviar via WhatsApp</button>
+            </div>
+          )}
+
+          {/* ── Legenda + Hashtags ── */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <div style={labelStyle}>Legenda</div>
+              {!editCaption && !readonly && (
+                <button onClick={() => { setCaptionDraft(currentPost.caption || ""); setHashtagsDraft(currentPost.hashtags || ""); setEditCaption(true); }}
+                  style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
+                  ✏ Editar
+                </button>
+              )}
+            </div>
+            {editCaption ? (
+              <div>
+                <textarea className="ws-input" value={captionDraft} onChange={e => setCaptionDraft(e.target.value)}
+                  placeholder="Legenda do post..." style={{ minHeight: 100, resize: "vertical", fontSize: ".84rem", marginBottom: 10, lineHeight: 1.6 }} />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => { void save({ caption: captionDraft }); setEditCaption(false); }}
+                    style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+                    Salvar
+                  </button>
+                  <button onClick={() => setEditCaption(false)}
+                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {currentPost.caption ? (
+                  <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {currentPost.caption}
+                  </div>
+                ) : (
+                  <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Sem legenda</div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ── Extra info — sempre visível, editável só pelo admin ── */}
+          {(stripMediaTag(currentPost.extra_info) || !readonly) && (
+            <ExtraInfoSection
+              extraInfo={currentPost.extra_info}
+              readonly={readonly}
+              color={caseData.color}
+              onSave={(text) => {
+                const extraUrls = decodeExtraUrls(currentPost.extra_info);
+                const encoded = extraUrls.length > 0
+                  ? `__media_urls__:${JSON.stringify(extraUrls)}
+${text}`
+                  : text;
+                void save({ extra_info: encoded });
+              }}
+            />
+          )}
+
+          {/* ── Comentários — no final ── */}
           {(() => {
             const isAlteracao = currentPost.approval_status === "alteracao";
             const isReprovado = currentPost.approval_status === "reprovado";
@@ -897,7 +963,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             const highlightColor = isReprovado ? "#ef4444" : isAlteracao ? "#f59e0b" : undefined;
             return (
               <div style={{
-                marginBottom: 20,
+                marginTop: 8,
                 ...(highlighted ? {
                   border: `2px solid ${highlightColor}`,
                   borderRadius: 12,
@@ -993,72 +1059,6 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               </div>
             );
           })()}
-
-          {!!caseData.phone && (
-            <div style={{ marginTop: 12, marginBottom: 16 }}>
-              <button onClick={sendToWhatsApp} style={{
-                display: "flex", alignItems: "center", gap: 8, padding: "8px 16px",
-                backgroundColor: "#25D366", color: "#fff", border: "none", borderRadius: 8,
-                cursor: "pointer", fontSize: ".78rem", fontWeight: 600,
-              }}>Enviar via WhatsApp</button>
-            </div>
-          )}
-
-          {/* ── Legenda + Hashtags ── */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <div style={labelStyle}>Legenda</div>
-              {!editCaption && !readonly && (
-                <button onClick={() => { setCaptionDraft(currentPost.caption || ""); setHashtagsDraft(currentPost.hashtags || ""); setEditCaption(true); }}
-                  style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
-                  ✏ Editar
-                </button>
-              )}
-            </div>
-            {editCaption ? (
-              <div>
-                <textarea className="ws-input" value={captionDraft} onChange={e => setCaptionDraft(e.target.value)}
-                  placeholder="Legenda do post..." style={{ minHeight: 100, resize: "vertical", fontSize: ".84rem", marginBottom: 10, lineHeight: 1.6 }} />
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => { void save({ caption: captionDraft }); setEditCaption(false); }}
-                    style={{ background: caseData.color, border: "none", borderRadius: 6, color: "#fff", padding: "6px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
-                    Salvar
-                  </button>
-                  <button onClick={() => setEditCaption(false)}
-                    style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontFamily: "inherit", fontSize: ".8rem" }}>
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {currentPost.caption ? (
-                  <div style={{ background: "var(--ws-surface2)", borderRadius: 8, padding: "10px 12px", fontSize: ".84rem", color: "var(--ws-text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                    {currentPost.caption}
-                  </div>
-                ) : (
-                  <div style={{ color: "var(--ws-text3)", fontSize: ".82rem" }}>Sem legenda</div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ── Extra info — sempre visível, editável só pelo admin ── */}
-          {(stripMediaTag(currentPost.extra_info) || !readonly) && (
-            <ExtraInfoSection
-              extraInfo={currentPost.extra_info}
-              readonly={readonly}
-              color={caseData.color}
-              onSave={(text) => {
-                const extraUrls = decodeExtraUrls(currentPost.extra_info);
-                const encoded = extraUrls.length > 0
-                  ? `__media_urls__:${JSON.stringify(extraUrls)}
-${text}`
-                  : text;
-                void save({ extra_info: encoded });
-              }}
-            />
-          )}
 
         </div>
 
