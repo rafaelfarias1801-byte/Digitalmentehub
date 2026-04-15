@@ -491,92 +491,141 @@ export default function TabDesigner({ caseData, readonly = false }: TabDesignerP
   // ════════════════════════════════════════
   //  VIEW — WORKSPACE DO DESIGNER
   // ════════════════════════════════════════
+
+  // Avatar helper
+  const designerAvatar = (size: number, radius: number) => (
+    <div style={{ width: size, height: size, borderRadius: radius, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}22)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: size * 0.3, color: caseData.color, flexShrink: 0, overflow: "hidden" }}>
+      {(activeDesigner as any)?.avatar_url
+        ? <img src={(activeDesigner as any).avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        : activeDesigner?.name.slice(0, 2).toUpperCase()}
+    </div>
+  );
+
   return (
-    <div style={{ display: "flex", gap: 0, minHeight: 520, border: "1px solid var(--ws-border)", borderRadius: 14, overflow: "hidden" }}>
+    <div style={{ border: "1px solid var(--ws-border)", borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: isMobile ? "column" : "row", minHeight: isMobile ? 0 : 520 }}>
 
-      {/* Sidebar clientes */}
-      <div style={{ width: 176, flexShrink: 0, borderRight: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", flexDirection: "column" }}>
-        <button onClick={() => setView("cards")} style={{ background: "none", border: "none", borderBottom: "1px solid var(--ws-border)", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".68rem", fontFamily: "Poppins", letterSpacing: "1px", padding: "10px 14px", textAlign: "left" }}>
-          ← Designers
-        </button>
-        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--ws-border)" }}>
-          <div style={{ width: 36, height: 36, borderRadius: 9, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}22)`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: ".85rem", color: caseData.color, marginBottom: 6 }}>
-            {(activeDesigner as any)?.avatar_url
-            ? <img src={(activeDesigner as any).avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 9 }} />
-            : activeDesigner?.name.slice(0, 2).toUpperCase()}
-          </div>
-          <div style={{ fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text)" }}>{activeDesigner?.name}</div>
-          <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeDesigner?.email}</div>
-        </div>
-        <div style={{ fontSize: ".55rem", fontFamily: "Poppins", letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--ws-text3)", padding: "10px 14px 4px" }}>Clientes</div>
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {designerCases.length === 0 ? (
-            <div style={{ padding: "14px", fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", lineHeight: 1.5, textAlign: "center", marginTop: 8 }}>
-              Nenhum cliente vinculado ainda. Crie um briefing.
+      {/* ── MOBILE: compact top header ── */}
+      {isMobile ? (
+        <div style={{ background: "var(--ws-surface)", borderBottom: "1px solid var(--ws-border)" }}>
+          {/* Row 1: back + designer + action */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px" }}>
+            <button onClick={() => setView("cards")} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".72rem", fontFamily: "Poppins", padding: 0, whiteSpace: "nowrap", flexShrink: 0 }}>← Designers</button>
+            {designerAvatar(28, 7)}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeDesigner?.name}</div>
+              <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeCase.name}</div>
             </div>
-          ) : (() => {
-            const ativos    = designerCases.filter(c => c.status === "ativo");
-            const pausados  = designerCases.filter(c => c.status === "pausado");
-            const encerrados = designerCases.filter(c => c.status === "encerrado");
-            const allAtivos = pausados.length === 0 && encerrados.length === 0;
-
-            const renderClient = (c: Case) => (
-              <button key={c.id} onClick={() => void switchClient(c.id)}
-                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: activeClientId === c.id ? `${c.color}18` : "none", border: "none", borderLeft: activeClientId === c.id ? `2px solid ${c.color}` : "2px solid transparent", color: activeClientId === c.id ? c.color : "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 14px", textAlign: "left", fontFamily: "inherit", transition: "all .15s" }}
-              >
-                <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: `${c.color}33`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: c.color }}>
-                  {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.name.slice(0, 2).toUpperCase()}
-                </div>
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
-              </button>
-            );
-
-            const GroupLabel = ({ label }: { label: string }) => (
-              <div style={{ fontSize: ".52rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "var(--ws-text3)", padding: "8px 14px 2px" }}>{label}</div>
-            );
-
-            if (allAtivos) return <>{ativos.map(renderClient)}</>;
-
-            return <>
-              {ativos.length > 0 && <><GroupLabel label="Ativos" />{ativos.map(renderClient)}</>}
-              {pausados.length > 0 && <><GroupLabel label="Pausados" />{pausados.map(renderClient)}</>}
-              {encerrados.length > 0 && <><GroupLabel label="Encerrados" />{encerrados.map(renderClient)}</>}
-            </>;
-          })()}
-        </div>
-
-      </div>
-
-      {/* Área principal */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--ws-bg)", minWidth: 0 }}>
-        {/* Header */}
-        <div style={{ padding: "14px 20px 0", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div>
-              <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{activeCase.name}<span style={{ color: activeCase.color }}>.</span></div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
-                <div style={{ width: 20, height: 20, borderRadius: 5, background: `linear-gradient(135deg, ${caseData.color}55, ${caseData.color}22)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: caseData.color, flexShrink: 0 }}>
-                  {(activeDesigner as any)?.avatar_url
-            ? <img src={(activeDesigner as any).avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 9 }} />
-            : activeDesigner?.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div style={{ fontSize: ".75rem", color: "var(--ws-text2)", fontFamily: "Poppins", fontWeight: 600 }}>{activeDesigner?.name}</div>
-              </div>
-            </div>
-            {!readonly && activeSubTab === "briefings" && <button className="ws-btn" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => setBriefingModal(true)}>+ Novo briefing</button>}
-            {!readonly && activeSubTab === "identidade" && !editingBrand && <button className="ws-btn-ghost" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => { setBrandForm(brandIdentity); setEditingBrand(true); }}>✎ Editar</button>}
+            {!readonly && activeSubTab === "briefings" && (
+              <button className="ws-btn" style={{ fontSize: ".72rem", padding: "5px 10px", flexShrink: 0 }} onClick={() => setBriefingModal(true)}>+ Briefing</button>
+            )}
+            {!readonly && activeSubTab === "identidade" && !editingBrand && (
+              <button className="ws-btn-ghost" style={{ fontSize: ".72rem", padding: "5px 10px", flexShrink: 0 }} onClick={() => { setBrandForm(brandIdentity); setEditingBrand(true); }}>✎ Editar</button>
+            )}
           </div>
-          <div style={{ display: "flex" }}>
+
+          {/* Row 2: client chips (horizontal scroll) */}
+          {designerCases.length > 1 && (
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 14px 10px", scrollbarWidth: "none" }}>
+              {designerCases.map(c => (
+                <button key={c.id} onClick={() => void switchClient(c.id)} style={{
+                  display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+                  background: activeClientId === c.id ? `${c.color}22` : "var(--ws-surface2)",
+                  border: `1px solid ${activeClientId === c.id ? c.color : "var(--ws-border)"}`,
+                  borderRadius: 20, padding: "4px 10px", cursor: "pointer",
+                  color: activeClientId === c.id ? c.color : "var(--ws-text3)",
+                  fontSize: ".72rem", fontFamily: "inherit", transition: "all .15s",
+                }}>
+                  <div style={{ width: 14, height: 14, borderRadius: 3, background: `${c.color}44`, overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".45rem", fontWeight: 800, color: c.color }}>
+                    {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Row 3: sub-tabs */}
+          <div style={{ display: "flex", borderTop: "1px solid var(--ws-border)" }}>
             {(["briefings", "identidade", "financeiro"] as const).map(tab => (
-              <button key={tab} onClick={() => setActiveSubTab(tab)} style={{ background: "none", border: "none", cursor: "pointer", borderBottom: activeSubTab === tab ? `2px solid ${activeCase.color}` : "2px solid transparent", color: activeSubTab === tab ? activeCase.color : "var(--ws-text3)", fontSize: ".78rem", padding: "6px 14px", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
-                {tab === "briefings" ? "📋 Briefings" : tab === "identidade" ? "🎨 Identidade Visual" : "💰 Financeiro"}
+              <button key={tab} onClick={() => setActiveSubTab(tab)} style={{ flex: 1, background: "none", border: "none", cursor: "pointer", borderBottom: activeSubTab === tab ? `2px solid ${activeCase.color}` : "2px solid transparent", color: activeSubTab === tab ? activeCase.color : "var(--ws-text3)", fontSize: ".72rem", padding: "8px 4px", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
+                {tab === "briefings" ? "📋 Briefings" : tab === "identidade" ? "🎨 Visual" : "💰 Financeiro"}
               </button>
             ))}
           </div>
         </div>
+      ) : (
+        /* ── DESKTOP: sidebar clientes ── */
+        <div style={{ width: 176, flexShrink: 0, borderRight: "1px solid var(--ws-border)", background: "var(--ws-surface)", display: "flex", flexDirection: "column" }}>
+          <button onClick={() => setView("cards")} style={{ background: "none", border: "none", borderBottom: "1px solid var(--ws-border)", color: "var(--ws-text3)", cursor: "pointer", fontSize: ".68rem", fontFamily: "Poppins", letterSpacing: "1px", padding: "10px 14px", textAlign: "left" }}>
+            ← Designers
+          </button>
+          <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--ws-border)" }}>
+            {designerAvatar(36, 9)}
+            <div style={{ fontWeight: 700, fontSize: ".82rem", color: "var(--ws-text)", marginTop: 6 }}>{activeDesigner?.name}</div>
+            <div style={{ fontSize: ".62rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeDesigner?.email}</div>
+          </div>
+          <div style={{ fontSize: ".55rem", fontFamily: "Poppins", letterSpacing: "1.2px", textTransform: "uppercase", color: "var(--ws-text3)", padding: "10px 14px 4px" }}>Clientes</div>
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            {designerCases.length === 0 ? (
+              <div style={{ padding: "14px", fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", lineHeight: 1.5, textAlign: "center", marginTop: 8 }}>
+                Nenhum cliente vinculado ainda. Crie um briefing.
+              </div>
+            ) : (() => {
+              const ativos     = designerCases.filter(c => c.status === "ativo");
+              const pausados   = designerCases.filter(c => c.status === "pausado");
+              const encerrados = designerCases.filter(c => c.status === "encerrado");
+              const allAtivos  = pausados.length === 0 && encerrados.length === 0;
+              const renderClient = (c: Case) => (
+                <button key={c.id} onClick={() => void switchClient(c.id)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: activeClientId === c.id ? `${c.color}18` : "none", border: "none", borderLeft: activeClientId === c.id ? `2px solid ${c.color}` : "2px solid transparent", color: activeClientId === c.id ? c.color : "var(--ws-text2)", cursor: "pointer", fontSize: ".78rem", padding: "8px 14px", textAlign: "left", fontFamily: "inherit", transition: "all .15s" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: `${c.color}33`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".5rem", fontWeight: 800, color: c.color }}>
+                    {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+                </button>
+              );
+              const GroupLabel = ({ label }: { label: string }) => (
+                <div style={{ fontSize: ".52rem", fontFamily: "Poppins", letterSpacing: "1px", textTransform: "uppercase", color: "var(--ws-text3)", padding: "8px 14px 2px" }}>{label}</div>
+              );
+              if (allAtivos) return <>{ativos.map(renderClient)}</>;
+              return <>
+                {ativos.length > 0    && <><GroupLabel label="Ativos"     />{ativos.map(renderClient)}</>}
+                {pausados.length > 0  && <><GroupLabel label="Pausados"   />{pausados.map(renderClient)}</>}
+                {encerrados.length > 0 && <><GroupLabel label="Encerrados"/>{encerrados.map(renderClient)}</>}
+              </>;
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── Área principal (desktop only header) ── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--ws-bg)", minWidth: 0 }}>
+        {/* Desktop header */}
+        {!isMobile && (
+          <div style={{ padding: "14px 20px 0", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1rem", color: "var(--ws-text)" }}>{activeCase.name}<span style={{ color: activeCase.color }}>.</span></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                  {designerAvatar(20, 5)}
+                  <div style={{ fontSize: ".75rem", color: "var(--ws-text2)", fontFamily: "Poppins", fontWeight: 600 }}>{activeDesigner?.name}</div>
+                </div>
+              </div>
+              {!readonly && activeSubTab === "briefings" && <button className="ws-btn" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => setBriefingModal(true)}>+ Novo briefing</button>}
+              {!readonly && activeSubTab === "identidade" && !editingBrand && <button className="ws-btn-ghost" style={{ fontSize: ".78rem", padding: "7px 14px" }} onClick={() => { setBrandForm(brandIdentity); setEditingBrand(true); }}>✎ Editar</button>}
+            </div>
+            <div style={{ display: "flex" }}>
+              {(["briefings", "identidade", "financeiro"] as const).map(tab => (
+                <button key={tab} onClick={() => setActiveSubTab(tab)} style={{ background: "none", border: "none", cursor: "pointer", borderBottom: activeSubTab === tab ? `2px solid ${activeCase.color}` : "2px solid transparent", color: activeSubTab === tab ? activeCase.color : "var(--ws-text3)", fontSize: ".78rem", padding: "6px 14px", fontFamily: "inherit", transition: "all .15s", marginBottom: -1 }}>
+                  {tab === "briefings" ? "📋 Briefings" : tab === "identidade" ? "🎨 Identidade Visual" : "💰 Financeiro"}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Conteúdo */}
-        <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? 14 : 20 }}>
           {loadingWorkspace ? <Loader /> : (
             <>
               {activeSubTab === "briefings" && (
