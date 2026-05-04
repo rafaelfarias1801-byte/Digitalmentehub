@@ -579,7 +579,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </div>
               )}
               <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 4 }}>
-                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + (currentPost.media_type !== "stories" ? " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "") : "Sem data"}
+                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + (currentPost.media_type !== "stories" && currentPost.media_type !== "banners" ? " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "") : "Sem data"}
               </div>
               {currentPost.media_type === "banners" && (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text)", marginBottom: 4, background: "var(--ws-surface2)", display: "inline-block", padding: "4px 8px", borderRadius: 4 }}>
@@ -1233,7 +1233,7 @@ ${text}`
                 const time = scheduledTimeValue || "12:00";
                 void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
               }} />
-            {currentPost.media_type !== "stories" && (
+            {currentPost.media_type !== "stories" && currentPost.media_type !== "banners" && (
               <select className="ws-input" value={scheduledTimeValue}
                 onChange={e => {
                   const newTime = e.target.value;

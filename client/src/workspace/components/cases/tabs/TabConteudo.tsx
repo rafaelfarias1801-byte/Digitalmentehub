@@ -636,7 +636,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                       <span>
                         {post.scheduled_date
                           ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) +
-                            (post.media_type !== "stories" ? " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "")
+                            (post.media_type !== "stories" && post.media_type !== "banners" ? " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "")
                           : "Sem data"}
                       </span>
 
@@ -716,7 +716,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                 <label className="ws-label">Data *</label>
                 <input className="ws-input" type="date" value={form.scheduled_date} onChange={e => setForm(p => ({ ...p, scheduled_date: e.target.value }))} />
               </div>
-              {form.media_type !== "stories" && (
+              {form.media_type !== "stories" && form.media_type !== "banners" && (
                 <div>
                   <label className="ws-label">Horário *</label>
                   <select className="ws-input" value={form.scheduled_time ?? "12:00"} onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
