@@ -888,11 +888,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
 
             ) : readonly ? (
               /* ── CLIENTE ── */
-              currentPost.media_type === "stories" ? (
-                <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
-                  👁 Este conteúdo (Stories) é apenas para visualização. Use os comentários para sugerir ajustes.
-                </div>
-              ) : isLocked ? (
+              isLocked ? (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                   🔒 Você já aprovou este post.
                 </div>
@@ -1073,6 +1069,16 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                         transition: "all .15s",
                       }}>
                         ✓ Aprovar
+                      </button>
+                      <button onClick={() => setConfirmStatus("postado")} disabled={saving} style={{
+                        padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                        fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
+                        background: APPROVAL_STYLES["postado"].bg, color: APPROVAL_STYLES["postado"].color,
+                        opacity: currentPost.approval_status === "postado" ? 1 : 0.6,
+                        outline: currentPost.approval_status === "postado" ? `2px solid ${APPROVAL_STYLES["postado"].color}` : "none",
+                        transition: "all .15s",
+                      }}>
+                        ✅ Postado
                       </button>
                     </>
                   )}
