@@ -579,7 +579,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </div>
               )}
               <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 4 }}>
-                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
+                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + (currentPost.media_type !== "stories" ? " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "") : "Sem data"}
               </div>
               {currentPost.media_type === "banners" && (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text)", marginBottom: 4, background: "var(--ws-surface2)", display: "inline-block", padding: "4px 8px", borderRadius: 4 }}>
@@ -1049,9 +1049,10 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           )}
 
           {/* ── Legenda + Hashtags ── */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <div style={labelStyle}>Legenda</div>
+          {currentPost.media_type !== "banners" && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={labelStyle}>Legenda {currentPost.media_type === "stories" && <span style={{ textTransform: "none", opacity: 0.7 }}>(opcional)</span>}</div>
               {!editCaption && !readonly && (
                 <button onClick={() => { setCaptionDraft(currentPost.caption || ""); setHashtagsDraft(currentPost.hashtags || ""); setEditCaption(true); }}
                   style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
@@ -1086,6 +1087,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               </>
             )}
           </div>
+          )}
 
           {/* ── Extra info — sempre visível, editável só pelo admin ── */}
           {(stripMediaTag(currentPost.extra_info) || !readonly) && (
@@ -1231,16 +1233,18 @@ ${text}`
                 const time = scheduledTimeValue || "12:00";
                 void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
               }} />
-            <select className="ws-input" value={scheduledTimeValue}
-              onChange={e => {
-                const newTime = e.target.value;
-                const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
-                void save({ scheduled_date: `${date}T${newTime}:00` });
-              }} style={{ fontSize: ".8rem" }}>
-              <option value="12:00">12:00</option>
-              <option value="15:00">15:00</option>
-              <option value="18:00">18:00</option>
-            </select>
+            {currentPost.media_type !== "stories" && (
+              <select className="ws-input" value={scheduledTimeValue}
+                onChange={e => {
+                  const newTime = e.target.value;
+                  const date = scheduledDateValue || new Date().toISOString().slice(0, 10);
+                  void save({ scheduled_date: `${date}T${newTime}:00` });
+                }} style={{ fontSize: ".8rem", marginTop: 6 }}>
+                <option value="12:00">12:00</option>
+                <option value="15:00">15:00</option>
+                <option value="18:00">18:00</option>
+              </select>
+            )}
           </div>}
 
           {!readonly && <div style={{ marginBottom: 20 }}>

@@ -270,7 +270,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     if (!form.title.trim()) return alert("O campo 'Título / Tema' é obrigatório.");
     if (!form.scheduled_date) return alert("A 'Data de agendamento' é obrigatória.");
     if (mediaUrls.length === 0) return alert("Você precisa enviar pelo menos uma mídia (foto ou vídeo).");
-    if (!form.caption.trim()) return alert("A 'Legenda' é obrigatória.");
+    if (!form.caption.trim() && form.media_type !== "stories" && form.media_type !== "banners") return alert("A 'Legenda' é obrigatória para este tipo de post.");
     if (form.platforms.length === 0) return alert("Selecione pelo menos uma plataforma.");
 
     setSaving(true);
@@ -636,8 +636,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                       <span>
                         {post.scheduled_date
                           ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) +
-                            " às " +
-                            new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+                            (post.media_type !== "stories" ? " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "")
                           : "Sem data"}
                       </span>
 
@@ -717,14 +716,16 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                 <label className="ws-label">Data *</label>
                 <input className="ws-input" type="date" value={form.scheduled_date} onChange={e => setForm(p => ({ ...p, scheduled_date: e.target.value }))} />
               </div>
-              <div>
-                <label className="ws-label">Horário *</label>
-                <select className="ws-input" value={form.scheduled_time ?? "12:00"} onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
-                  <option value="12:00">12:00</option>
-                  <option value="15:00">15:00</option>
-                  <option value="18:00">18:00</option>
-                </select>
-              </div>
+              {form.media_type !== "stories" && (
+                <div>
+                  <label className="ws-label">Horário *</label>
+                  <select className="ws-input" value={form.scheduled_time ?? "12:00"} onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
+                    <option value="12:00">12:00</option>
+                    <option value="15:00">15:00</option>
+                    <option value="18:00">18:00</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             {form.media_type === "banners" && (
@@ -761,8 +762,12 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             )}
             <input ref={fileRef} type="file" accept="image/*,video/*" multiple style={{ display: "none" }} onChange={e => { if (e.target.files?.length) void uploadFiles(e.target.files); }} />
 
-            <label className="ws-label">Legenda *</label>
-            <textarea className="ws-input" value={form.caption} placeholder="Texto do post..." onChange={e => setForm(p => ({ ...p, caption: e.target.value }))} style={{ minHeight: 80, resize: "vertical", marginBottom: 12 }} />
+            {form.media_type !== "banners" && (
+              <>
+                <label className="ws-label">Legenda {form.media_type !== "stories" ? "*" : "(opcional)"}</label>
+                <textarea className="ws-input" value={form.caption} placeholder="Texto do post..." onChange={e => setForm(p => ({ ...p, caption: e.target.value }))} style={{ minHeight: 80, resize: "vertical", marginBottom: 12 }} />
+              </>
+            )}
 
             <label className="ws-label">Informações extras (opcional)</label>
             <textarea className="ws-input" value={stripMediaTag(form.extra_info)} placeholder="Briefing, referências..." onChange={e => { const userText = e.target.value; const extraUrls = decodeExtraUrls(form.extra_info); setForm(p => ({ ...p, extra_info: encodeExtraUrls(extraUrls, userText) })); }} style={{ minHeight: 60, resize: "vertical", marginBottom: 20 }} />
