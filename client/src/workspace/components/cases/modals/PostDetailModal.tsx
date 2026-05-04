@@ -115,6 +115,23 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
   function prevSlide() { setSlideIdx(i => Math.max(0, i - 1)); }
   function nextSlide() { setSlideIdx(i => Math.min(allSlides.length - 1, i + 1)); }
 
+  async function downloadMedia(url: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = url.split("/").pop() || "media";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      window.open(url, "_blank");
+    }
+  }
+
   // Histórico de motivos — backward compat: se não há array, usa rejection_reason avulso
   const rejectionHistory: Array<{ reason: string; type: string; created_at: string }> =
     Array.isArray(currentPost.rejection_history) && currentPost.rejection_history.length > 0
@@ -647,6 +664,15 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                     </>
                   )}
 
+                  {currentPost.media_type === "stories" && (
+                    <button onClick={() => void downloadMedia(activeSlideUrl)} title="Baixar mídia" style={{
+                      position: "absolute", bottom: 8, right: 48,
+                      background: "rgba(0,0,0,.6)", border: "none", borderRadius: "50%",
+                      width: 32, height: 32, color: "#fff", cursor: "pointer",
+                      fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all .15s",
+                    }}>⬇</button>
+                  )}
                   {/* Botão expandir — canto inferior direito */}
                   <button onClick={() => setFullscreenSlide(true)} title="Abrir em tela cheia" style={{
                     position: "absolute", bottom: 8, right: 8,
@@ -768,6 +794,28 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   touchAction: "manipulation",
                   lineHeight: 1,
                 }}>×</button>
+
+              {currentPost.media_type === "stories" && (
+                <button
+                  onClick={e => { e.stopPropagation(); void downloadMedia(activeSlideUrl); }}
+                  title="Baixar mídia"
+                  style={{
+                    position: "absolute",
+                    top: "calc(20px + env(safe-area-inset-top, 0px))",
+                    right: "calc(80px + env(safe-area-inset-right, 0px))",
+                    zIndex: 1,
+                    background: "rgba(0,0,0,.60)",
+                    border: "2px solid rgba(255,255,255,.4)",
+                    borderRadius: "50%",
+                    width: 52, height: 52,
+                    color: "#fff", fontSize: "1.4rem",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer",
+                    WebkitTapHighlightColor: "transparent",
+                    touchAction: "manipulation",
+                    lineHeight: 1,
+                  }}>⬇</button>
+              )}
 
               {/* Setas navegação no fullscreen */}
               {allSlides.length > 1 && (
