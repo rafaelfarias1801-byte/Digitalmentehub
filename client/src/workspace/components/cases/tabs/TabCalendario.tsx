@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Profile } from "../../../../lib/supabaseClient";
 import { supabase } from "../../../../lib/supabaseClient";
 import { MONTHS_FULL } from "../constants";
@@ -191,7 +191,7 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
                               fontSize: ".58rem", color: cfg.text, fontFamily: "Poppins",
                               overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
                             }}>
-                              {post.scheduled_date && (
+                              {post.scheduled_date && post.media_type !== "stories" && post.media_type !== "banners" && (
                                 <span style={{ opacity: 0.7, flexShrink: 0 }}>
                                   {new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                                 </span>
@@ -199,7 +199,7 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
                               <span style={{ overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>{label}</span>
                             </div>
                             {/* Thumbnail */}
-                            {thumbUrl && (
+                            {thumbUrl && post.media_type !== "stories" && (
                               <div style={{ width: "100%", aspectRatio: "1/1", background: "#000", overflow: "hidden", position: "relative" }}>
                                 {isVideo ? (
                                   <>
