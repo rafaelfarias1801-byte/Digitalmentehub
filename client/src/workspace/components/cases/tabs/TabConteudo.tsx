@@ -32,7 +32,8 @@ const TYPE_COLORS: Record<string, string> = {
   reels: "#E91E8C",
   carousel: "#FFC107",
   feed: "#2196F3",
-  stories: "#9C27B0"
+  stories: "#9C27B0",
+  banners: "#FF5722",
 };
 
 const EMPTY_POST: NewPostForm = {
@@ -53,6 +54,7 @@ const EMPTY_POST: NewPostForm = {
   due_date: "",
   label_color: "",
   platforms: [],
+  destination: "",
 };
 
 function isVideoUrl(url: string) {
@@ -107,6 +109,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const [notifyResult, setNotifyResult] = useState<"ok" | "error" | "notoken" | null>(null);
   const [bulkApproving, setBulkApproving] = useState(false);
   const [bulkApproveResult, setBulkApproveResult] = useState<"ok" | "error" | null>(null);
+  const [filterType, setFilterType] = useState<string>("Todos");
 
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const dragIdx = useRef<number | null>(null);
@@ -178,9 +181,9 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   }, [caseData.id]);
 
   useEffect(() => {
-    if (posts.length === 0) { setActiveMonth(""); return; }
     if (activeMonth) return;
     const now = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+    if (posts.length === 0) { setActiveMonth(now); return; }
     const keys = [...new Set(posts.map(p => p.scheduled_date ? p.scheduled_date.slice(0, 7) : "sem-data"))].sort();
     setActiveMonth(keys.includes(now) ? now : keys[0] || "sem-data");
   }, [posts, activeMonth]);
@@ -283,6 +286,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
       extra_info, media_urls: mediaUrls, comments: form.comments ?? [], 
       label_color: TYPE_COLORS[form.media_type] || "#9E9E9E", // Atribuição automática da cor igual ao calendário
       platforms: form.platforms ?? [], case_id: caseData.id,
+      destination: form.destination,
     };
 
     const { data, error } = await supabase.from("posts").insert(payload).select().single();
@@ -332,15 +336,23 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     return grouped;
   }, [posts]);
 
-  const sortedMonths = useMemo(() =>
-    Object.keys(postsByMonth).sort((a, b) => {
+  const sortedMonths = useMemo(() => {
+    const keys = Object.keys(postsByMonth);
+    const now = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+    if (!keys.includes(now)) keys.push(now);
+    return keys.sort((a, b) => {
       if (a === "sem-data") return 1;
       if (b === "sem-data") return -1;
       return a.localeCompare(b);
-    }), [postsByMonth]);
+    });
+  }, [postsByMonth]);
 
   const currentMonth = sortedMonths.includes(activeMonth) ? activeMonth : sortedMonths[0] || "sem-data";
-  const currentPosts = postsByMonth[currentMonth] || [];
+  const currentPosts = (postsByMonth[currentMonth] || []).filter(
+    p => filterType === "Todos" ? true :
+         filterType === "Estático (feed)" ? p.media_type === "feed" :
+         p.media_type === filterType.toLowerCase()
+  );
   const approvableCurrentPosts = currentPosts.filter(
     post => post.approval_status !== "aprovado" && post.approval_status !== "postado"
   );
@@ -504,24 +516,29 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             }}
           >
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              {sortedMonths.map(key => (
-                <button key={key} onClick={() => setActiveMonth(key)} style={{
-                  padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer",
-                  fontFamily: "inherit", fontSize: ".78rem", fontWeight: 600,
-                  background: currentMonth === key ? `${caseData.color}22` : "var(--ws-surface)",
-                  color: currentMonth === key ? caseData.color : "var(--ws-text3)",
-                  outline: currentMonth === key ? `2px solid ${caseData.color}` : "1px solid var(--ws-border)",
-                  transition: "all .15s",
-                }}>
-                  {getMonthLabel(key)}
-                  <span style={{
-                    marginLeft: 6, fontSize: ".65rem",
-                    background: currentMonth === key ? caseData.color : "var(--ws-border)",
-                    color: currentMonth === key ? "#fff" : "var(--ws-text3)",
-                    borderRadius: 10, padding: "1px 6px",
-                  }}>{(postsByMonth[key] || []).length}</span>
-                </button>
-              ))}
+              <select 
+                className="ws-input" 
+                value={currentMonth} 
+                onChange={(e) => setActiveMonth(e.target.value)}
+                style={{
+                  width: "auto",
+                  padding: "6px 14px",
+                  borderRadius: 20,
+                  fontFamily: "Poppins",
+                  fontSize: ".85rem",
+                  fontWeight: 600,
+                  color: caseData.color,
+                  border: `2px solid ${caseData.color}`,
+                  background: `${caseData.color}11`,
+                  cursor: "pointer",
+                }}
+              >
+                {sortedMonths.map(key => (
+                  <option key={key} value={key}>
+                    {getMonthLabel(key)} ({(postsByMonth[key] || []).length})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {currentMonth !== "sem-data" && (
@@ -555,6 +572,20 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                 </button>
               </div>
             )}
+          </div>
+
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16 }}>
+            {["Todos", "Reels", "Estático (feed)", "Carrossel", "Stories", "Banners"].map((ft) => (
+              <button key={ft} onClick={() => setFilterType(ft)} style={{
+                padding: "5px 12px", borderRadius: 16, border: "none", cursor: "pointer",
+                fontFamily: "inherit", fontSize: ".75rem", fontWeight: 500, whiteSpace: "nowrap",
+                background: filterType === ft ? `var(--ws-text)` : "var(--ws-surface2)",
+                color: filterType === ft ? "var(--ws-surface)" : "var(--ws-text2)",
+                transition: "all .15s",
+              }}>
+                {ft}
+              </button>
+            ))}
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -619,7 +650,9 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                             ? "Stories"
                             : post.media_type === "reels"
                               ? "Reels"
-                              : "Carrossel"}
+                              : post.media_type === "banners"
+                                ? "Banners"
+                                : "Carrossel"}
                       </span>
 
                       {!!post.platforms?.length && post.platforms.map(platform => {
@@ -677,6 +710,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   <option value="stories">Stories (9:16)</option>
                   <option value="reels">Reels (9:16)</option>
                   <option value="carousel">Carrossel (1:1)</option>
+                  <option value="banners">Banners</option>
                 </select>
               </div>
               <div>
@@ -692,6 +726,13 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                 </select>
               </div>
             </div>
+
+            {form.media_type === "banners" && (
+              <div style={{ marginBottom: 14 }}>
+                <label className="ws-label">Para onde vai (Site, folders, rede social...) *</label>
+                <input className="ws-input" value={form.destination || ""} placeholder="Ex: Site institucional" onChange={e => setForm(p => ({ ...p, destination: e.target.value }))} />
+              </div>
+            )}
 
             <label className="ws-label">Mídia *</label>
             <div onClick={() => fileRef.current?.click()} style={{ height: 110, borderRadius: 10, border: "1px dashed var(--ws-border2)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 10, background: "var(--ws-surface2)", gap: 6 }}>

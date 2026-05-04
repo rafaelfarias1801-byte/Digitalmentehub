@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "../../../../lib/supabaseClient";
 import RichEditor from "../RichEditor";
@@ -486,7 +486,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: "var(--ws-text2)", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
+                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : currentPost.media_type === "banners" ? "Banners" : "Carrossel"}
                 </span>
                 {(currentPost.platforms ?? []).length > 0 && (
                   <>
@@ -578,13 +578,18 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                   )}
                 </div>
               )}
-              <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins" }}>
+              <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 4 }}>
                 {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sem data"}
               </div>
+              {currentPost.media_type === "banners" && (
+                <div style={{ fontSize: ".75rem", color: "var(--ws-text)", marginBottom: 4, background: "var(--ws-surface2)", display: "inline-block", padding: "4px 8px", borderRadius: 4 }}>
+                  <b>Destino:</b> {currentPost.destination || "Não especificado"}
+                </div>
+              )}
               {/* Tipo + Plataformas — linha compacta abaixo da data */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: caseData.color, textTransform: "uppercase", letterSpacing: ".5px" }}>
-                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : "Carrossel"}
+                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : currentPost.media_type === "banners" ? "Banners" : "Carrossel"}
                 </span>
                 {(currentPost.platforms ?? []).length > 0 && (
                   <>
@@ -835,7 +840,11 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
 
             ) : readonly ? (
               /* ── CLIENTE ── */
-              isLocked ? (
+              currentPost.media_type === "stories" ? (
+                <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
+                  👁 Este conteúdo (Stories) é apenas para visualização. Use os comentários para sugerir ajustes.
+                </div>
+              ) : isLocked ? (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", background: "var(--ws-surface2)", borderRadius: 8, padding: "8px 12px", lineHeight: 1.5 }}>
                   🔒 Você já aprovou este post.
                 </div>
@@ -1242,7 +1251,14 @@ ${text}`
               <option value="stories">Stories (9:16 · 1080×1920)</option>
               <option value="reels">Reels (9:16 · 1080×1920)</option>
               <option value="carousel">Carrossel (1:1 · 1080×1080)</option>
+              <option value="banners">Banners</option>
             </select>
+          </div>}
+
+          {!readonly && currentPost.media_type === "banners" && <div style={{ marginBottom: 20 }}>
+            <div style={labelStyle}>Para onde vai</div>
+            <input className="ws-input" value={currentPost.destination || ""}
+              onChange={e => void save({ destination: e.target.value })} style={{ fontSize: ".8rem" }} placeholder="Site, redes sociais, etc." />
           </div>}
 
           <div style={{ padding: "10px 12px", background: "var(--ws-surface2)", borderRadius: 8, fontSize: ".73rem", color: "var(--ws-text3)", lineHeight: 1.6 }}>
@@ -1250,6 +1266,7 @@ ${text}`
             {currentPost.media_type === "stories" && "📐 1080 × 1920 px — Stories"}
             {currentPost.media_type === "reels" && "📐 1080 × 1920 px — Reels"}
             {currentPost.media_type === "carousel" && "📐 1080 × 1080 px — Carrossel"}
+            {currentPost.media_type === "banners" && "📐 Tamanho ajustável — Banners"}
           </div>
 
           {allSlides.length > 1 && (

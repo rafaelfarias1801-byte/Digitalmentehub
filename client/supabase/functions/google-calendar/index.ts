@@ -136,9 +136,14 @@ serve(async (req) => {
 
   // ── SYNC-ALL (O "Webhook" do Robô do Supabase) ──
   if (path === "sync-all") {
-    // Segurança máxima: Exige a chave mestra (Service Role Key) para rodar
+    // Aceita autenticação via Bearer (service key) OU via ?secret= (cron job interno)
+    const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "dig-cron-2024";
     const authHeader = req.headers.get("Authorization");
-    if (authHeader !== `Bearer ${SUPABASE_SERVICE_KEY}`) {
+    const secretParam = url.searchParams.get("secret");
+    const authorized =
+      authHeader === `Bearer ${SUPABASE_SERVICE_KEY}` ||
+      secretParam === CRON_SECRET;
+    if (!authorized) {
       return new Response("Unauthorized", { status: 401 });
     }
 
