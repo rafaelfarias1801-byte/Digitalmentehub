@@ -503,7 +503,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
             <div style={{ position: "sticky", top: 0, zIndex: 10, padding: "8px 16px", borderBottom: "1px solid var(--ws-border)", background: "var(--ws-surface2)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: "var(--ws-text2)", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : currentPost.media_type === "banners" ? "Banners" : "Carrossel"}
+                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : currentPost.media_type === "banners" ? "Banners" : currentPost.media_type === "lancamento" ? "Lançamento" : "Carrossel"}
                 </span>
                 {(currentPost.platforms ?? []).length > 0 && (
                   <>
@@ -596,7 +596,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
                 </div>
               )}
               <div style={{ fontSize: ".72rem", color: "var(--ws-text3)", fontFamily: "Poppins", marginBottom: 4 }}>
-                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + (currentPost.media_type !== "stories" && currentPost.media_type !== "banners" ? " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "") : "Sem data"}
+                {scheduledDate ? scheduledDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }) + (currentPost.media_type !== "stories" && currentPost.media_type !== "banners" && currentPost.media_type !== "lancamento" ? " às " + scheduledDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "") : "Sem data"}
               </div>
               {currentPost.media_type === "banners" && (
                 <div style={{ fontSize: ".75rem", color: "var(--ws-text)", marginBottom: 4, background: "var(--ws-surface2)", display: "inline-block", padding: "4px 8px", borderRadius: 4 }}>
@@ -606,7 +606,7 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
               {/* Tipo + Plataformas — linha compacta abaixo da data */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "Poppins", fontSize: ".65rem", fontWeight: 700, color: caseData.color, textTransform: "uppercase", letterSpacing: ".5px" }}>
-                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : currentPost.media_type === "banners" ? "Banners" : "Carrossel"}
+                  {currentPost.media_type === "feed" ? "Feed" : currentPost.media_type === "stories" ? "Stories" : currentPost.media_type === "reels" ? "Reels" : currentPost.media_type === "banners" ? "Banners" : currentPost.media_type === "lancamento" ? "Lançamento" : "Carrossel"}
                 </span>
                 {(currentPost.platforms ?? []).length > 0 && (
                   <>
@@ -1103,10 +1103,10 @@ export default function PostDetailModal({ post, caseData, onClose, onUpdate, pro
           )}
 
           {/* ── Legenda + Hashtags ── */}
-          {currentPost.media_type !== "banners" && (
+          {currentPost.media_type !== "banners" && currentPost.media_type !== "lancamento" && (
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                <div style={labelStyle}>Legenda {currentPost.media_type === "stories" && <span style={{ textTransform: "none", opacity: 0.7 }}>(opcional)</span>}</div>
+                <div style={labelStyle}>Legenda {currentPost.media_type === "stories" || currentPost.media_type === "lancamento" ? <span style={{ textTransform: "none", opacity: 0.7 }}>(opcional)</span> : null}</div>
               {!editCaption && !readonly && (
                 <button onClick={() => { setCaptionDraft(currentPost.caption || ""); setHashtagsDraft(currentPost.hashtags || ""); setEditCaption(true); }}
                   style={{ background: "none", border: "none", color: caseData.color, cursor: "pointer", fontSize: ".75rem", fontFamily: "inherit", fontWeight: 600 }}>
@@ -1287,7 +1287,7 @@ ${text}`
                 const time = scheduledTimeValue || "12:00";
                 void save({ scheduled_date: newDate ? `${newDate}T${time}:00` : null });
               }} />
-            {currentPost.media_type !== "stories" && currentPost.media_type !== "banners" && (
+            {currentPost.media_type !== "stories" && currentPost.media_type !== "banners" && currentPost.media_type !== "lancamento" && (
               <select className="ws-input" value={scheduledTimeValue}
                 onChange={e => {
                   const newTime = e.target.value;
@@ -1310,6 +1310,7 @@ ${text}`
               <option value="reels">Reels (9:16 · 1080×1920)</option>
               <option value="carousel">Carrossel (1:1 · 1080×1080)</option>
               <option value="banners">Banners</option>
+              <option value="lancamento">Lançamento</option>
             </select>
           </div>}
 
@@ -1325,6 +1326,7 @@ ${text}`
             {currentPost.media_type === "reels" && "📐 1080 × 1920 px — Reels"}
             {currentPost.media_type === "carousel" && "📐 1080 × 1080 px — Carrossel"}
             {currentPost.media_type === "banners" && "📐 Tamanho ajustável — Banners"}
+            {currentPost.media_type === "lancamento" && "🚀 Lançamento — formato livre"}
           </div>
 
           {allSlides.length > 1 && (

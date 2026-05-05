@@ -15,14 +15,16 @@ interface TabCalendarioProps {
 }
 
 const TYPE_CFG: Record<string, { bg: string; text: string; border: string }> = {
-  reels:    { bg: "#e91e8c22", text: "#e91e8c",  border: "#e91e8c" },
-  carousel: { bg: "#ffd60022", text: "#c59600",  border: "#ffd600" },
-  feed:     { bg: "#4dabf722", text: "#4dabf7",  border: "#4dabf7" },
-  stories:  { bg: "#7b2fff22", text: "#aa77ff",  border: "#7b2fff" },
+  reels:      { bg: "#e91e8c22", text: "#e91e8c",  border: "#e91e8c" },
+  carousel:   { bg: "#ffd60022", text: "#c59600",  border: "#ffd600" },
+  feed:       { bg: "#4dabf722", text: "#4dabf7",  border: "#4dabf7" },
+  stories:    { bg: "#7b2fff22", text: "#aa77ff",  border: "#7b2fff" },
+  banners:    { bg: "#ff572222", text: "#ff5722",  border: "#ff5722" },
+  lancamento: { bg: "#00bcd422", text: "#00bcd4",  border: "#00bcd4" },
 };
 
 function typeLabel(type: string) {
-  return { reels: "Reels", carousel: "Carrossel", feed: "Feed", stories: "Stories" }[type] ?? type;
+  return { reels: "Reels", carousel: "Carrossel", feed: "Feed", stories: "Stories", banners: "Banners", lancamento: "Lançamento" }[type] ?? type;
 }
 
 const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -191,7 +193,7 @@ export default function TabCalendario({ caseData, profile, readonly = false }: T
                               fontSize: ".58rem", color: cfg.text, fontFamily: "Poppins",
                               overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
                             }}>
-                              {post.scheduled_date && post.media_type !== "stories" && post.media_type !== "banners" && (
+                              {post.scheduled_date && post.media_type !== "stories" && post.media_type !== "banners" && post.media_type !== "lancamento" && (
                                 <span style={{ opacity: 0.7, flexShrink: 0 }}>
                                   {new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                                 </span>

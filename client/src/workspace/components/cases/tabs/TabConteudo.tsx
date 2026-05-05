@@ -34,6 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
   feed: "#2196F3",
   stories: "#9C27B0",
   banners: "#FF5722",
+  lancamento: "#00BCD4",
 };
 
 const EMPTY_POST: NewPostForm = {
@@ -270,7 +271,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     if (!form.title.trim()) return alert("O campo 'Título / Tema' é obrigatório.");
     if (!form.scheduled_date) return alert("A 'Data de agendamento' é obrigatória.");
     if (mediaUrls.length === 0) return alert("Você precisa enviar pelo menos uma mídia (foto ou vídeo).");
-    if (!form.caption.trim() && form.media_type !== "stories" && form.media_type !== "banners") return alert("A 'Legenda' é obrigatória para este tipo de post.");
+    if (!form.caption.trim() && form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento") return alert("A 'Legenda' é obrigatória para este tipo de post.");
     if (form.platforms.length === 0) return alert("Selecione pelo menos uma plataforma.");
 
     setSaving(true);
@@ -351,6 +352,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const currentPosts = (postsByMonth[currentMonth] || []).filter(
     p => filterType === "Todos" ? true :
          filterType === "Estático (feed)" ? p.media_type === "feed" :
+         filterType === "Lançamento" ? p.media_type === "lancamento" :
          p.media_type === filterType.toLowerCase()
   );
   const approvableCurrentPosts = currentPosts.filter(
@@ -575,7 +577,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
           </div>
 
           <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16 }}>
-            {["Todos", "Reels", "Estático (feed)", "Carrossel", "Stories", "Banners"].map((ft) => (
+            {["Todos", "Reels", "Estático (feed)", "Carrossel", "Stories", "Banners", "Lançamento"].map((ft) => (
               <button key={ft} onClick={() => setFilterType(ft)} style={{
                 padding: "5px 12px", borderRadius: 16, border: "none", cursor: "pointer",
                 fontFamily: "inherit", fontSize: ".75rem", fontWeight: 500, whiteSpace: "nowrap",
@@ -636,7 +638,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                       <span>
                         {post.scheduled_date
                           ? new Date(post.scheduled_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) +
-                            (post.media_type !== "stories" && post.media_type !== "banners" ? " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "")
+                            (post.media_type !== "stories" && post.media_type !== "banners" && post.media_type !== "lancamento" ? " às " + new Date(post.scheduled_date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "")
                           : "Sem data"}
                       </span>
 
@@ -651,7 +653,9 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                               ? "Reels"
                               : post.media_type === "banners"
                                 ? "Banners"
-                                : "Carrossel"}
+                                : post.media_type === "lancamento"
+                                  ? "Lançamento"
+                                  : "Carrossel"}
                       </span>
 
                       {!!post.platforms?.length && post.platforms.map(platform => {
@@ -710,13 +714,14 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   <option value="reels">Reels (9:16)</option>
                   <option value="carousel">Carrossel (1:1)</option>
                   <option value="banners">Banners</option>
+                  <option value="lancamento">Lançamento</option>
                 </select>
               </div>
               <div>
                 <label className="ws-label">Data *</label>
                 <input className="ws-input" type="date" value={form.scheduled_date} onChange={e => setForm(p => ({ ...p, scheduled_date: e.target.value }))} />
               </div>
-              {form.media_type !== "stories" && form.media_type !== "banners" && (
+              {form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento" && (
                 <div>
                   <label className="ws-label">Horário *</label>
                   <select className="ws-input" value={form.scheduled_time ?? "12:00"} onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
@@ -764,7 +769,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
 
             {form.media_type !== "banners" && (
               <>
-                <label className="ws-label">Legenda {form.media_type !== "stories" ? "*" : "(opcional)"}</label>
+                <label className="ws-label">Legenda {form.media_type !== "stories" && form.media_type !== "lancamento" ? "*" : "(opcional)"}</label>
                 <textarea className="ws-input" value={form.caption} placeholder="Texto do post..." onChange={e => setForm(p => ({ ...p, caption: e.target.value }))} style={{ minHeight: 80, resize: "vertical", marginBottom: 12 }} />
               </>
             )}

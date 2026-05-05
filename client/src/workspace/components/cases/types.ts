@@ -44,7 +44,7 @@ export interface Post {
   caption: string;
   hashtags: string;
   media_url?: string;
-  media_type: "feed" | "stories" | "reels" | "carousel" | "banners";
+  media_type: "feed" | "stories" | "reels" | "carousel" | "banners" | "lancamento";
   scheduled_date: string;
   scheduled_time?: string;
   approval_status: "pendente" | "aprovado" | "reprovado" | "alteracao" | "agendado" | "postado" | "pendente_alteracao";
