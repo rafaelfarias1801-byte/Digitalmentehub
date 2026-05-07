@@ -4,6 +4,7 @@ import ProfileModal from "./ProfileModal";
 import { supabase } from "../../lib/supabaseClient";
 import type { Profile } from "../../lib/supabaseClient";
 import type { PageId } from "../WorkspaceApp";
+import { CARLOS_USER_ID } from "./leads/LeadsCavalheiro";
 
 interface Props {
   currentPage: PageId;
@@ -32,9 +33,13 @@ const NAV = [
   { section: "Produtividade", items: [
     { id: "pomodoro", icon: "◷", label: "Pomodoro" },
   ]},
+  { section: "Parceiros", items: [
+    { id: "leads-cavalheiro", icon: "◈", label: "Leads" },
+  ]},
 ];
 
 const ADMIN_ONLY: PageId[] = ["financeiro", "notas", "ia", "notificacoes"];
+const ADMIN_OR_CARLOS: PageId[] = ["leads-cavalheiro"];
 
 function getIsMobile() {
   return typeof window !== "undefined" && window.innerWidth < 768;
@@ -149,6 +154,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
             <div className="ws-nav-section">{group.section}</div>
             {group.items.map(item => {
               if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
+              if (ADMIN_OR_CARLOS.includes(item.id as PageId) && !isAdmin && profile.id !== CARLOS_USER_ID) return null;
               return (
                 <div
                   key={item.id}
@@ -329,6 +335,7 @@ export default function Sidebar({ currentPage, onNavigate, profile, open: openPr
             {NAV.map(group =>
               group.items.map(item => {
                 if (ADMIN_ONLY.includes(item.id as PageId) && !isAdmin) return null;
+                if (ADMIN_OR_CARLOS.includes(item.id as PageId) && !isAdmin && profile.id !== CARLOS_USER_ID) return null;
                 const isActive = currentPage === item.id;
                 return (
                   <button
