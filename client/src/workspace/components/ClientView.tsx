@@ -10,6 +10,7 @@ import TabConteudo from "./cases/tabs/TabConteudo";
 import TabFinanceiro from "./cases/tabs/TabFinanceiro";
 import TabDocumentos from "./cases/tabs/TabDocumentos";
 import TabNotas from "./cases/tabs/TabNotas";
+import LeadsCavalheiro, { CARLOS_USER_ID } from "./leads/LeadsCavalheiro";
 import { useIsMobile } from "../hooks/useIsMobile";
 import NotificationBadge from "./NotificationBadge";
 import { usePushNotification } from "../hooks/usePushNotification";
@@ -26,7 +27,9 @@ type ClientProfile = Profile & {
 };
 
 // Tabs que o cliente pode acessar (designer é exclusivo para admin/designer)
-const CLIENT_TABS = SUB_TABS.filter(t => t.id !== "designer");
+// leads só aparece para o Carlos Cavalheiro
+const getClientTabs = (profileId: string) =>
+  SUB_TABS.filter(t => t.id !== "designer" && (t.id !== "leads" || profileId === CARLOS_USER_ID));
 
 function getSavedTheme(): "dark" | "light" {
   try { return (localStorage.getItem("ws_theme") as "dark" | "light") || "dark"; }
@@ -240,8 +243,11 @@ export default function ClientView({ profile, initialTab, onTabChange }: Props) 
       {activeTab === "contratos"   && <TabDocumentos  caseData={caseData!} type="documento" readonly canUpload={false} />}
       {activeTab === "documentos"  && <TabDocumentos  caseData={caseData!} type="arquivo" readonly canUpload={true} />}
       {activeTab === "notas"       && <TabNotas       caseData={caseData!} profile={currentProfile} readonly />}
+      {activeTab === "leads"       && profile.id === CARLOS_USER_ID && <LeadsCavalheiro profile={currentProfile} />}
     </>
   );
+
+  const clientTabs = getClientTabs(profile.id);
 
   const ProfileModal = () => (
     <div
@@ -493,7 +499,7 @@ export default function ClientView({ profile, initialTab, onTabChange }: Props) 
                 </div>
               </div>
 
-              {CLIENT_TABS.filter(t => !MAIN_TABS.includes(t.id)).map(tab => (
+              {clientTabs.filter(t => !MAIN_TABS.includes(t.id)).map(tab => (
                 <button key={tab.id} onClick={() => { navigateTab(tab.id); setSidebarOpen(false); }} style={{
                   display: "flex", alignItems: "center", gap: 10, width: "100%",
                   background: activeTab === tab.id ? `${caseData.color}18` : "none",
@@ -553,7 +559,7 @@ export default function ClientView({ profile, initialTab, onTabChange }: Props) 
             </div>
           </div>
           <div style={{ width: 28, height: 1, background: "var(--ws-border)", margin: "4px 0" }} />
-          {CLIENT_TABS.map(tab => (
+          {clientTabs.map(tab => (
             <button key={tab.id} onClick={() => { navigateTab(tab.id); setSidebarOpen(false); }} title={tab.label}
               className={`ws-rail-item${activeTab === tab.id ? " active" : ""}`}
               style={{ fontSize: "1rem" }}
@@ -619,7 +625,7 @@ export default function ClientView({ profile, initialTab, onTabChange }: Props) 
           </div>
 
           <nav style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
-            {CLIENT_TABS.map(tab => (
+            {clientTabs.map(tab => (
               <button key={tab.id} onClick={() => navigateTab(tab.id)} style={{
                 display: "flex", alignItems: "center", gap: 8, width: "100%",
                 background: activeTab === tab.id ? `${caseData.color}18` : "none", border: "none",
@@ -656,7 +662,7 @@ export default function ClientView({ profile, initialTab, onTabChange }: Props) 
         <div style={{ padding: "28px 32px" }}>
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: "1.4rem", color: "var(--ws-text)" }}>
-              {CLIENT_TABS.find(t => t.id === activeTab)?.icon} {CLIENT_TABS.find(t => t.id === activeTab)?.label}<span style={{ color: caseData.color }}>.</span>
+              {clientTabs.find(t => t.id === activeTab)?.icon} {clientTabs.find(t => t.id === activeTab)?.label}<span style={{ color: caseData.color }}>.</span>
             </div>
             <div style={{ color: "var(--ws-text3)", fontSize: ".8rem", fontFamily: "Poppins", marginTop: 2 }}>{caseData.name}</div>
           </div>

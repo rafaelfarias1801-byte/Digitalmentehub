@@ -20,7 +20,6 @@ import NotificationBadge from "./components/NotificationBadge";
 import Notificacoes from "./components/Notificacoes";
 import DesignerView from "./components/DesignerView";
 import TikTokCallback from "./components/TikTokCallback";
-import LeadsCavalheiro, { CARLOS_USER_ID } from "./components/leads/LeadsCavalheiro";
 import "./workspace.css";
 
 export type PageId =
@@ -32,8 +31,7 @@ export type PageId =
   | "notas"
   | "ia"
   | "pomodoro"
-  | "notificacoes"
-  | "leads-cavalheiro";
+  | "notificacoes";
 
 const PAGE_PATHS: Record<PageId, string> = {
   dashboard: "/workspace/dashboard",
@@ -45,7 +43,6 @@ const PAGE_PATHS: Record<PageId, string> = {
   ia: "/workspace/ia",
   pomodoro: "/workspace/pomodoro",
   notificacoes: "/workspace/notificacoes",
-  "leads-cavalheiro": "/workspace/leads-cavalheiro",
 };
 
 function parseWorkspacePath(loc: string): { page: PageId; caseId?: string; tab?: string } {
@@ -58,7 +55,6 @@ function parseWorkspacePath(loc: string): { page: PageId; caseId?: string; tab?:
     "financeiro": "financeiro", "clientes": "cases",
     "notas": "notas", "ia": "ia",
     "pomodoro": "pomodoro", "notificacoes": "notificacoes",
-    "leads-cavalheiro": "leads-cavalheiro",
   };
   return { page: pageMap[segment] ?? "dashboard", caseId, tab };
 }
@@ -331,12 +327,6 @@ export default function WorkspaceApp() {
         );
       case "notificacoes":
         return <Notificacoes profile={profile!} />;
-      case "leads-cavalheiro":
-        if (profile!.role !== "admin" && profile!.id !== CARLOS_USER_ID) {
-          setLocation("/workspace/dashboard");
-          return null;
-        }
-        return <LeadsCavalheiro profile={profile!} />;
       case "cases":
         return (
           <Cases

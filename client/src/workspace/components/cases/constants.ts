@@ -93,7 +93,8 @@ export const SUB_TABS = [
   { id: "contratos",   label: "Documentos",  icon: "📑" },
   { id: "documentos",  label: "Arquivos",    icon: "📁" },
   { id: "notas",       label: "Notas",       icon: "🗒" },
-  { id: "designer",    label: "Designer",    icon: "🎨" },   // ← NOVO
+  { id: "designer",    label: "Designer",    icon: "🎨" },
+  { id: "leads",       label: "Leads",       icon: "◈" },
 ] as const;
 
 export const MONTHS_FULL = [

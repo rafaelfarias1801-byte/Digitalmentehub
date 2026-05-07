@@ -12,12 +12,16 @@ import TabFinanceiro  from "./tabs/TabFinanceiro";
 import TabDocumentos  from "./tabs/TabDocumentos";
 import TabNotas       from "./tabs/TabNotas";
 import TabDesigner    from "./tabs/TabDesigner";
+import LeadsCavalheiro from "../leads/LeadsCavalheiro";
 
 const LS_ACTIVE_TAB = "ws_case_tab";
 const VALID_TABS    = SUB_TABS.map((t) => t.id) as string[];
 
 // Abas ocultas para o cliente
 const CLIENT_HIDDEN_TABS = ["designer"] as const;
+
+// Tab de Leads visível apenas no case do Carlos Cavalheiro
+const CARLOS_CASE_NAME = "Carlos Cavalheiro";
 
 function getSavedTab(): string {
   const saved = localStorage.getItem(LS_ACTIVE_TAB);
@@ -42,10 +46,13 @@ export default function CaseWorkspace({
   const isClient  = profile?.role === "cliente";
   const isDesigner = profile?.role === "designer";
 
+  const isCarlosCase = caseData.name === CARLOS_CASE_NAME;
+
   // Filtra abas visíveis por role
   const visibleTabs = SUB_TABS.filter(tab => {
     if (isClient   && (CLIENT_HIDDEN_TABS as readonly string[]).includes(tab.id)) return false;
-    if (isDesigner && tab.id !== "designer") return false;  // designer vê só a aba dele
+    if (isDesigner && tab.id !== "designer") return false;
+    if (tab.id === "leads" && !isCarlosCase) return false;
     return true;
   });
 
@@ -105,6 +112,7 @@ export default function CaseWorkspace({
       {activeTab === "documentos"  && <TabDocumentos caseData={caseData} type="arquivo"   readonly={isClient || isDesigner} canUpload={!isDesigner} />}
       {activeTab === "notas"       && <TabNotas      caseData={caseData} profile={profile} readonly={isClient || isDesigner} />}
       {activeTab === "designer"    && <TabDesigner   caseData={caseData} readonly={isDesigner} />}
+      {activeTab === "leads"       && isCarlosCase   && <LeadsCavalheiro profile={profile} />}
     </>
   );
 
