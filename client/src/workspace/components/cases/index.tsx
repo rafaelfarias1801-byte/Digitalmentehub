@@ -239,7 +239,7 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, onCaseTabChang
       </div>
       {loading ? ( <Loader /> ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
-          {cases.map((caseItem) => (
+          {[...cases].sort((a, b) => (a.status === "encerrado" ? 1 : 0) - (b.status === "encerrado" ? 1 : 0)).map((caseItem) => (
             <div key={caseItem.id} className="ws-case" style={{ cursor: "pointer" }} onClick={() => selectCase(caseItem)}>
               <div className="ws-case-thumb" style={{ background: caseItem.logo_url ? undefined : `linear-gradient(135deg,${caseItem.color}33,${caseItem.color}11)`, position: "relative", overflow: "hidden" }}>
                 {caseItem.logo_url ? ( <img src={caseItem.logo_url} alt={caseItem.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> ) : (
