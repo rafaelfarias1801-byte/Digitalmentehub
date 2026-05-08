@@ -208,8 +208,8 @@ export default function Cases({ profile, onCaseOpen, onCaseClose, onCaseTabChang
           onBack={closeCase}
           onEdit={() => openEdit(openCase)}
           onDelete={() => void remove(openCase.id)}
+          onCaseUpdate={(updated) => { setCases(prev => prev.map(c => c.id === updated.id ? updated : c)); }}
           profile={profile}
-          // Passamos o ID pendente para o workspace do cliente
           initialPostId={(window as any)._pendingPostId}
           initialTab={initialTab}
           onTabChange={(tabId: string) => onCaseTabChange?.(openCase.id, tabId)}

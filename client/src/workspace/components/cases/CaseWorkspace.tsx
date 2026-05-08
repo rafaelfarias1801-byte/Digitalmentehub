@@ -4,7 +4,10 @@ import SendAccessModal from "./modals/SendAccessModal";
 import { CasesGlobalStyle } from "./styles";
 import { STATUS_STYLES, SUB_TABS } from "./constants";
 import type { CaseWorkspaceProps } from "./types";
+import type { Case } from "./types";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { supabase } from "../../../lib/supabaseClient";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 import TabCalendario  from "./tabs/TabCalendario";
 import TabConteudo    from "./tabs/TabConteudo";
@@ -30,21 +33,28 @@ function getSavedTab(): string {
 }
 
 export default function CaseWorkspace({
-  caseData,
+  caseData: initialCaseData,
   onBack,
   onEdit,
   onDelete,
+  onCaseUpdate,
   profile,
   initialPostId,
   initialTab,
   onTabChange,
 }: CaseWorkspaceProps & { initialPostId?: string | null }) {
+  const [caseData, setCaseData] = useState<Case>(initialCaseData);
   const [activeTab, setActiveTab]   = useState<string>(initialTab ?? getSavedTab());
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [accessModal, setAccessModal] = useState(false);
+  const [clientBlocked, setClientBlocked] = useState<boolean | null>(null);
+  const [clientProfileId, setClientProfileId] = useState<string | null>(null);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
   const isMobile  = useIsMobile();
   const isClient  = profile?.role === "cliente";
   const isDesigner = profile?.role === "designer";
+  const isAdmin = profile?.role === "admin";
 
   const isCarlosCase = caseData.name === CARLOS_CASE_NAME;
 
@@ -64,12 +74,60 @@ export default function CaseWorkspace({
     }
   }, [profile?.role]);
 
+  // Sync caseData quando o pai atualiza (ex: após status change)
+  useEffect(() => { setCaseData(initialCaseData); }, [initialCaseData.id, initialCaseData.status]);
+
   // Sync activeTab when initialTab changes (URL navigation)
   useEffect(() => {
     if (initialTab && VALID_TABS.includes(initialTab)) {
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
+  // Busca o perfil do cliente vinculado a este case (admin only)
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase
+      .from("profiles")
+      .select("id, is_blocked")
+      .eq("case_id", caseData.id)
+      .eq("role", "cliente")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setClientProfileId(data.id);
+          setClientBlocked(data.is_blocked ?? false);
+        }
+      });
+  }, [caseData.id, isAdmin]);
+
+  async function handleStatusChange(newStatus: Case["status"]) {
+    if (statusLoading) return;
+    setStatusLoading(true);
+    const { data, error } = await supabase
+      .from("cases")
+      .update({ status: newStatus })
+      .eq("id", caseData.id)
+      .select()
+      .single();
+    if (!error && data) {
+      setCaseData(data as Case);
+      onCaseUpdate?.(data as Case);
+    }
+    setStatusLoading(false);
+  }
+
+  async function handleToggleBlock() {
+    if (!clientProfileId || blockLoading) return;
+    setBlockLoading(true);
+    const newVal = !clientBlocked;
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ is_blocked: newVal })
+      .eq("id", clientProfileId);
+    if (!error) setClientBlocked(newVal);
+    setBlockLoading(false);
+  }
 
   // Auto-abre modal de edição se vier do callback OAuth do TikTok
   useEffect(() => {
@@ -180,8 +238,57 @@ export default function CaseWorkspace({
         {/* Ações admin — não aparece para cliente nem designer */}
         {!isClient && !isDesigner && (
           <div style={{ padding: "12px 16px", borderTop: "1px solid var(--ws-border)", display: "flex", flexDirection: "column", gap: 6 }}>
-            <button onClick={onEdit}  style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>✎ Editar cliente</button>
+
+            {/* Status rápido */}
+            <div style={{ fontSize: ".65rem", color: "var(--ws-text3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 2 }}>Status</div>
+            <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
+              {(["ativo", "pausado", "encerrado"] as const).map(s => (
+                <button
+                  key={s}
+                  onClick={() => !statusLoading && void handleStatusChange(s)}
+                  style={{
+                    flex: 1, padding: "5px 2px", borderRadius: 6, border: "none",
+                    cursor: statusLoading ? "not-allowed" : "pointer",
+                    fontSize: ".62rem", fontWeight: 600, fontFamily: "inherit",
+                    background: caseData.status === s
+                      ? s === "ativo" ? "rgba(0,230,118,0.15)" : s === "pausado" ? "rgba(255,214,0,0.15)" : "rgba(160,160,160,0.15)"
+                      : "var(--ws-surface2)",
+                    color: caseData.status === s
+                      ? s === "ativo" ? "#00e676" : s === "pausado" ? "#ffd600" : "#aaa"
+                      : "var(--ws-text3)",
+                    border: caseData.status === s
+                      ? `1px solid ${s === "ativo" ? "#00e676" : s === "pausado" ? "#ffd600" : "#aaa"}`
+                      : "1px solid var(--ws-border2)",
+                    opacity: statusLoading ? .6 : 1,
+                    transition: "all .15s",
+                  }}
+                >
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            <button onClick={onEdit} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>✎ Editar cliente</button>
             <button onClick={() => setAccessModal(true)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>👤 Criar acesso ao cliente</button>
+
+            {/* Bloquear/desbloquear acesso do cliente */}
+            {clientProfileId !== null && (
+              <button
+                onClick={() => void handleToggleBlock()}
+                disabled={blockLoading}
+                style={{
+                  background: clientBlocked ? "rgba(0,230,118,0.1)" : "rgba(220,50,50,0.1)",
+                  border: `1px solid ${clientBlocked ? "rgba(0,230,118,0.3)" : "rgba(220,50,50,0.3)"}`,
+                  borderRadius: 6, color: clientBlocked ? "#00e676" : "#d63232",
+                  cursor: blockLoading ? "not-allowed" : "pointer",
+                  padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit",
+                  opacity: blockLoading ? .6 : 1, transition: "all .15s",
+                }}
+              >
+                {blockLoading ? "Aguarde..." : clientBlocked ? "✓ Desbloquear acesso" : "⊘ Bloquear acesso"}
+              </button>
+            )}
+
             <button onClick={onDelete} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>× Excluir cliente</button>
           </div>
         )}

@@ -257,10 +257,23 @@ export default function WorkspaceApp() {
     );
   }
   if (profile.role === "cliente") {
+    if (profile.is_blocked) {
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--ws-bg)", flexDirection: "column", gap: 16, padding: 24 }}>
+          <div style={{ fontSize: "2.5rem" }}>⊘</div>
+          <div style={{ fontFamily: "Poppins", fontWeight: 700, fontSize: "1.1rem", color: "var(--ws-text)", textAlign: "center" }}>Acesso suspenso</div>
+          <div style={{ fontSize: ".85rem", color: "var(--ws-text3)", textAlign: "center", maxWidth: 320, lineHeight: 1.6 }}>
+            Seu acesso ao workspace está temporariamente suspenso. Entre em contato com a equipe Digitalmente.
+          </div>
+          <button onClick={() => supabase.auth.signOut()} style={{ marginTop: 8, background: "none", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", padding: "8px 20px", fontSize: ".8rem", fontFamily: "Poppins" }}>
+            Sair
+          </button>
+        </div>
+      );
+    }
     // Extrai tab da URL do cliente — suporta sub-rotas como /conteudo/post/:id
     const clientTabMatch = location.match(/^\/workspace\/cliente\/([^/]+)/);
     const clientTab = clientTabMatch ? clientTabMatch[1] : "calendario";
-    // Se a URL não está no formato correto do cliente, redireciona
     if (!location.startsWith("/workspace/cliente")) {
       setLocation(`/workspace/cliente/${clientTab}`);
     }

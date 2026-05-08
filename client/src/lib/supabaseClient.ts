@@ -36,8 +36,9 @@ export interface Profile {
   role: UserRole;
   initials: string;
   avatar_url?: string;
-  case_id?: string;          // para clientes: vincula ao case deles
-  must_change_password?: boolean; // true no primeiro acesso
+  case_id?: string;
+  must_change_password?: boolean;
+  is_blocked?: boolean;
   created_at: string;
 }
 

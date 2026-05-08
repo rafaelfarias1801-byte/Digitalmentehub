@@ -146,6 +146,7 @@ export interface CaseWorkspaceProps {
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onCaseUpdate?: (updated: Case) => void;
   profile: Profile;
   initialTab?: string;
   onTabChange?: (tab: string) => void;
