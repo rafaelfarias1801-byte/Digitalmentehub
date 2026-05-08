@@ -215,7 +215,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
                   {tab !== "livro" && (
                     <Td>
                       {lead.mensagem
-                        ? <span title={lead.mensagem} style={{ cursor: "help", color: "var(--ws-text2)", display: "inline-block", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lead.mensagem}</span>
+                        ? <MensagemCell texto={lead.mensagem} />
                         : <span style={{ color: "var(--ws-text3)" }}>—</span>}
                     </Td>
                   )}
@@ -244,6 +244,27 @@ export default function LeadsCavalheiro({ profile }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function MensagemCell({ texto }: { texto: string }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const preview = texto.length > 60 ? texto.slice(0, 60) + "…" : texto;
+  return (
+    <span
+      onClick={() => setExpanded(v => !v)}
+      style={{
+        color: "var(--ws-text2)", cursor: texto.length > 60 ? "pointer" : "default",
+        display: "block", maxWidth: 260,
+        whiteSpace: expanded ? "pre-wrap" : "nowrap",
+        overflow: expanded ? "visible" : "hidden",
+        textOverflow: expanded ? "unset" : "ellipsis",
+        lineHeight: 1.5, transition: "all .15s",
+      }}
+      title={texto.length > 60 && !expanded ? "Clique para expandir" : undefined}
+    >
+      {expanded ? texto : preview}
+    </span>
   );
 }
 
