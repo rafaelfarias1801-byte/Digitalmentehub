@@ -272,22 +272,22 @@ export default function CaseWorkspace({
             <button onClick={() => setAccessModal(true)} style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-text2)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>👤 Criar acesso ao cliente</button>
 
             {/* Bloquear/desbloquear acesso do cliente */}
-            {clientProfileId !== null && (
-              <button
-                onClick={() => void handleToggleBlock()}
-                disabled={blockLoading}
-                style={{
-                  background: clientBlocked ? "rgba(0,230,118,0.1)" : "rgba(220,50,50,0.1)",
-                  border: `1px solid ${clientBlocked ? "rgba(0,230,118,0.3)" : "rgba(220,50,50,0.3)"}`,
-                  borderRadius: 6, color: clientBlocked ? "#00e676" : "#d63232",
-                  cursor: blockLoading ? "not-allowed" : "pointer",
-                  padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit",
-                  opacity: blockLoading ? .6 : 1, transition: "all .15s",
-                }}
-              >
-                {blockLoading ? "Aguarde..." : clientBlocked ? "✓ Desbloquear acesso" : "⊘ Bloquear acesso"}
-              </button>
-            )}
+            <button
+              onClick={() => clientProfileId && void handleToggleBlock()}
+              disabled={blockLoading || !clientProfileId}
+              title={!clientProfileId ? "Nenhum acesso de cliente criado para este case" : undefined}
+              style={{
+                background: !clientProfileId ? "var(--ws-surface2)" : clientBlocked ? "rgba(0,230,118,0.1)" : "rgba(220,50,50,0.1)",
+                border: `1px solid ${!clientProfileId ? "var(--ws-border2)" : clientBlocked ? "rgba(0,230,118,0.3)" : "rgba(220,50,50,0.3)"}`,
+                borderRadius: 6,
+                color: !clientProfileId ? "var(--ws-text3)" : clientBlocked ? "#00e676" : "#d63232",
+                cursor: blockLoading || !clientProfileId ? "not-allowed" : "pointer",
+                padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit",
+                opacity: blockLoading || !clientProfileId ? .5 : 1, transition: "all .15s",
+              }}
+            >
+              {blockLoading ? "Aguarde..." : clientBlocked ? "✓ Desbloquear acesso" : "⊘ Bloquear acesso"}
+            </button>
 
             <button onClick={onDelete} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 6, color: "var(--ws-accent)", cursor: "pointer", padding: "6px 10px", fontSize: ".72rem", fontFamily: "inherit" }}>× Excluir cliente</button>
           </div>
