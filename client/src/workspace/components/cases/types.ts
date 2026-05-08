@@ -93,7 +93,7 @@ export interface NoteCard {
   due_date?: string;
   label_color?: string;
   order: number;
-  completed?: boolean;}
+  completed?: boolean;
   attachments?: { id: string; name: string; url: string; type: string; cover: boolean }[];
 }
 

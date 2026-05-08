@@ -753,7 +753,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                 <label className="ws-label">Data *</label>
                 <input className="ws-input" type="date" value={form.scheduled_date} onChange={e => setForm(p => ({ ...p, scheduled_date: e.target.value }))} />
               </div>
-              {form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento" && form.media_type !== "linkedin" && (
+              {form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento" && (
                 <div>
                   <label className="ws-label">Horário *</label>
                   <select className="ws-input" value={form.scheduled_time ?? "12:00"} onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
