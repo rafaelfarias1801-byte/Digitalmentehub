@@ -1311,6 +1311,7 @@ ${text}`
               <option value="carousel">Carrossel (1:1 · 1080×1080)</option>
               <option value="banners">Banners</option>
               <option value="lancamento">Lançamento</option>
+              <option value="linkedin">LinkedIn</option>
             </select>
           </div>}
 
