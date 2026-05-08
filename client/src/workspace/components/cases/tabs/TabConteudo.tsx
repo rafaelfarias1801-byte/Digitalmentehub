@@ -353,6 +353,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     p => filterType === "Todos" ? true :
          filterType === "Estático (feed)" ? p.media_type === "feed" :
          filterType === "Lançamento" ? p.media_type === "lancamento" :
+         filterType === "Carrossel" ? p.media_type === "carousel" :
          p.media_type === filterType.toLowerCase()
   );
   const approvableCurrentPosts = currentPosts.filter(
