@@ -35,6 +35,7 @@ const TYPE_COLORS: Record<string, string> = {
   stories: "#9C27B0",
   banners: "#FF5722",
   lancamento: "#00BCD4",
+  linkedin: "#0A66C2",
 };
 
 const EMPTY_POST: NewPostForm = {
@@ -111,6 +112,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   const [bulkApproving, setBulkApproving] = useState(false);
   const [bulkApproveResult, setBulkApproveResult] = useState<"ok" | "error" | null>(null);
   const [filterType, setFilterType] = useState<string>("Todos");
+  const [filterPlatform, setFilterPlatform] = useState<string>("all");
 
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const dragIdx = useRef<number | null>(null);
@@ -270,7 +272,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
     if (!form.slug.trim()) return alert("O campo 'Nome no calendário' é obrigatório.");
     if (!form.title.trim()) return alert("O campo 'Título / Tema' é obrigatório.");
     if (!form.scheduled_date) return alert("A 'Data de agendamento' é obrigatória.");
-    if (mediaUrls.length === 0) return alert("Você precisa enviar pelo menos uma mídia (foto ou vídeo).");
+    if (mediaUrls.length === 0 && form.media_type !== "linkedin") return alert("Você precisa enviar pelo menos uma mídia (foto ou vídeo).");
     if (!form.caption.trim() && form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento") return alert("A 'Legenda' é obrigatória para este tipo de post.");
     if (form.platforms.length === 0) return alert("Selecione pelo menos uma plataforma.");
 
@@ -349,13 +351,18 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
   }, [postsByMonth]);
 
   const currentMonth = sortedMonths.includes(activeMonth) ? activeMonth : sortedMonths[0] || "sem-data";
-  const currentPosts = (postsByMonth[currentMonth] || []).filter(
-    p => filterType === "Todos" ? true :
-         filterType === "Estático (feed)" ? p.media_type === "feed" :
-         filterType === "Lançamento" ? p.media_type === "lancamento" :
-         filterType === "Carrossel" ? p.media_type === "carousel" :
-         p.media_type === filterType.toLowerCase()
-  );
+  const currentPosts = (postsByMonth[currentMonth] || []).filter(p => {
+    const matchType =
+      filterType === "Todos" ? true :
+      filterType === "Estático (feed)" ? p.media_type === "feed" :
+      filterType === "Lançamento" ? p.media_type === "lancamento" :
+      filterType === "Carrossel" ? p.media_type === "carousel" :
+      p.media_type === filterType.toLowerCase();
+    const matchPlatform =
+      filterPlatform === "all" ? true :
+      (p.platforms ?? []).includes(filterPlatform);
+    return matchType && matchPlatform;
+  });
   const approvableCurrentPosts = currentPosts.filter(
     post => post.approval_status !== "aprovado" && post.approval_status !== "postado"
   );
@@ -577,7 +584,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 8 }}>
             {["Todos", "Reels", "Estático (feed)", "Carrossel", "Stories", "Banners", "Lançamento"].map((ft) => (
               <button key={ft} onClick={() => setFilterType(ft)} style={{
                 padding: "5px 12px", borderRadius: 16, border: "none", cursor: "pointer",
@@ -587,6 +594,27 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                 transition: "all .15s",
               }}>
                 {ft}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginBottom: 16 }}>
+            <span style={{ fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins", whiteSpace: "nowrap" }}>Plataforma:</span>
+            {[
+              { value: "all", label: "Todas" },
+              { value: "instagram", label: "📸 Instagram" },
+              { value: "tiktok", label: "🎵 TikTok" },
+              { value: "linkedin", label: "💼 LinkedIn" },
+            ].map(({ value, label }) => (
+              <button key={value} onClick={() => setFilterPlatform(value)} style={{
+                padding: "4px 11px", borderRadius: 16, border: "none", cursor: "pointer",
+                fontFamily: "inherit", fontSize: ".73rem", fontWeight: 500, whiteSpace: "nowrap",
+                background: filterPlatform === value ? `${caseData.color}22` : "var(--ws-surface2)",
+                color: filterPlatform === value ? caseData.color : "var(--ws-text2)",
+                outline: filterPlatform === value ? `1.5px solid ${caseData.color}` : "none",
+                transition: "all .15s",
+              }}>
+                {label}
               </button>
             ))}
           </div>
@@ -656,7 +684,9 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                                 ? "Banners"
                                 : post.media_type === "lancamento"
                                   ? "Lançamento"
-                                  : "Carrossel"}
+                                  : post.media_type === "linkedin"
+                                    ? "LinkedIn"
+                                    : "Carrossel"}
                       </span>
 
                       {!!post.platforms?.length && post.platforms.map(platform => {
@@ -716,13 +746,14 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   <option value="carousel">Carrossel (1:1)</option>
                   <option value="banners">Banners</option>
                   <option value="lancamento">Lançamento</option>
+                  <option value="linkedin">LinkedIn</option>
                 </select>
               </div>
               <div>
                 <label className="ws-label">Data *</label>
                 <input className="ws-input" type="date" value={form.scheduled_date} onChange={e => setForm(p => ({ ...p, scheduled_date: e.target.value }))} />
               </div>
-              {form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento" && (
+              {form.media_type !== "stories" && form.media_type !== "banners" && form.media_type !== "lancamento" && form.media_type !== "linkedin" && (
                 <div>
                   <label className="ws-label">Horário *</label>
                   <select className="ws-input" value={form.scheduled_time ?? "12:00"} onChange={e => setForm(p => ({ ...p, scheduled_time: e.target.value }))}>
@@ -741,7 +772,7 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
               </div>
             )}
 
-            <label className="ws-label">Mídia *</label>
+            <label className="ws-label">Mídia {form.media_type === "linkedin" ? "(opcional)" : "*"}</label>
             <div onClick={() => fileRef.current?.click()} style={{ height: 110, borderRadius: 10, border: "1px dashed var(--ws-border2)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 10, background: "var(--ws-surface2)", gap: 6 }}>
                {mediaUrls.length > 0 ? `✅ ${mediaUrls.length} arquivo(s) selecionado(s)` : "🖼 Clique para enviar foto ou vídeo"}
             </div>
