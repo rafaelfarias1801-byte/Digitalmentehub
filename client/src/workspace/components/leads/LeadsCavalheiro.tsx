@@ -48,6 +48,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const isAdmin = profile.role === "admin";
 
@@ -85,7 +86,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
     doc.text("Carlos Cavalheiro", 14, 18);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Relatório de Leads — ${tab === "livro" ? "Pré-lançamento do Livro" : tab !== "livro" ? "Mentoria" : "Palestras"}`, 14, 25);
+    doc.text(`Relatório de Leads — ${tab === "livro" ? "Pré-lançamento do Livro" : tab === "mentoria" ? "Mentoria" : "Palestras"}`, 14, 25);
     doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}`, 14, 31);
 
     // Linha separadora
@@ -103,7 +104,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
         : [l.nome, l.email, l.cargo ?? "—", l.mensagem ?? "—", STATUS_LABEL[l.status], fmt(l.created_at)]
     );
 
-    const tabLabel = tab === "livro" ? "pre-lancamento-livro" : tab !== "livro" ? "mentoria" : "palestras";
+    const tabLabel = tab === "livro" ? "pre-lancamento-livro" : tab === "mentoria" ? "mentoria" : "palestras";
 
     autoTable(doc, {
       startY: 38,
@@ -112,7 +113,8 @@ export default function LeadsCavalheiro({ profile }: Props) {
       theme: "striped",
       headStyles: { fillColor: [30, 30, 30], textColor: [255, 255, 255], fontSize: 9 },
       bodyStyles: { fontSize: 8, textColor: [40, 40, 40] },
-      columnStyles: isLivro ? {} : { 3: { cellWidth: 55 } },
+      columnStyles: isLivro ? {} : { 3: { cellWidth: 70, overflow: "linebreak" } },
+      styles: { overflow: "linebreak" },
       margin: { left: 14, right: 14 },
     });
 
@@ -129,6 +131,50 @@ export default function LeadsCavalheiro({ profile }: Props) {
 
   return (
     <div className="ws-page" style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px" }}>
+
+      {/* Modal de detalhe do lead */}
+      {selectedLead && (
+        <div
+          onClick={() => setSelectedLead(null)}
+          style={{ position: "fixed", inset: 0, background: "#00000080", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: "var(--ws-surface)", border: "1px solid var(--ws-border2)", borderRadius: 16, padding: 28, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px #00000060" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ws-text)" }}>{selectedLead.nome}</div>
+                <div style={{ fontSize: ".75rem", color: "var(--ws-text3)", marginTop: 2 }}>{fmt(selectedLead.created_at)}</div>
+              </div>
+              <button onClick={() => setSelectedLead(null)} style={{ background: "none", border: "1px solid var(--ws-border2)", borderRadius: 8, color: "var(--ws-text3)", cursor: "pointer", width: 30, height: 30, fontSize: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <LeadField label="E-mail" value={selectedLead.email} />
+              {selectedLead.cargo && <LeadField label="Cargo" value={selectedLead.cargo} />}
+              {selectedLead.mensagem && (
+                <div>
+                  <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 6 }}>Mensagem</div>
+                  <div style={{ background: "var(--ws-surface2)", border: "1px solid var(--ws-border)", borderRadius: 8, padding: "12px 14px", fontSize: ".83rem", color: "var(--ws-text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+                    {selectedLead.mensagem}
+                  </div>
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
+                <span style={{ fontSize: ".72rem", color: "var(--ws-text3)" }}>Status</span>
+                <button
+                  onClick={() => isAdmin && cycleStatus(selectedLead).then(() => setSelectedLead(prev => prev ? { ...prev, status: STATUS_CYCLE[(STATUS_CYCLE.indexOf(prev.status) + 1) % STATUS_CYCLE.length] } : null))}
+                  disabled={!isAdmin}
+                  style={{ ...STATUS_COLOR[selectedLead.status], padding: "4px 14px", borderRadius: 999, fontSize: ".75rem", fontWeight: 600, cursor: isAdmin ? "pointer" : "default" }}
+                >
+                  {STATUS_LABEL[selectedLead.status]}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Título */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
         <div>
@@ -209,7 +255,14 @@ export default function LeadsCavalheiro({ profile }: Props) {
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--ws-surface2)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
-                  <Td><span style={{ fontWeight: 500, color: "var(--ws-text)" }}>{lead.nome}</span></Td>
+                  <Td>
+                    <span
+                      onClick={() => setSelectedLead(lead)}
+                      style={{ fontWeight: 500, color: "var(--ws-accent)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}
+                    >
+                      {lead.nome}
+                    </span>
+                  </Td>
                   <Td><span style={{ color: "var(--ws-text2)" }}>{lead.email}</span></Td>
                   {tab !== "livro" && <Td>{lead.cargo ?? <span style={{ color: "var(--ws-text3)" }}>—</span>}</Td>}
                   {tab !== "livro" && (
@@ -243,6 +296,15 @@ export default function LeadsCavalheiro({ profile }: Props) {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function LeadField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: ".7rem", color: "var(--ws-text3)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: ".85rem", color: "var(--ws-text2)" }}>{value}</div>
     </div>
   );
 }
