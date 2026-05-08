@@ -7,7 +7,7 @@ import type { Profile } from "../../../lib/supabaseClient";
 // ─── Substitua pelo user_id real do Carlos no Supabase ─────────────────────
 export const CARLOS_USER_ID = "004a0191-3e94-4552-84b0-ae499ffde54d";
 
-type LeadTipo = "livro" | "mentoria";
+type LeadTipo = "livro" | "mentoria" | "palestra";
 type LeadStatus = "novo" | "contatado" | "convertido";
 
 interface Lead {
@@ -85,7 +85,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
     doc.text("Carlos Cavalheiro", 14, 18);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Relatório de Leads — ${tab === "livro" ? "Pré-lançamento do Livro" : "Mentoria"}`, 14, 25);
+    doc.text(`Relatório de Leads — ${tab === "livro" ? "Pré-lançamento do Livro" : tab !== "livro" ? "Mentoria" : "Palestras"}`, 14, 25);
     doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}`, 14, 31);
 
     // Linha separadora
@@ -102,6 +102,8 @@ export default function LeadsCavalheiro({ profile }: Props) {
         ? [l.nome, l.email, STATUS_LABEL[l.status], fmt(l.created_at)]
         : [l.nome, l.email, l.cargo ?? "—", l.mensagem ?? "—", STATUS_LABEL[l.status], fmt(l.created_at)]
     );
+
+    const tabLabel = tab === "livro" ? "pre-lancamento-livro" : tab !== "livro" ? "mentoria" : "palestras";
 
     autoTable(doc, {
       startY: 38,
@@ -120,7 +122,6 @@ export default function LeadsCavalheiro({ profile }: Props) {
     doc.setTextColor(80, 80, 80);
     doc.text(`Total de leads: ${leads.length}`, 14, finalY);
 
-    const tabLabel = tab === "livro" ? "pre-lancamento-livro" : "mentoria";
     doc.save(`leads-cavalheiro-${tabLabel}-${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
@@ -160,7 +161,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
 
       {/* Abas */}
       <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--ws-border)", marginBottom: 24 }}>
-        {(["livro", "mentoria"] as LeadTipo[]).map(t => (
+        {(["livro", "mentoria", "palestra"] as LeadTipo[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -172,7 +173,7 @@ export default function LeadsCavalheiro({ profile }: Props) {
               marginBottom: -1, transition: "color .15s",
             }}
           >
-            {t === "livro" ? "Pré-lançamento do Livro" : "Mentoria"}
+            {t === "livro" ? "Pré-lançamento do Livro" : t === "mentoria" ? "Mentoria" : "Palestras"}
           </button>
         ))}
       </div>
@@ -194,8 +195,8 @@ export default function LeadsCavalheiro({ profile }: Props) {
               <tr style={{ borderBottom: "1px solid var(--ws-border)" }}>
                 <Th>Nome</Th>
                 <Th>E-mail</Th>
-                {tab === "mentoria" && <Th>Cargo</Th>}
-                {tab === "mentoria" && <Th>Mensagem</Th>}
+                {tab !== "livro" && <Th>Cargo</Th>}
+                {tab !== "livro" && <Th>Mensagem</Th>}
                 <Th>Data</Th>
                 <Th>Status</Th>
               </tr>
@@ -210,8 +211,8 @@ export default function LeadsCavalheiro({ profile }: Props) {
                 >
                   <Td><span style={{ fontWeight: 500, color: "var(--ws-text)" }}>{lead.nome}</span></Td>
                   <Td><span style={{ color: "var(--ws-text2)" }}>{lead.email}</span></Td>
-                  {tab === "mentoria" && <Td>{lead.cargo ?? <span style={{ color: "var(--ws-text3)" }}>—</span>}</Td>}
-                  {tab === "mentoria" && (
+                  {tab !== "livro" && <Td>{lead.cargo ?? <span style={{ color: "var(--ws-text3)" }}>—</span>}</Td>}
+                  {tab !== "livro" && (
                     <Td>
                       {lead.mensagem
                         ? <span title={lead.mensagem} style={{ cursor: "help", color: "var(--ws-text2)", display: "inline-block", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lead.mensagem}</span>
