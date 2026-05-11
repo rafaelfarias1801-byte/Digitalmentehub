@@ -5,7 +5,7 @@ import { supabase } from "../../../lib/supabaseClient";
 import type { Profile } from "../../../lib/supabaseClient";
 
 // ─── Substitua pelo user_id real do Carlos no Supabase ─────────────────────
-export const CARLOS_USER_ID = "004a0191-3e94-4552-84b0-ae499ffde54d";
+export const CARLOS_USER_ID = "9ffe94fd-4729-43f6-8a86-f125ec0dbf46";
 
 type LeadTipo = "livro" | "mentoria" | "palestra";
 type LeadStatus = "novo" | "contatado" | "convertido";
