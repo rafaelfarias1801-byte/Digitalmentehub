@@ -619,8 +619,18 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
             ))}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {currentPosts.map(post => {
+          {(() => {
+            const TYPE_ORDER: { key: Post["media_type"]; label: string }[] = [
+              { key: "reels", label: "Reels" },
+              { key: "feed", label: "Estático (feed)" },
+              { key: "carousel", label: "Carrossel" },
+              { key: "stories", label: "Stories" },
+              { key: "banners", label: "Banners" },
+              { key: "lancamento", label: "Lançamento" },
+              { key: "linkedin", label: "LinkedIn" },
+            ];
+
+            const renderPostCard = (post: Post) => {
               const approval = APPROVAL_STYLES[post.approval_status] ?? APPROVAL_STYLES["pendente"];
               return (
                 <div key={post.id} onClick={() => navigateToPost(post)} style={{
@@ -720,8 +730,49 @@ export default function TabConteudo({ caseData, profile, readonly = false }: Tab
                   {!readonly && <button onClick={e => { e.stopPropagation(); void removePost(post); }} style={{ background: "none", border: "none", color: "var(--ws-text3)", cursor: "pointer", fontSize: "1rem", padding: "0 8px" }}>×</button>}
                 </div>
               );
-            })}
-          </div>
+            };
+
+            // Agrupamento por tipo somente em "Todos"; demais filtros mostram lista simples
+            if (filterType !== "Todos") {
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {currentPosts.map(renderPostCard)}
+                </div>
+              );
+            }
+
+            const groups = TYPE_ORDER
+              .map(({ key, label }) => ({ key, label, posts: currentPosts.filter(p => p.media_type === key) }))
+              .filter(g => g.posts.length > 0);
+
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {groups.map(({ key, label, posts: groupPosts }) => (
+                  <div key={key}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
+                    }}>
+                      <span style={{
+                        display: "inline-block", width: 10, height: 10, borderRadius: "50%",
+                        background: TYPE_COLORS[key] || "#9E9E9E",
+                      }} />
+                      <h3 style={{
+                        margin: 0, fontFamily: "Poppins", fontSize: ".95rem", fontWeight: 700,
+                        color: "var(--ws-text)", letterSpacing: ".02em",
+                      }}>{label}</h3>
+                      <span style={{
+                        fontSize: ".7rem", color: "var(--ws-text3)", fontFamily: "Poppins",
+                      }}>({groupPosts.length})</span>
+                      <div style={{ flex: 1, height: 1, background: "var(--ws-border)", marginLeft: 6 }} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {groupPosts.map(renderPostCard)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </>
       )}
 
